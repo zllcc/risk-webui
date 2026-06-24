@@ -9,77 +9,105 @@ import {
 import ReactECharts from 'echarts-for-react';
 // 引入封装好的筛选组件与类型
 import FilterPanel, { FilterParams } from './compononts/FilterPanel.tsx';
+// 引入持仓分配弹窗组件
+import AllocatePositionModal, { PositionRowItem } from './compononts/AllocatePositionModal.tsx';
 
 const { TabPane } = Tabs;
 const { Option } = Select;
 const { Title } = Typography;
 
-// ====================== 模拟数据 ======================
-const mockData = {
-  "标准资产": [
-    { id: 1, name: "标准债权A", principal: 1000000, loan: 200000, cost: 980000, dailyProfit: 12500, totalProfit: 86400, marketValue: 1080000, amount: 10000, rate: "4.2%" },
-    { id: 2, name: "标准债权B", principal: 2000000, loan: 400000, cost: 1920000, dailyProfit: -8200, totalProfit: 42100, marketValue: 2042000, amount: 20000, rate: "3.8%" },
-  ],
-  "非标资产": [
-    { id: 3, name: "信托计划X", principal: 5000000, loan: 0, cost: 4850000, dailyProfit: 28100, totalProfit: 326800, marketValue: 5326800, amount: 5000, rate: "5.6%" },
-  ],
-  "股票": [
-    { id: 4, name: "贵州茅台", principal: 320000, loan: 0, cost: 305200, dailyProfit: -6280, totalProfit: 28400, marketValue: 348400, amount: 2000, rate: "+8.2%" },
-    { id: 5, name: "宁德时代", principal: 240000, loan: 0, cost: 231500, dailyProfit: 4150, totalProfit: 18200, marketValue: 258200, amount: 3000, rate: "+7.0%" },
-  ],
-  "债券": [
-    { id: 6, name: "国开债2401", principal: 1500000, loan: 0, cost: 1476000, dailyProfit: 3850, totalProfit: 42300, marketValue: 1542300, amount: 15000, rate: "2.9%" },
-  ],
-  "期货": [
-    { id: 7, name: "螺纹钢2405", principal: 800000, loan: 4000000, cost: 786000, dailyProfit: 18420, totalProfit: 58900, marketValue: 858900, amount: 40, rate: "+7.0%" },
-  ],
-  "期权": [
-    { id: 8, name: "50ETF购2.8", principal: 120000, loan: 0, cost: 114200, dailyProfit: 6850, totalProfit: 21300, marketValue: 141300, amount: 50000, rate: "+15.1%" },
-  ]
-};
+// ====================== 模拟持仓表格数据（匹配持仓列表表头） ======================
+const mockPositionData: PositionRowItem[] = [
+  {
+    id: 1,
+    account: 'U123456',
+    contract: 'AAPL',
+    amount: 100,
+    avgCostPrice: 152.35,
+    marketPrice: 158.62,
+    marketValue: 15862,
+    updateTime: '2026-06-23 15:30:00',
+    realizedProfit: 23600,
+    unrealizedProfit: 627,
+    unAllocateAmount: 10,
+    totalAmount: 100
+  },
+  {
+    id: 2,
+    account: 'U654321',
+    contract: 'MSFT',
+    amount: 50,
+    avgCostPrice: 320.10,
+    marketPrice: 335.40,
+    marketValue: 16770,
+    updateTime: '2026-06-23 15:30:00',
+    realizedProfit: 12500,
+    unrealizedProfit: 765,
+    unAllocateAmount: 0,
+    totalAmount: 50
+  }
+];
 
-// ====================== 所有可配置列 ======================
+// ====================== 所有可配置列（持仓列表表头，按图片1） ======================
 const allColumns = [
-  { key: "name", label: "资产名称" },
-  { key: "principal", label: "本金" },
-  { key: "loan", label: "贷款" },
-  { key: "cost", label: "持仓成本" },
-  { key: "dailyProfit", label: "每日盈亏" },
-  { key: "totalProfit", label: "累计盈亏" },
-  { key: "marketValue", label: "市值" },
-  { key: "amount", label: "持仓数量" },
-  { key: "rate", label: "收益率" },
+  { key: "account", label: "账号" },
+  { key: "contract", label: "合约" },
+  { key: "amount", label: "数量" },
+  { key: "avgCostPrice", label: "平均成本价" },
+  { key: "marketPrice", label: "市场价格" },
+  { key: "marketValue", label: "市场值" },
+  { key: "updateTime", label: "最后更新时间" },
+  { key: "realizedProfit", label: "实现盈亏" },
+  { key: "unrealizedProfit", label: "未实现盈亏" },
+  { key: "unAllocateAmount", label: "未分配数量" },
+  { key: "action", label: "操作" },
 ];
 
 // ====================== 主页面 ======================
 export default function AssetList() {
   // 筛选组件生效参数
   const [activeFilter, setActiveFilter] = useState<FilterParams | null>(null);
-  const [activeTab, setActiveTab] = useState("标准资产");
+  const [activeTab, setActiveTab] = useState("股票");
   const [region, setRegion] = useState("CN");
-  const [tableData, setTableData] = useState([]);
-  // 默认展示列
-  const [visibleCols, setVisibleCols] = useState(["name", "principal", "dailyProfit", "marketValue", "amount"]);
+  const [tableData, setTableData] = useState(mockPositionData);
+  // 默认展示全部列
+  const [visibleCols, setVisibleCols] = useState(allColumns.map(item => item.key));
+  // 图表弹窗状态
   const [modalVisible, setModalVisible] = useState(false);
   const [chartTitle, setChartTitle] = useState("");
   const [chartType, setChartType] = useState("profit");
 
-  // 切换 Tab 加载对应数据
+  // 分配弹窗状态
+  const [allocateModalOpen, setAllocateModalOpen] = useState(false);
+  const [currentPosition, setCurrentPosition] = useState<PositionRowItem | null>(null);
+
+  // 切换 Tab 加载对应数据（简化，统一展示持仓列表）
   useEffect(() => {
-    setTableData(mockData[activeTab] || []);
+    setTableData(mockPositionData);
   }, [activeTab]);
 
   // 筛选查询回调
   const handleSearch = (params: FilterParams) => {
     setActiveFilter(params);
     console.log('资产列表筛选条件', params);
-    // 真实场景：根据账号/操盘人/策略/时间重新请求资产接口
-    setTableData(mockData[activeTab] || []);
+    setTableData(mockPositionData);
+  };
+
+  // 打开分配弹窗，传入当前行数据
+  const openAllocateModal = (record: PositionRowItem) => {
+    setCurrentPosition(record);
+    setAllocateModalOpen(true);
+  };
+
+  // 分配弹窗确认回调
+  const handleAllocateConfirm = (pos: PositionRowItem, allocateList: any[]) => {
+    console.log('执行分配操作', pos, allocateList);
+    // 此处调用分配接口，成功后刷新表格数据
   };
 
   // 打开图表弹窗
   const showChart = (record, type) => {
-    setChartTitle(`${record.name} - ${type === "profit" ? "每日盈亏趋势" : "市值走势"}`);
+    setChartTitle(`${record.contract} - ${type === "profit" ? "每日盈亏趋势" : "市值走势"}`);
     setChartType(type);
     setModalVisible(true);
   };
@@ -114,32 +142,32 @@ export default function AssetList() {
         key: col.key,
       };
 
-      // 每日盈亏 点击弹窗
-      if (col.key === "dailyProfit") {
-        item.render = (val, record) => (
+      // 操作列：分配按钮
+      if (col.key === "action") {
+        item.render = (_: any, record: PositionRowItem) => (
+          <Button type="link" onClick={() => openAllocateModal(record)}>分配</Button>
+        );
+      }
+
+      // 实现盈亏、未实现盈亏 点击打开盈亏图表
+      else if (["realizedProfit", "unrealizedProfit"].includes(col.key)) {
+        item.render = (val: number, record: PositionRowItem) => (
           <a onClick={() => showChart(record, "profit")} style={{ color: val >= 0 ? "#f5222d" : "#52c41a" }}>
             {val >= 0 ? "+" : ""}{val.toLocaleString()}
           </a>
         );
       }
-      // 市值 点击弹窗
-      else if (col.key === "marketValue") {
-        item.render = (val, record) => (
-          <a onClick={() => showChart(record, "value")} style={{ color: "#1890ff" }}>
-            {val.toLocaleString()}
-          </a>
-        );
-      }
-      // 金额千分位格式化
-      else if (["principal", "loan", "cost", "totalProfit"].includes(col.key)) {
-        item.render = (val) => val.toLocaleString();
+
+      // 市场值、数量、价格千分位格式化
+      else if (["amount", "avgCostPrice", "marketPrice", "marketValue", "realizedProfit", "unrealizedProfit", "unAllocateAmount"].includes(col.key)) {
+        item.render = (val: number) => val.toLocaleString();
       }
 
       return item;
     });
 
   return (
-    <Card title={<Title level={5}>资产全品类列表</Title>}>
+    <Card title={<Title level={5}>持仓列表</Title>}>
       {/* 1. 顶部筛选组件：账号/操盘人/策略/时间段查询 */}
       <FilterPanel onSearch={handleSearch} />
 
@@ -187,7 +215,7 @@ export default function AssetList() {
         </Space>
       </div>
 
-      {/* 4. 资产表格，max-content 自适应横向滚动 */}
+      {/* 4. 持仓表格，max-content 自适应横向滚动 */}
       <Table
         columns={tableColumns}
         dataSource={tableData}
@@ -207,6 +235,14 @@ export default function AssetList() {
       >
         <ReactECharts option={getChartOption()} style={{ height: 400 }} />
       </Modal>
+
+      {/* 6. 持仓分配弹窗组件 */}
+      <AllocatePositionModal
+        open={allocateModalOpen}
+        data={currentPosition}
+        onCancel={() => setAllocateModalOpen(false)}
+        onConfirm={handleAllocateConfirm}
+      />
     </Card>
   );
 }

@@ -54,10 +54,10 @@ export default function BasicLayout() {
           <Button
             type="text"
             icon={<FileTextOutlined />}
-            onClick={() => navigate('/asset-detail')}
+            onClick={() => navigate('/trade-list')}
             style={{ color: '#fff' }}
           >
-            资产详情
+            交易列表
           </Button>
           <Button
             type="text"

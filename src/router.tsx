@@ -1,10 +1,10 @@
 import { Navigate, useRoutes } from 'react-router-dom';
 import Login from './pages/Login.js';
-import AssetList from './pages/AssetList.jsx';
-import OverviewList from './pages/OverviewList.jsx';
-import AssetDetail from './pages/AssetDetail.js';
-import PortfolioAnalysis from './pages/PortfolioAnalysis.js';
-import BasicLayout from './layouts/BasicLayout.js';
+import AssetList from './pages/AssetList.tsx';
+import OverviewList from './pages/OverviewList.tsx';
+import TradeList from './pages/TradeList.tsx';
+import PortfolioAnalysis from './pages/PortfolioAnalysis.tsx';
+import BasicLayout from './layouts/BasicLayout.tsx';
 
 // 路由守卫：简单用 localStorage 模拟登录
 const PrivateRoute = ({ children } : any ) => {
@@ -26,7 +26,7 @@ export default function Router() {
         { path: '', element: <Navigate to="asset-list" replace /> },
         { path: 'overview', element: <OverviewList /> },
         { path: 'asset-list', element: <AssetList /> },
-        { path: 'asset-detail', element: <AssetDetail /> },
+        { path: 'trade-list', element: <TradeList /> },
         { path: 'asset-analysis', element: <PortfolioAnalysis /> },
       ],
     },
