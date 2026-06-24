@@ -170,7 +170,7 @@ const PortfolioChart: React.FC<Props> = ({ filter }) => {
   }, []);
 
   return (
-    <div style={{ width: '100%', height: 650, background: '#fff', padding: 16 }}>
+    <div style={{ width: '100%', height: 650, padding: 16 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0 40px' }}>
         <h3 style={{ color: '#666', fontWeight: 400 }}>Net Asset Value</h3>
         <h3 style={{ color: '#666', fontWeight: 400 }}>Cumulative Return</h3>

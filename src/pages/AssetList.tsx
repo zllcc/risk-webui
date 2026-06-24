@@ -199,7 +199,7 @@ export default function AssetList() {
       </Row>
 
       {/* 3. 表头字段配置，移至表格上方独立区域 */}
-      <div style={{ marginBottom: 16, padding: '8px 12px', background: '#f7f8fa', borderRadius: 4 }}>
+      <div style={{ marginBottom: 16, padding: '8px 12px', borderRadius: 4 }}>
         <Space align="baseline" wrap>
           <span style={{ fontWeight: 500 }}>表格显示字段：</span>
           <Checkbox.Group

@@ -1,13 +1,25 @@
-import { Layout, Button, Typography, Space, ConfigProvider } from 'antd';
-import { Outlet, useNavigate } from 'react-router-dom';
+import { Layout, Button, Typography, Space, ConfigProvider, theme } from 'antd';
+import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { LogoutOutlined, FileTextOutlined, DashboardOutlined } from '@ant-design/icons';
 import locale from 'antd/locale/zh_CN';
+const { darkAlgorithm } = theme;
 
 const { Header, Content } = Layout;
 const { Title } = Typography;
 
+// 导航菜单配置，统一管理路由、名称、图标
+const navMenus = [
+  { path: '/overview', label: '总览', icon: <DashboardOutlined /> },
+  { path: '/asset-list', label: '资产列表', icon: <DashboardOutlined /> },
+  { path: '/trade-list', label: '交易列表', icon: <FileTextOutlined /> },
+  { path: '/asset-analysis', label: '投资组合分析', icon: <FileTextOutlined /> },
+];
+
 export default function BasicLayout() {
   const navigate = useNavigate();
+  // 获取当前路由地址
+  const location = useLocation();
+  const currentPath = location.pathname;
 
   // 退出登录
   const handleLogout = () => {
@@ -20,7 +32,7 @@ export default function BasicLayout() {
       {/* 顶部导航：全屏、深色、无左右边距 */}
       <Header
         style={{
-          background: '#34495e',
+          background: '#1f2d3d',
           padding: '0 20px',
           display: 'flex',
           alignItems: 'center',
@@ -33,40 +45,35 @@ export default function BasicLayout() {
           zIndex: 999,
         }}
       >
-        {/* 左侧导航按钮 */}
-        <Space size="middle">
-          <Button
-            type="text"
-            icon={<DashboardOutlined />}
-            onClick={() => navigate('/overview')}
-            style={{ color: '#fff' }}
-          >
-            总览
-          </Button>
-          <Button
-            type="text"
-            icon={<DashboardOutlined />}
-            onClick={() => navigate('/asset-list')}
-            style={{ color: '#fff' }}
-          >
-            资产列表
-          </Button>
-          <Button
-            type="text"
-            icon={<FileTextOutlined />}
-            onClick={() => navigate('/trade-list')}
-            style={{ color: '#fff' }}
-          >
-            交易列表
-          </Button>
-          <Button
-            type="text"
-            icon={<FileTextOutlined />}
-            onClick={() => navigate('/asset-analysis')}
-            style={{ color: '#fff' }}
-          >
-            投资组合分析
-          </Button>
+        {/* 左侧导航按钮，循环渲染自动判断高亮 */}
+        <Space
+          size="middle"
+        >
+          {navMenus.map((item) => {
+            // 判断是否为当前选中路由
+            const isActive = currentPath === item.path;
+            return (
+              <div
+                style={{
+                  background: isActive ? 'rgba(0,0,0,0.5)' : 'transparent',
+                  borderRadius: 4,
+                }}
+              >
+              <Button
+                key={item.path}
+                type="text"
+                icon={item.icon}
+                onClick={() => navigate(item.path)}
+                style={{
+                  color: '#fff',
+                  height: '100%'
+                }}
+              >
+                {item.label}
+              </Button>
+              </div>
+            );
+          })}
         </Space>
 
         {/* 右侧：标题 + 退出 */}
@@ -89,12 +96,22 @@ export default function BasicLayout() {
       <Content
         style={{
           marginTop: 64, // Header 高度
-          padding: '24px', // 左右下全局边距
-          background: '#f5f5f5',
+          // padding: '24px', // 左右下全局边距
+          // background: '#f5f5f5',
+          background: '#141414',
           minHeight: 'calc(100vh - 64px)',
         }}
       >
-        <ConfigProvider locale={locale}>
+        <ConfigProvider
+          locale={locale}
+          theme={{
+            algorithm: darkAlgorithm, // 开启全局深色算法
+            // 自定义深色主色调（可选，默认蓝色）
+            token: {
+              colorPrimary: '#1677ff',
+            },
+          }}
+        >
           <Outlet /> {/* 子页面渲染在这里 */}
         </ConfigProvider>
       </Content>
