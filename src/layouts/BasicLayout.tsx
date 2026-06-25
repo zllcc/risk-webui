@@ -32,7 +32,7 @@ export default function BasicLayout() {
       {/* 顶部导航：全屏、深色、无左右边距 */}
       <Header
         style={{
-          background: '#1f2d3d',
+          background: '#161B24',
           padding: '0 20px',
           display: 'flex',
           alignItems: 'center',
@@ -55,14 +55,13 @@ export default function BasicLayout() {
             return (
               <div
                 style={{
-                  background: isActive ? 'rgba(0,0,0,0.5)' : 'transparent',
+                  background: isActive ? 'rgba(48, 112, 202, 0.22)' : 'transparent',
                   borderRadius: 4,
                 }}
               >
               <Button
                 key={item.path}
                 type="text"
-                icon={item.icon}
                 onClick={() => navigate(item.path)}
                 style={{
                   color: '#fff',
@@ -96,9 +95,7 @@ export default function BasicLayout() {
       <Content
         style={{
           marginTop: 64, // Header 高度
-          // padding: '24px', // 左右下全局边距
-          // background: '#f5f5f5',
-          background: '#141414',
+          background: 'rgb(24,34,54)',
           minHeight: 'calc(100vh - 64px)',
         }}
       >
@@ -109,6 +106,7 @@ export default function BasicLayout() {
             // 自定义深色主色调（可选，默认蓝色）
             token: {
               colorPrimary: '#1677ff',
+              colorBgBase: '#0E1117', // 全局背景色
             },
           }}
         >

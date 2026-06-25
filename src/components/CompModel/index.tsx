@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Modal, Typography, Button, Divider } from 'antd';
 import { CheckCircleFilled, CloseCircleFilled } from '@ant-design/icons';
+import styles from './index.module.less';
 
 const { Text } = Typography;
 
@@ -92,9 +93,7 @@ const ComponotsModel: React.FC<Props> = ({ open, onCancel }) => {
   const moveToAvailable = (targetKey: string) => {
     const targetItem = selectedList.find(item => item.key === targetKey);
     if (!targetItem) return;
-    // 移除已选内目标
     const newSelected = selectedList.filter(item => item.key !== targetKey);
-    // 添加到可用列表末尾
     const newAvailable = [...availableList, targetItem];
     setSelectedList(newSelected);
     setAvailableList(newAvailable);
@@ -112,7 +111,6 @@ const ComponotsModel: React.FC<Props> = ({ open, onCancel }) => {
 
   // 保存回调
   const handleSave = () => {
-    // 拿到最终选中字段key数组，传给后端/父组件
     const selectKeys = selectedList.map(i => i.key);
     console.log('最终选中字段', selectKeys);
     onCancel();
@@ -126,23 +124,13 @@ const ComponotsModel: React.FC<Props> = ({ open, onCancel }) => {
   ) => (
     <div
       key={item.key}
+      className={styles.listItem}
       onClick={clickHandler}
-      style={{
-        display: 'flex',
-        alignItems: 'flex-start',
-        padding: '12px 8px',
-        borderBottom: '1px solid #f0f0f0',
-        gap: 10,
-        cursor: 'pointer',
-        transition: 'background 0.2s',
-      }}
-      onMouseEnter={(e) => (e.currentTarget.style.background = '#f7f7f7')}
-      onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
     >
       {dotColorIcon}
-      <div style={{ flex: 1 }}>
-        <Text strong>{item.label}</Text>
-        <div style={{ fontSize: 12, color: '#666', marginTop: 4, lineHeight: 1.5 }}>
+      <div className={styles.itemContent}>
+        <Text strong className={styles.itemLabel}>{item.label}</Text>
+        <div className={styles.itemDesc}>
           {item.desc}
         </div>
       </div>
@@ -151,6 +139,7 @@ const ComponotsModel: React.FC<Props> = ({ open, onCancel }) => {
 
   return (
     <Modal
+      className={styles.modalWrap}
       title="自定义面板字段"
       open={open}
       width={720}
@@ -161,12 +150,12 @@ const ComponotsModel: React.FC<Props> = ({ open, onCancel }) => {
       onCancel={onCancel}
       maskClosable={false}
     >
-      <div style={{ maxHeight: '70vh', overflowY: 'auto' }}>
+      <div className={styles.scrollBox}>
         {/* 上方：已选列表 红点 */}
-        <Text strong style={{ fontSize: 15 }}>已选</Text>
-        <div style={{ border: '1px solid #e8e8e8', borderRadius: 6, marginBottom: 12 }}>
+        <Text strong className={styles.groupTitle}>已选</Text>
+        <div className={styles.listBox}>
           {selectedList.length === 0 ? (
-            <div style={{ padding: 16, textAlign: 'center', color: '#aaa' }}>暂无选中字段</div>
+            <div className={styles.emptyTip}>暂无选中字段</div>
           ) : (
             selectedList.map((item) =>
               renderItem(
@@ -178,13 +167,13 @@ const ComponotsModel: React.FC<Props> = ({ open, onCancel }) => {
           )}
         </div>
 
-        <Divider style={{ margin: '16px 0' }} />
+        <Divider className={styles.dividerLine} />
 
         {/* 下方：可用列表 绿点 */}
-        <Text strong style={{ fontSize: 15 }}>可用</Text>
-        <div style={{ border: '1px solid #e8e8e8', borderRadius: 6 }}>
+        <Text strong className={styles.groupTitle}>可用</Text>
+        <div className={styles.listBox}>
           {availableList.length === 0 ? (
-            <div style={{ padding: 16, textAlign: 'center', color: '#aaa' }}>无更多可选字段</div>
+            <div className={styles.emptyTip}>无更多可选字段</div>
           ) : (
             availableList.map((item) =>
               renderItem(

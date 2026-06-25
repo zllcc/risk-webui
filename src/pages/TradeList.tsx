@@ -3,9 +3,9 @@ import {
   Card, Tabs, Select, Table, Button, Checkbox,
   Modal, Space, Typography, Row, Col, Pagination
 } from 'antd';
-import { FilterParams } from './compononts/FilterPanel.tsx';
-import FilterPanel from './compononts/FilterPanel.tsx';
-import TradeAllocateModal, { TradeRowItem } from './compononts/TradeAllocateModal.tsx';
+import { FilterParams } from '@/components/FilterPanel';
+import FilterPanel from '@/components/FilterPanel';
+import TradeAllocateModal, { TradeRowItem } from '@/components/TradeAllocateModal';
 
 const { TabPane } = Tabs;
 const { Option } = Select;

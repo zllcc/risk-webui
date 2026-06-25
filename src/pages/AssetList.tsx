@@ -8,9 +8,9 @@ import {
 } from '@ant-design/icons';
 import ReactECharts from 'echarts-for-react';
 // 引入封装好的筛选组件与类型
-import FilterPanel, { FilterParams } from './compononts/FilterPanel.tsx';
+import FilterPanel, { FilterParams } from '@/components/FilterPanel';
 // 引入持仓分配弹窗组件
-import AllocatePositionModal, { PositionRowItem } from './compononts/AllocatePositionModal.tsx';
+import AllocatePositionModal, { PositionRowItem } from '@/components/AllocatePositionModal';
 
 const { TabPane } = Tabs;
 const { Option } = Select;

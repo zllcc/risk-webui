@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "baseUrl": "./",
+    "paths": {
+      "@/*": ["src/*"]
+    },
+    "ignoreDeprecations": "6.0",
+    // 新增JSX配置，vite-react固定填react-jsx
+    "jsx": "react-jsx"
+  },
+  "include": ["src/**/*"]
+}

@@ -1,9 +1,9 @@
-// AssetDetail.jsx
+// AssetDetail.tsx
 import { Card, Row, Col } from 'antd';
-import LineChartNavBench from './compononts/LineChart.tsx';
-import BarChartPeriodReturn from './compononts/BarChart.tsx';
-import HorizontalBarContribution from './compononts/HorizontalBar.tsx';
-import PieFirstLayer from './compononts/PieFirstLayer';
+import LineChartNavBench from '@/components/LineChart';
+import BarChartPeriodReturn from '@/components/BarChart';
+import HorizontalBarContribution from '@/components/HorizontalBar';
+import PieFirstLayer from '@/components/PieFirstLayer';
 export default function AssetDetail() {
   return (
     <Card title="详情">

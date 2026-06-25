@@ -3,15 +3,15 @@ import {
   Card, Tabs, Button, Modal, Space, Typography, Row, Col
 } from 'antd';
 import { RightOutlined, CloseOutlined } from '@ant-design/icons';
-import AccountModalContent from './compononts/AccountModalContent.tsx';
-import ComponotsModel from './compononts/ComponotsModel.tsx'
-import PortfolioChart from './compononts/PortfolioChart.tsx';
-import HorizontalBarContribution from './compononts/HorizontalBar.tsx';
-import DonutAssetPie from './compononts/DonutAssetPie.tsx';
-import RiskVarPanel from './compononts/RiskVarPanel.tsx';
-import FilterPanel, { FilterParams } from './compononts/FilterPanel.tsx';
+import AccountModalContent from '@/components/AccountModalContent';
+import ComponotsModel from '@/components/CompModel'
+import AttributionHeatChart from '@/components/AttributionHeatChart';
+import HorizontalBarContribution from '@/components/HorizontalBar';
+import DonutAssetPie from '@/components/DonutAssetPie';
+import RiskDashboard from '@/components/RiskVarPanel';
+import FilterPanel, { FilterParams } from '@/components/FilterPanel';
 // 引入抽离的绩效趋势图
-import PerformanceTrendChart, { PerformanceMetric } from './compononts/PerformanceTrendChart.tsx';
+import PerformanceTrendChart, { PerformanceMetric } from '@/components/PerformanceTrendChart';
 
 const { TabPane } = Tabs;
 const { Title, Text } = Typography;
@@ -61,7 +61,7 @@ const originTreeData: TreeOption[] = [
 const PortfolioAnalysis: React.FC = () => {
   // 弹窗状态
   const [modalOpen, setModalOpen] = useState(false);
-  const [componontsModalOpen, setComponontsModalOpen] = useState(false);
+  const [componentsModalOpen, setcomponentsModalOpen] = useState(false);
 
   // 卡片折叠状态（新增dash7总敞口卡片）
   const [collapse, setCollapse] = useState({
@@ -112,8 +112,8 @@ const PortfolioAnalysis: React.FC = () => {
 
       {/* 右上角：组件配置弹窗按钮 */}
       <Row justify="end" style={{ padding: '0 0 24px' }}>
-        <Button onClick={() => setComponontsModalOpen(true)}>配置图表组件</Button>
-        <ComponotsModel open={componontsModalOpen} onCancel={() => setComponontsModalOpen(false)} />
+        <Button onClick={() => setcomponentsModalOpen(true)}>配置图表组件</Button>
+        <ComponotsModel open={componentsModalOpen} onCancel={() => setcomponentsModalOpen(false)} />
       </Row>
 
       {/* 全局图表卡片栅格布局 */}
@@ -124,7 +124,7 @@ const PortfolioAnalysis: React.FC = () => {
             title={<CardHeader title="收益归因" cardKey="dash1" />}
           >
             <Text type="secondary">当前筛选账户数量：{activeFilter.accountKeys.length}</Text>
-            <PortfolioChart filter={activeFilter} />
+            <AttributionHeatChart filter={activeFilter} />
           </Card>
         </Col>
 
@@ -156,9 +156,9 @@ const PortfolioAnalysis: React.FC = () => {
         {/* 4. 量化风险指标 */}
         <Col span={8}>
           <Card
-            title={<CardHeader title="量化风险指标" cardKey="dash4" />}
+            title={<CardHeader title="金融风控系统仪表盘" cardKey="dash4" />}
           >
-            <RiskVarPanel filter={activeFilter} />
+            <RiskDashboard filter={activeFilter} />
           </Card>
         </Col>
 

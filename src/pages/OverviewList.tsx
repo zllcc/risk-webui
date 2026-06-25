@@ -1,8 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { Card, Table, Typography, Checkbox, Space, Row, Col } from 'antd';
 import dayjs from 'dayjs';
-import FilterPanel, { FilterParams } from './compononts/FilterPanel.tsx';
-import PortfolioChart from './compononts/PortfolioChart.tsx';
+import FilterPanel, { FilterParams } from '@/components/FilterPanel';
+import PortfolioChart from '@/components/PortfolioChart';
 
 const { Title } = Typography;
 
