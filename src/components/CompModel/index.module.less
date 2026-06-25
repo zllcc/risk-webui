@@ -1,84 +1,116 @@
-/* 弹窗外层容器 */
 .modalWrap {
   .ant-modal-content {
     background: #161B24;
-  }
-  .ant-modal-header {
-    background: #161B24;
-    border-bottom: 1px solid #2A303C;
-    .ant-modal-title {
+    .ant-modal-header {
+      background: #161B24;
+      border-bottom: 1px solid #2A303C;
+      .ant-modal-title {
+        color: #C9D1D9;
+      }
+    }
+    .ant-modal-body {
+      background: #161B24;
       color: #C9D1D9;
     }
-  }
-  .ant-modal-body {
-    background: #161B24;
-    color: #C9D1D9;
-  }
-  .ant-modal-footer {
-    background: #161B24;
-    border-top: 1px solid #2A303C;
+    .ant-modal-footer {
+      background: #161B24;
+      border-top: 1px solid #2A303C;
+    }
   }
 }
 
-/* 滚动容器 */
 .scrollBox {
-  max-height: 70vh;
+  max-height: 60vh;
   overflow-y: auto;
+  padding-right: 4px;
 }
 
-/* 分组标题 */
 .groupTitle {
   font-size: 15px;
   color: #fff;
-}
-
-/* 列表容器边框 */
-.listBox {
-  border: 1px solid #2A303C;
-  border-radius: 6px;
+  display: block;
   margin-bottom: 12px;
 }
 
-/* 单行条目 */
+.listBox {
+  background: #1f2937;
+  border-radius: 8px;
+  padding: 12px;
+  min-height: 80px;
+}
+
+.emptyTip {
+  color: #64748b;
+  text-align: center;
+  padding: 20px 0;
+}
+
+.dividerLine {
+  margin: 20px 0;
+  border-color: #2A303C;
+}
+
+// 条目容器 弹性布局
 .listItem {
   display: flex;
+  justify-content: space-between;
   align-items: flex-start;
-  padding: 12px 8px;
-  border-bottom: 1px solid #2A303C;
-  gap: 10px;
-  cursor: pointer;
+  padding: 10px 12px;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  background: transparent;
   transition: background 0.2s;
+  cursor: pointer;
+  position: relative;
+
   &:last-child {
-    border-bottom: none;
+    margin-bottom: 0;
   }
+
   &:hover {
     background: rgba(48, 112, 202, 0.12);
   }
 }
 
-/* 条目文字区域 */
 .itemContent {
   flex: 1;
+  padding-right: 12px;
 }
+
 .itemLabel {
   color: #fff;
+  font-size: 14px;
+  display: block;
+  margin-bottom: 4px;
 }
+
 .itemDesc {
   font-size: 12px;
   color: #94a3b8;
-  margin-top: 4px;
   line-height: 1.5;
 }
 
-/* 空占位文字 */
-.emptyTip {
-  padding: 16px;
-  text-align: center;
-  color: #64748b;
+// 右侧操作按钮 默认隐藏，hover显示
+.actionBtn {
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 4px;
+  opacity: 0;
+  transition: opacity 0.2s;
+  background: rgba(48, 112, 202, 0.2);
+  color: #72C0FF;
+
+  &:hover {
+    background: #3070ca;
+    color: #fff;
+  }
 }
 
-/* 分割线 */
-.dividerLine {
-  margin: 16px 0;
-  border-color: #2A303C;
+.listItem:hover .actionBtn {
+  opacity: 1;
 }

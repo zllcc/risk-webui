@@ -1,0 +1,102 @@
+.wrapCard {
+  background: #161B24;
+  border: 1px solid #2A303C;
+  border-radius: 12px;
+  .ant-card-head {
+    background: #161B24;
+    border-bottom: 1px solid #2A303C;
+    .ant-card-head-title {
+      color: #C9D1D9;
+      font-size: 16px;
+    }
+  }
+  .ant-card-body {
+    background: #161B24;
+    padding: 20px;
+  }
+}
+
+.divider {
+  height: 1px;
+  background: #2A303C;
+  margin: 24px 0;
+}
+
+// 希腊指标卡片通用
+.greekItem {
+  background: #1f2937;
+  border: 1px solid #2A303C;
+  border-radius: 8px;
+  padding: 16px;
+  transition: all 0.2s;
+  &:hover {
+    border-color: rgba(48, 112, 202, 0.3);
+  }
+}
+// 当前高亮Delta卡片（橙色发光）
+.greekItemActive {
+  background: #1f2937;
+  border: 1px solid #ff7d00;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 0 14px rgba(255, 125, 0, 0.25);
+}
+
+.labelRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.labelText {
+  color: #C9D1D9;
+  font-size: 16px;
+}
+.dropIcon {
+  color: #94a3b8;
+  font-size: 14px;
+}
+.valueText {
+  color: #fff;
+  margin: 0 !important;
+}
+.miniChart {
+  width: 100%;
+  height: 32px;
+  margin-top: 8px;
+  background: linear-gradient(to top, rgba(48,112,202,0.1), transparent);
+  border-radius: 4px;
+}
+
+// 图表容器
+.chartBox {
+  background: #1f2937;
+  border-radius: 8px;
+  padding: 16px;
+  border: 1px solid #2A303C;
+}
+.chartTitle {
+  display: block;
+  margin-bottom: 12px;
+  color: #C9D1D9;
+}
+.tagBlue {
+  background: rgba(48, 112, 202, 0.22);
+  color: #72C0FF;
+  padding: 3px 8px;
+  border-radius: 4px;
+  margin-left: 8px;
+}
+.tagRed {
+  background: rgba(245, 34, 45, 0.18);
+  color: #ff7875;
+  padding: 3px 8px;
+  border-radius: 4px;
+  margin-right: 10px;
+}
+.tagGreen {
+  background: rgba(82, 196, 26, 0.18);
+  color: #73d13d;
+  padding: 3px 8px;
+  border-radius: 4px;
+}

@@ -12,51 +12,13 @@ import RiskDashboard from '@/components/RiskVarPanel';
 import FilterPanel, { FilterParams } from '@/components/FilterPanel';
 // 引入抽离的绩效趋势图
 import PerformanceTrendChart, { PerformanceMetric } from '@/components/PerformanceTrendChart';
+import RiskGreekDashboard from '@/components/RiskGreekDashboard';
+import PerformanceRatioTable from '@/components/PerformanceRatioTable';
+import TotalGreekExposure from '@/components/TotalGreekExposure';
+
 
 const { TabPane } = Tabs;
 const { Title, Text } = Typography;
-const currentAccount = { id: 'U10726086', name: 'U10726086', type: '机构', totalAsset: 23590000, profitRate: -7.87, deposit: 0, withdraw: 0 };
-
-// ===================== 类型定义 =====================
-type TimeRange = '1D' | '7D' | 'MTD' | '1M' | 'QTD' | 'YTD' | '1Y';
-const rangeList: TimeRange[] = ['1D', '7D', 'MTD', '1M', 'QTD', 'YTD', '1Y'];
-
-interface TreeOption {
-  value: string;
-  label: string;
-  idx?: string;
-  children?: TreeOption[];
-}
-
-const originTreeData: TreeOption[] = [
-  {
-    value: 'num1',
-    label: '账号一',
-    children: [
-      {
-        value: 'zhangsan',
-        label: '张三(操盘人)',
-        children: [
-          { value: 'str1', label: '策略一', idx: 'SPY' },
-        ],
-      },
-    ],
-  },
-  {
-    value: 'num2',
-    label: '账号二',
-    children: [
-      {
-        value: 'lisi',
-        label: '李四(操盘人)',
-        children: [
-          { value: 'str1', label: '策略一', idx: 'SPY' },
-          { value: 'str2', label: '策略二', idx: 'SPY' },
-        ],
-      },
-    ],
-  },
-];
 
 const PortfolioAnalysis: React.FC = () => {
   // 弹窗状态
@@ -112,12 +74,12 @@ const PortfolioAnalysis: React.FC = () => {
 
       {/* 右上角：组件配置弹窗按钮 */}
       <Row justify="end" style={{ padding: '0 0 24px' }}>
-        <Button onClick={() => setcomponentsModalOpen(true)}>配置图表组件</Button>
+        <Button onClick={() => setcomponentsModalOpen(true)}>配置组件</Button>
         <ComponotsModel open={componentsModalOpen} onCancel={() => setcomponentsModalOpen(false)} />
       </Row>
 
       {/* 全局图表卡片栅格布局 */}
-      <Row gutter={24}>
+      <Row gutter={[24, 8]}>
         {/* 1. 收益归因 */}
         <Col span={8}>
           <Card
@@ -154,20 +116,11 @@ const PortfolioAnalysis: React.FC = () => {
         </Col>
 
         {/* 4. 量化风险指标 */}
-        <Col span={8}>
+        <Col span={16}>
           <Card
-            title={<CardHeader title="金融风控系统仪表盘" cardKey="dash4" />}
+            title={<CardHeader title="量化风险指标" cardKey="dash4" />}
           >
             <RiskDashboard filter={activeFilter} />
-          </Card>
-        </Col>
-
-        {/* 5. 衍生品希腊敞口总览 */}
-        <Col span={8}>
-          <Card
-            title={<CardHeader title="衍生品希腊敞口总览" cardKey="dash5" />}
-          >
-            <Text type="secondary">Delta/Gamma/Vega/Theta 希腊值汇总图表</Text>
           </Card>
         </Col>
 
@@ -176,16 +129,26 @@ const PortfolioAnalysis: React.FC = () => {
           <Card
             title={<CardHeader title="总敞口总览" cardKey="dash7" />}
           >
-            <Text type="secondary">全品类总Delta、总风险敞口、多空对冲汇总图表</Text>
+            {/* <TotalGreekExposure /> */}
+          </Card>
+        </Col>
+
+        {/* 5. 衍生品希腊敞口总览 */}
+        <Col span={24}>
+          <Card
+            title={<CardHeader title="衍生品希腊敞口总览" cardKey="dash5" />}
+          >
+            <RiskGreekDashboard />
           </Card>
         </Col>
 
         {/* 7. 风险收益绩效比 - 6个Tab，每个Tab渲染独立趋势图组件 */}
-        <Col span={8}>
+        <Col span={24}>
           <Card
             title={<CardHeader title="风险收益绩效比" cardKey="dash6" />}
           >
-            <Tabs activeKey={performanceTab} onChange={(k) => setPerformanceTab(k as PerformanceMetric)} size="small">
+            <PerformanceRatioTable />
+            {/* <Tabs activeKey={performanceTab} onChange={(k) => setPerformanceTab(k as PerformanceMetric)} size="small">
               <TabPane tab="夏普比率" key="sharpe">
                 <PerformanceTrendChart filter={activeFilter} metric="sharpe" />
               </TabPane>
@@ -204,7 +167,7 @@ const PortfolioAnalysis: React.FC = () => {
               <TabPane tab="波动率溢价" key="ivSpread">
                 <PerformanceTrendChart filter={activeFilter} metric="ivSpread" />
               </TabPane>
-            </Tabs>
+            </Tabs> */}
           </Card>
         </Col>
       </Row>
