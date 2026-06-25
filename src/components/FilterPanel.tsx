@@ -1,6 +1,7 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Row, Col, Space, Select, DatePicker, Button } from 'antd';
 import type { SelectProps } from 'antd/es/select';
+import { getInvestStrategy } from '@/api/investApi'
 import dayjs from 'dayjs';
 
 const { RangePicker } = DatePicker;
@@ -66,6 +67,24 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ onSearch }) => {
   const [tempTimeQuick, setTempTimeQuick] = useState<string | null>(timeShortOpts[0]);
   const [tempCustomDate, setTempCustomDate] = useState<[dayjs.Dayjs, dayjs.Dayjs] | null>(null);
   const [benchmarkType, setBenchmarkType] = useState('default');
+
+  const [strategyList, setStrategyList] = useState<Array<{ strategyName: string }>>([])
+
+  const fetchData = async () => {
+    try {
+      // 传搜索关键词，空字符串查询全部
+      const res = await getInvestStrategy('')
+      console.log('获取策略', res)
+      setStrategyList(res)
+    } catch (err) {
+      console.error('获取策略失败', err)
+    }
+  }
+
+  useEffect(() => {
+    fetchData()
+  }, [])
+
 
   const accountOptions = useMemo(() => originTreeData.map(acc => ({ value: acc.value, label: acc.label })), []);
 
@@ -164,7 +183,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ onSearch }) => {
               mode="multiple"
               placeholder="先选操盘人再选策略"
               style={{ minWidth: 200 }}
-              options={strategyOptions}
+              options={strategyList}
               value={selectedStrategies}
               onChange={setSelectedStrategies}
               allowClear

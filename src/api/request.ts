@@ -21,7 +21,7 @@ request.interceptors.response.use(
   (res) => {
     // 根据后端返回结构调整，示例：后端 { code:200, data: {}, msg:'' }
     const data = res.data
-    if (data.code !== 200) {
+    if (data.code !== 0) {
       message.error(data.msg || '接口请求失败')
       return Promise.reject(data)
     }
