@@ -1,9 +1,8 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Row, Col, Space, Select, DatePicker, Button, Typography, Form } from 'antd';
+import { Row, Col, Space, Select, DatePicker, Button } from 'antd';
 import type { SelectProps } from 'antd/es/select';
 import { getInvestStrategy } from '@/api/investApi'
 import dayjs from 'dayjs';
-const { Text } = Typography;
 
 const { RangePicker } = DatePicker;
 
@@ -19,6 +18,8 @@ export interface FilterParams {
   timeQuick: string | null;
   customDate: [dayjs.Dayjs, dayjs.Dayjs] | null;
   benchmarkType: string;
+  subjectMatterKeys: string[];
+  sectorKeys: string[];
 }
 
 const originTreeData: TreeOption[] = [
@@ -65,17 +66,17 @@ interface FilterPanelProps {
 }
 
 const FilterPanel: React.FC<FilterPanelProps> = ({ onSearch, pageType }) => {
-  const [selectedAccounts, setSelectedAccounts] = useState<string[]>([]);
-  const [selectedTraders, setSelectedTraders] = useState<string[]>([]);
-  const [selectedStrategies, setSelectedStrategies] = useState<string[]>([]);
-  const [selectedSubjectMatter, setSelectedSubjectMatter] = useState<string[]>([]);
-  const [selectedSectors, setSelectedSectors] = useState<string[]>([]);
+  const [selectedAccounts, setSelectedAccounts] = useState<string[]>([]); // 账号选择
+  const [selectedTraders, setSelectedTraders] = useState<string[]>([]); // 操盘人选择
+  const [selectedStrategies, setSelectedStrategies] = useState<string[]>([]); // 策略选择
+  const [selectedSubjectMatter, setSelectedSubjectMatter] = useState<string[]>([]); // 板块选择
+  const [selectedSectors, setSelectedSectors] = useState<string[]>([]); // 标的选择
 
-  const [tempTimeQuick, setTempTimeQuick] = useState<string | null>(timeShortOpts[0]);
-  const [tempCustomDate, setTempCustomDate] = useState<[dayjs.Dayjs, dayjs.Dayjs] | null>(null);
-  const [benchmarkType, setBenchmarkType] = useState('default');
+  const [tempTimeQuick, setTempTimeQuick] = useState<string | null>(timeShortOpts[0]); // 快捷时间段选择
+  const [tempCustomDate, setTempCustomDate] = useState<[dayjs.Dayjs, dayjs.Dayjs] | null>(null); // 自定义时间段选择
+  const [benchmarkType, setBenchmarkType] = useState('default'); // 业绩基准选择
 
-  const [strategyList, setStrategyList] = useState<Array<{ strategyName: string }>>([])
+  const [strategyList, setStrategyList] = useState<Array<{ strategyName: string }>>([]) // 策略列表
 
   const fetchData = async () => {
     try {
@@ -115,6 +116,8 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ onSearch, pageType }) => {
       timeQuick: tempTimeQuick,
       customDate: tempCustomDate,
       benchmarkType,
+      subjectMatterKeys: selectedSubjectMatter,
+      sectorKeys: selectedSectors,
     });
   };
 
@@ -181,7 +184,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ onSearch, pageType }) => {
           mode="multiple"
           placeholder="先选操盘人再选策略"
           style={{ minWidth: 200 }}
-          options={strategyList.map(item => ({ value: item, label: item }))}
+          options={strategyList.map(item => ({ value: item.strategyName, label: item.strategyName }))}
           value={selectedStrategies}
           onChange={setSelectedStrategies}
           allowClear
@@ -223,7 +226,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ onSearch, pageType }) => {
           style={{ minWidth: 200 }}
           options={sectorOpts.map(item => ({ value: item, label: item }))}
           value={selectedSectors}
-          onChange={setSelectedSectors}
+          onChange={(val) => setSelectedSectors(val)}
           allowClear
         />
       ),
