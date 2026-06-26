@@ -49,6 +49,9 @@ export default function BasicLayout() {
         <Space
           size="middle"
         >
+          <Title level={4} style={{ color: '#fff', marginRight: 24, marginBottom: 0 }}>
+            家办财务风控系统
+          </Title>
           {navMenus.map((item) => {
             // 判断是否为当前选中路由
             const isActive = currentPath === item.path;
@@ -64,7 +67,7 @@ export default function BasicLayout() {
                 type="text"
                 onClick={() => navigate(item.path)}
                 style={{
-                  color: '#fff',
+                  color: isActive ? '#fff' : '#B8C2D6',
                   height: '100%'
                 }}
               >
@@ -77,7 +80,7 @@ export default function BasicLayout() {
 
         {/* 右侧：标题 + 退出 */}
         <Space size="middle">
-          <Title level={5} style={{ color: '#fff', margin: 0 }}>
+          <Title level={5} style={{ color: '#B8C2D6', margin: 0 }}>
             欢迎，管理员
           </Title>
           <Button

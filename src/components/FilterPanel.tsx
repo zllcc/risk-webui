@@ -1,8 +1,9 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Row, Col, Space, Select, DatePicker, Button } from 'antd';
+import { Row, Col, Space, Select, DatePicker, Button, Typography, Form } from 'antd';
 import type { SelectProps } from 'antd/es/select';
 import { getInvestStrategy } from '@/api/investApi'
 import dayjs from 'dayjs';
+const { Text } = Typography;
 
 const { RangePicker } = DatePicker;
 
@@ -54,15 +55,21 @@ const originTreeData: TreeOption[] = [
 ];
 
 export const timeShortOpts = ["当日", "近7日", "30日", "YTD", "近1年"];
+export const subjectMatterOpts = ["Apple", "NVIDIA", "Tesla", "Microsoft", "Amazon", "Google", "Meta", "Netflix", "AMD", "Intel"];
+export const sectorOpts = ["Energy", "Materials", "Industrials", "ConsumerDiscretionary", "ConsumerStaples", "HealthCare", "Financials", "InformationTechnology", "CommunicationServices", "Utilities", "RealEstate"];
+
 
 interface FilterPanelProps {
   onSearch: (params: FilterParams) => void;
+  pageType: 'overview' | 'asset' | 'analysis';
 }
 
-const FilterPanel: React.FC<FilterPanelProps> = ({ onSearch }) => {
+const FilterPanel: React.FC<FilterPanelProps> = ({ onSearch, pageType }) => {
   const [selectedAccounts, setSelectedAccounts] = useState<string[]>([]);
   const [selectedTraders, setSelectedTraders] = useState<string[]>([]);
   const [selectedStrategies, setSelectedStrategies] = useState<string[]>([]);
+  const [selectedSubjectMatter, setSelectedSubjectMatter] = useState<string[]>([]);
+  const [selectedSectors, setSelectedSectors] = useState<string[]>([]);
 
   const [tempTimeQuick, setTempTimeQuick] = useState<string | null>(timeShortOpts[0]);
   const [tempCustomDate, setTempCustomDate] = useState<[dayjs.Dayjs, dayjs.Dayjs] | null>(null);
@@ -100,20 +107,6 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ onSearch }) => {
     return traders;
   }, [selectedAccounts]);
 
-  const strategyOptions = useMemo(() => {
-    const strategies: SelectProps['options'] = [];
-    originTreeData.forEach(acc => {
-      acc.children?.forEach(trader => {
-        if (selectedTraders.includes(trader.value)) {
-          trader.children?.forEach(str => {
-            strategies.push({ value: str.value, label: str.label });
-          });
-        }
-      });
-    });
-    return strategies;
-  }, [selectedTraders]);
-
   const handleQuery = () => {
     onSearch({
       accountKeys: selectedAccounts,
@@ -145,86 +138,136 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ onSearch }) => {
     setSelectedStrategies([]);
   };
 
+  // 总览：三项、时间、业绩基准
+  // 资产：三项、时间、模块、标的
+  // 分析：三项、时间
+
+  const formItemArr = [
+    {
+      label: '账号',
+      isShow: true,
+      content: (
+        <Select
+          mode="multiple"
+          placeholder="多选账号"
+          style={{ minWidth: 200 }}
+          options={accountOptions}
+          value={selectedAccounts}
+          onChange={handleAccountChange}
+          allowClear
+        />
+      ),
+    },
+    {
+      label: '操盘人',
+      isShow: true,
+      content: (
+        <Select
+          mode="multiple"
+          placeholder="先选账号再选操盘人"
+          style={{ minWidth: 200 }}
+          options={traderOptions}
+          value={selectedTraders}
+          onChange={handleTraderChange}
+          allowClear
+        />
+      ),
+    },
+    {
+      label: '策略',
+      isShow: true,
+      content: (
+        <Select
+          mode="multiple"
+          placeholder="先选操盘人再选策略"
+          style={{ minWidth: 200 }}
+          options={strategyList.map(item => ({ value: item, label: item }))}
+          value={selectedStrategies}
+          onChange={setSelectedStrategies}
+          allowClear
+        />
+      ),
+    },
+    {
+      label: '快捷时间段',
+      isShow: true,
+      content: (
+        <Select
+          value={tempTimeQuick}
+          onChange={handleQuickTimeChange}
+          style={{ width: 200 }}
+        >
+          {timeShortOpts.map((item) => (
+            <Select.Option key={item} value={item}>{item}</Select.Option>
+          ))}
+        </Select>
+      ),
+    },
+    {
+      label: '自定义区间',
+      isShow: true,
+      content: (
+        <RangePicker
+          value={tempCustomDate}
+          onChange={handleDateRangeChange}
+        />
+      ),
+    },
+    {
+      label: '标的',
+      isShow: pageType === 'asset',
+      content: (
+        <Select
+          mode="multiple"
+          placeholder="选择标的"
+          style={{ minWidth: 200 }}
+          options={sectorOpts.map(item => ({ value: item, label: item }))}
+          value={selectedSectors}
+          onChange={setSelectedSectors}
+          allowClear
+        />
+      ),
+    },
+    {
+      label: '板块',
+      isShow: pageType === 'asset',
+      content: (
+        <Select
+          mode="multiple"
+          placeholder="选择板块"
+          style={{ minWidth: 200 }}
+          options={subjectMatterOpts.map(item => ({ value: item, label: item }))}
+          value={selectedSubjectMatter}
+          onChange={setSelectedSubjectMatter}
+          allowClear
+        />
+      ),
+    },
+    {
+      label: '业绩基准',
+      isShow: pageType === 'overview',
+      content: (
+        <Select value={benchmarkType} onChange={setBenchmarkType} style={{ width: 200 }}>
+          <Select.Option value="default">默认对应关系</Select.Option>
+          <Select.Option value="custom">可手动切换</Select.Option>
+        </Select>
+      ),
+    }
+  ]
+
   return (
     <>
       <Row gutter={[16, 12]} style={{ marginBottom: 12 }} align="middle">
-        <Col>
-          <Space size="small" align="baseline">
-            <span>账号：</span>
-            <Select
-              mode="multiple"
-              placeholder="多选账号"
-              style={{ minWidth: 200 }}
-              options={accountOptions}
-              value={selectedAccounts}
-              onChange={handleAccountChange}
-              allowClear
-            />
-          </Space>
-        </Col>
-        <Col>
-          <Space size="small" align="baseline">
-            <span>操盘人：</span>
-            <Select
-              mode="multiple"
-              placeholder="先选账号再选操盘人"
-              style={{ minWidth: 200 }}
-              options={traderOptions}
-              value={selectedTraders}
-              onChange={handleTraderChange}
-              allowClear
-            />
-          </Space>
-        </Col>
-        <Col>
-          <Space size="small" align="baseline">
-            <span>策略：</span>
-            <Select
-              mode="multiple"
-              placeholder="先选操盘人再选策略"
-              style={{ minWidth: 200 }}
-              options={strategyList}
-              value={selectedStrategies}
-              onChange={setSelectedStrategies}
-              allowClear
-            />
-          </Space>
-        </Col>
+        {formItemArr.map((item, index) => (
+          item.isShow && <Col key={index} span={6}>
+            <div>{item.label}：</div>
+            <Space size="small" align="baseline">
+              {item.content}
+            </Space>
+          </Col>
+        ))}
       </Row>
-
-      <Row gutter={[16, 12]} style={{ marginBottom: 24 }} align="middle">
-        <Col>
-          <Space size="small" align="baseline">
-            <span>快捷时间段：</span>
-            <Select
-              value={tempTimeQuick}
-              onChange={handleQuickTimeChange}
-              style={{ width: 100 }}
-            >
-              {timeShortOpts.map((item) => (
-                <Select.Option key={item} value={item}>{item}</Select.Option>
-              ))}
-            </Select>
-          </Space>
-        </Col>
-        <Col>
-          <Space size="small" align="baseline">
-            <span>自定义区间：</span>
-            <RangePicker
-              value={tempCustomDate}
-              onChange={handleDateRangeChange}
-            />
-          </Space>
-        </Col>
-        <Col>
-          <Space size="small" align="baseline">
-            <span>业绩基准：</span>
-            <Select value={benchmarkType} onChange={setBenchmarkType} style={{ width: 130 }}>
-              <Select.Option value="default">默认对应关系</Select.Option>
-              <Select.Option value="custom">可手动切换</Select.Option>
-            </Select>
-          </Space>
-        </Col>
+      <Row style={{ marginBottom: 24 }} align="middle" justify="end">
         <Col>
           <Button type="primary" onClick={handleQuery}>查询</Button>
         </Col>

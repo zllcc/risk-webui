@@ -132,7 +132,7 @@ export default function PortfolioOverview() {
   return (
     <Card title={<Title level={5}>组合总览</Title>}>
       {/* 1. 顶部筛选区域 */}
-      <FilterPanel onSearch={handleSearch} />
+      <FilterPanel onSearch={handleSearch} pageType="overview" />
 
       {/* 2. 新增：4个总览指标卡片，和截图布局一致 */}
       <Row gutter={16} style={{ marginBottom: 20 }}>

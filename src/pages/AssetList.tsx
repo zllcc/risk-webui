@@ -169,7 +169,7 @@ export default function AssetList() {
   return (
     <Card title={<Title level={5}>持仓列表</Title>}>
       {/* 1. 顶部筛选组件：账号/操盘人/策略/时间段查询 */}
-      <FilterPanel onSearch={handleSearch} />
+      <FilterPanel onSearch={handleSearch} pageType="asset" />
 
       {/* 2. 资产分类Tab + 地区下拉 */}
       <Row justify="space-between" align="middle" style={{ marginBottom: 16, marginTop: 16 }}>

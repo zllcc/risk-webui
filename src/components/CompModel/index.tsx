@@ -52,9 +52,10 @@ const initAvailable: FieldItem[] = [];
 type Props = {
   open: boolean;
   onCancel: () => void;
+  onOk: (params: any) => void
 };
 
-const ComponotsModel: React.FC<Props> = ({ open, onCancel }) => {
+const ComponotsModel: React.FC<Props> = ({ open, onCancel, onOk }) => {
   const [selectedList, setSelectedList] = useState<FieldItem[]>(initSelected);
   const [availableList, setAvailableList] = useState<FieldItem[]>(initAvailable);
 
@@ -82,7 +83,7 @@ const ComponotsModel: React.FC<Props> = ({ open, onCancel }) => {
   const handleSave = () => {
     const selectKeys = selectedList.map(i => i.key);
     console.log('最终选中字段', selectKeys);
-    onCancel();
+    onOk({ selectedKeys: selectKeys });
   };
 
   // 渲染单行条目
@@ -144,7 +145,7 @@ const ComponotsModel: React.FC<Props> = ({ open, onCancel }) => {
         <Text strong className={styles.groupTitle}>可选</Text>
         <div className={styles.listBox}>
           {availableList.length === 0 ? (
-            <div className={styles.emptyTip}>无更多可选字段</div>
+            <div className={styles.emptyTip}>无更多可选组件</div>
           ) : (
             availableList.map((item) => renderItem(item,<></>, false))
           )}

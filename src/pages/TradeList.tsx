@@ -147,7 +147,7 @@ export default function TradeList() {
   return (
     <Card title={<Title level={5}>交易列表</Title>}>
       {/* 顶部筛选组件 */}
-      <FilterPanel onSearch={handleSearch} />
+      <FilterPanel onSearch={handleSearch} pageType='asset' />
 
       {/* Tab + 地区下拉 */}
       <Row justify="space-between" align="middle" style={{ marginBottom: 16, marginTop: 16 }}>
