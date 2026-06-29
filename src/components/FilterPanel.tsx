@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Row, Col, Space, Select, DatePicker, Button } from 'antd';
 import type { SelectProps } from 'antd/es/select';
-import { getInvestStrategy } from '@/api/investApi'
+import { queryInvestStrategy } from '@/api/investApi'
 import dayjs from 'dayjs';
 
 const { RangePicker } = DatePicker;
@@ -81,7 +81,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ onSearch, pageType }) => {
   const fetchData = async () => {
     try {
       // 传搜索关键词，空字符串查询全部
-      const res = await getInvestStrategy('')
+      const res = await queryInvestStrategy('')
       console.log('获取策略', res)
       setStrategyList(res)
     } catch (err) {

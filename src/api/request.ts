@@ -3,8 +3,8 @@ import { message } from 'antd'
 
 // 创建实例
 const request = axios.create({
-  baseURL: '', // 开发环境靠vite代理，不用写完整域名
-  timeout: 15000
+  baseURL: import.meta.env.VITE_API_BASE_URL,
+  timeout: 30000
 })
 
 // 请求拦截器：自动携带token

@@ -1,11 +1,17 @@
-import React, { useState, useMemo } from 'react';
-import { Card, Table, Typography, Checkbox, Space, Row, Col } from 'antd';
-import dayjs from 'dayjs';
+import React, { useState, useMemo, useEffect } from 'react';
+import { Card, Table, Typography, Checkbox, Space, Row, Col, Empty } from 'antd';
 import FilterPanel, { FilterParams } from '@/components/FilterPanel';
 import PortfolioChart from '@/components/PortfolioChart';
+import { queryPortfolioOverviewList } from '@/api/overviewApi';
+import {
+  PortfolioQueryParams,
+  PortfolioTableRow,
+  PortfolioChartItem
+} from '@/types/portfolio';
 
 const { Title } = Typography;
 
+// 表格显示字段配置
 const allFieldList = [
   { key: "group", label: "组别", defaultShow: true },
   { key: "inputCapital", label: "投入本金", defaultShow: true },
@@ -23,30 +29,40 @@ const allFieldList = [
   { key: "excessRate", label: "超额收益率", defaultShow: true },
 ];
 
-const mockOriginData = [
-  { group: "自营小计", inputCapital: 37564995, yearCapital: 33287321, marketValue: 75853631, deltaGap: 9231393, cash: 42518715, loan: 0, realized: 0, unrealized: 0, fee: 0, totalProfit: 5553720, rate: 0.1373, deltaRate: 0.1373, excessRate: 0.0015 },
-  { group: "郭老师", inputCapital: 18561800, yearCapital: 17485955, marketValue: 58731128, deltaGap: 5632672, cash: 23118627, loan: 0, realized: 0, unrealized: 0, fee: 0, totalProfit: 4557027, rate: 0.2262, deltaRate: 0.2262, excessRate: -0.0002 },
-  { group: "贺总组", inputCapital: 1896851, yearCapital: 1962363, marketValue: 1962363, deltaGap: 1106, cash: 1963469, loan: 0, realized: 0, unrealized: 0, fee: 0, totalProfit: 66617, rate: 0.0367, deltaRate: 0.0367, excessRate: 0.0203 },
-  { group: "裘欣组", inputCapital: 8360671, yearCapital: 6653248, marketValue: 8446000, deltaGap: 2714047, cash: 9367294, loan: 0, realized: 0, unrealized: 0, fee: 0, totalProfit: 1006623, rate: 0.1204, deltaRate: 0.1204, excessRate: 0.0081 },
-  { group: "陈总组", inputCapital: 3950986, yearCapital: 2157086, marketValue: 1812191, deltaGap: 1310660, cash: 3467746, loan: 0, realized: 0, unrealized: 0, fee: 0, totalProfit: -483240, rate: -0.1157, deltaRate: -0.1157, excessRate: 0.0326 },
-  { group: "张全斌", inputCapital: 1108303, yearCapital: 125483, marketValue: 125483, deltaGap: 974605, cash: 110087, loan: 0, realized: 0, unrealized: 0, fee: 0, totalProfit: -8215, rate: -0.0074, deltaRate: -0.0074, excessRate: -0.0089 },
-  { group: "胡总", inputCapital: 1139309, yearCapital: 1027027, marketValue: 1009260, deltaGap: -127981, cash: 899047, loan: 0, realized: 0, unrealized: 0, fee: 0, totalProfit: 359738, rate: 0.0435, deltaRate: 0.0435, excessRate: 0.0133 },
-  { group: "William", inputCapital: 119814, yearCapital: 12607, marketValue: 12607, deltaGap: 119965, cash: 132572, loan: 0, realized: 0, unrealized: 0, fee: 0, totalProfit: 12758, rate: 0.1068, deltaRate: 0.1068, excessRate: -0.0070 },
-  { group: "黄金海", inputCapital: 495832, yearCapital: 478532, marketValue: 349017, deltaGap: 93244, cash: 571776, loan: 0, realized: 0, unrealized: 0, fee: 0, totalProfit: 75944, rate: 0.1532, deltaRate: 0.1532, excessRate: -0.0035 },
-  { group: "郭老师其他", inputCapital: 3367682, yearCapital: 1025365, marketValue: 1025365, deltaGap: 2390317, cash: 3415681, loan: 0, realized: 0, unrealized: 0, fee: 0, totalProfit: 47999, rate: 0.0148, deltaRate: 0.0148, excessRate: -0.0124 },
-  { group: "KUKA", inputCapital: 2081107, yearCapital: 1277104, marketValue: 1277104, deltaGap: 738054, cash: 2015158, loan: 0, realized: 0, unrealized: 0, fee: 0, totalProfit: -65949, rate: -0.0329, deltaRate: -0.0329, excessRate: -0.0181 },
-  { group: "其他（利息等）", inputCapital: -3942326, yearCapital: 619631, marketValue: 619631, deltaGap: -646844, cash: -4027214, loan: 0, realized: 0, unrealized: 0, fee: 0, totalProfit: -84888, rate: -0.1714, deltaRate: -0.1714, excessRate: -0.0175 },
-  { group: "FOF小计", inputCapital: 37564995, yearCapital: 33287321, marketValue: 75853631, deltaGap: 9231393, cash: 42518715, loan: 0, realized: 0, unrealized: 0, fee: 0, totalProfit: 5553720, rate: 0.1373, deltaRate: 0.1373, excessRate: 0.0015 },
-  { group: "境外", inputCapital: 18561800, yearCapital: 17485955, marketValue: 58731128, deltaGap: 5632672, cash: 23118627, loan: 0, realized: 0, unrealized: 0, fee: 0, totalProfit: 4557027, rate: 0.2262, deltaRate: 0.2262, excessRate: -0.0002 },
-  { group: "境内", inputCapital: 1896851, yearCapital: 1962363, marketValue: 1962363, deltaGap: 1106, cash: 1963469, loan: 0, realized: 0, unrealized: 0, fee: 0, totalProfit: 66617, rate: 0.0367, deltaRate: 0.0367, excessRate: 0.0203 },
-  { group: "固收小计", inputCapital: 37564995, yearCapital: 33287321, marketValue: 75853631, deltaGap: 9231393, cash: 42518715, loan: 0, realized: 0, unrealized: 0, fee: 0, totalProfit: 5553720, rate: 0.1373, deltaRate: 0.1373, excessRate: 0.0015 },
-  { group: "其他小计", inputCapital: 37564995, yearCapital: 33287321, marketValue: 75853631, deltaGap: 9231393, cash: 42518715, loan: 0, realized: 0, unrealized: 0, fee: 0, totalProfit: 5553720, rate: 0.1373, deltaRate: 0.1373, excessRate: 0.0015 },
-];
+// 后端字段key → 前端表格key映射
+const fieldMap = {
+  traderName: 'group',
+  yearCapital: 'yearCapital',
+  grossPositionValue: 'marketValue',
+  deltaExposure: 'deltaGap',
+  availableFunds: 'cash',
+  loan: 'loan',
+  realizedPnl: 'realized',
+  unrealizedPnl: 'unrealized',
+  cost: 'fee',
+  pnl: 'totalProfit',
+  growthRate: 'rate',
+  deltaGrowthRate: 'deltaRate',
+  excessReturn: 'excessRate',
+} as Record<string, string>;
+
+// 后端数据转前端表格结构
+const transformTableData = (source: PortfolioTableRow[]) => {
+  return source.map(item => {
+    const row: Record<string, any> = {};
+    Object.entries(item).forEach(([backKey, value]) => {
+      const frontKey = fieldMap[backKey];
+      if (frontKey) row[frontKey] = value;
+    })
+    row.inputCapital = null;
+    return row;
+  })
+};
 
 // 指标卡片子组件
 const MetricCard: React.FC<{ title: string; value: string | number }> = ({ title, value }) => (
   <div style={{
-    background: 'rgb(204, 235, 255, 0.4)',
+    background: 'rgba(204, 235, 255, 0.4)',
     padding: '16px 12px',
     borderRadius: 4,
     textAlign: 'center',
@@ -64,8 +80,59 @@ export default function PortfolioOverview() {
   const defaultCheckedKeys = allFieldList.filter((item) => item.defaultShow).map((item) => item.key);
   const [checkedFieldKeys, setCheckedFieldKeys] = useState<string[]>(defaultCheckedKeys);
   const [activeFilter, setActiveFilter] = useState<FilterParams | null>(null);
-  const [tableData, setTableData] = useState(mockOriginData);
+  // 表格初始为空，完全依赖后端接口
+  const [tableData, setTableData] = useState<Record<string, any>[]>([]);
 
+  // 接口入参
+  const [queryParams, setQueryParams] = useState<PortfolioQueryParams>({
+    accountCodes: [],
+    tradeNames: [],
+    strategyNames: [],
+    startDate: '2026-06-29',
+    endDate: '2026-06-29',
+    referenceIndexConids: [],
+  });
+
+  const [chartData, setChartData] = useState<PortfolioChartItem[]>([]);
+  const [summary, setSummary] = useState({
+    growthRate: 0,
+    deltaGrowthRate: 0,
+    excessReturn: 0,
+    profitAmount: 0,
+  });
+  const [loading, setLoading] = useState(false);
+
+  // 请求后端接口
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const res = await queryPortfolioOverviewList(queryParams);
+      console.log('后端返回完整数据', res);
+      // 转换后端列表字段给表格使用
+      setTableData(transformTableData(res.portfolioOverviewList));
+      setChartData(res.chartList);
+      setSummary({
+        growthRate: res.growthRate,
+        deltaGrowthRate: res.deltaGrowthRate,
+        excessReturn: res.excessReturn,
+        profitAmount: res.profitAmount,
+      });
+    } catch (err) {
+      console.error('接口请求失败', err);
+      // 接口报错清空数据，不展示假mock
+      setTableData([]);
+      setChartData([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 页面初始化 / 筛选参数变更 自动请求
+  useEffect(() => {
+    fetchData();
+  }, [queryParams]);
+
+  // 动态生成表格列
   const dynamicTableColumns = useMemo(() => {
     return allFieldList
       .filter((fieldItem) => checkedFieldKeys.includes(fieldItem.key))
@@ -76,81 +143,104 @@ export default function PortfolioOverview() {
           key: fieldItem.key,
         };
         if (fieldItem.key === "group") return baseCol;
+        // 百分比格式化
         if (["rate", "deltaRate", "excessRate"].includes(fieldItem.key)) {
           return {
             ...baseCol,
-            render: (val: number) => `${(val * 100).toFixed(2)}%`,
+            render: (val: number | null) => val === null ? '--' : `${(val * 100).toFixed(2)}%`,
           };
         }
+        // 总盈亏 正负颜色区分
         if (fieldItem.key === "totalProfit") {
           return {
             ...baseCol,
-            render: (val: number) => (
-              <span style={{ color: val >= 0 ? "#f5222d" : "#52c41a" }}>
-                {val >= 0 ? "+" : ""}{val.toLocaleString()}
-              </span>
-            ),
+            render: (val: number | null) => {
+              if (val === null) return '--';
+              return (
+                <span style={{ color: val >= 0 ? "#f5222d" : "#52c41a" }}>
+                  {val >= 0 ? "+" : ""}{val.toLocaleString()}
+                </span>
+              );
+            },
           };
         }
+        // 普通数值空值展示--
         return {
           ...baseCol,
-          render: (val: number) => val.toLocaleString(),
+          render: (val: number | null) => val === null ? '--' : val.toLocaleString(),
         };
       });
   }, [checkedFieldKeys]);
 
-  // 筛选后汇总计算4个指标
-  const summaryMetrics = useMemo(() => {
-    if (!activeFilter) {
-      return {
-        profitAmount: '--',
-        deltaRate: '--',
-        rate: '--',
-        excessRate: '--'
-      };
-    }
-    // 模拟根据筛选条件过滤数据后汇总
-    const totalProfit = tableData.reduce((sum, item) => sum + item.totalProfit, 0);
-    const avgDeltaRate = tableData.reduce((sum, item) => sum + item.deltaRate, 0) / tableData.length;
-    const avgRate = tableData.reduce((sum, item) => sum + item.rate, 0) / tableData.length;
-    const avgExcessRate = tableData.reduce((sum, item) => sum + item.excessRate, 0) / tableData.length;
+  // 顶部指标汇总计算
+  // const summaryMetrics = useMemo(() => {
+  //   if (!activeFilter || tableData.length === 0) {
+  //     return {
+  //       profitAmount: '--',
+  //       deltaRate: '--',
+  //       rate: '--',
+  //       excessRate: '--'
+  //     };
+  //   }
+  //   const validData = tableData.filter(item => item.totalProfit !== null);
+  //   if (validData.length === 0) {
+  //     return {
+  //       profitAmount: '--',
+  //       deltaRate: '--',
+  //       rate: '--',
+  //       excessRate: '--'
+  //     };
+  //   }
 
-    return {
-      profitAmount: totalProfit.toLocaleString(),
-      deltaRate: `${(avgDeltaRate * 100).toFixed(2)}%`,
-      rate: `${(avgRate * 100).toFixed(2)}%`,
-      excessRate: `${(avgExcessRate * 100).toFixed(2)}%`
-    };
-  }, [activeFilter, tableData]);
+  //   const totalProfit = validData.reduce((sum, item) => sum + item.totalProfit, 0);
+  //   const avgDeltaRate = validData.reduce((sum, item) => sum + item.deltaRate, 0) / validData.length;
+  //   const avgRate = validData.reduce((sum, item) => sum + item.rate, 0) / validData.length;
+  //   const avgExcessRate = validData.reduce((sum, item) => sum + item.excessRate, 0) / validData.length;
 
+  //   return {
+  //     profitAmount: totalProfit.toLocaleString(),
+  //     deltaRate: `${(avgDeltaRate * 100).toFixed(2)}%`,
+  //     rate: `${(avgRate * 100).toFixed(2)}%`,
+  //     excessRate: `${(avgExcessRate * 100).toFixed(2)}%`
+  //   };
+  // }, [activeFilter, tableData]);
+
+  // 筛选回调，更新请求参数触发接口重拉
   const handleSearch = (params: FilterParams) => {
     setActiveFilter(params);
-    console.log('筛选参数', params);
-    setTableData([...mockOriginData]);
+    setQueryParams(prev => ({
+      ...prev,
+      accountCodes: params.accountCodes ?? [],
+      tradeNames: params.tradeNames ?? [],
+      strategyNames: params.strategyNames ?? [],
+      startDate: params.startDate,
+      endDate: params.endDate,
+      referenceIndexConids: params.referenceIndexConids ?? []
+    }));
   };
 
   return (
     <Card title={<Title level={5}>组合总览</Title>}>
-      {/* 1. 顶部筛选区域 */}
+      {/* 筛选栏 */}
       <FilterPanel onSearch={handleSearch} pageType="overview" />
 
-      {/* 2. 新增：4个总览指标卡片，和截图布局一致 */}
+      {/* 顶部指标卡片 */}
       <Row gutter={16} style={{ marginBottom: 20 }}>
         <Col span={6}>
-          <MetricCard title="收益额" value={summaryMetrics.profitAmount} />
+          <MetricCard title="收益额" value={summary.profitAmount} />
         </Col>
         <Col span={6}>
-          <MetricCard title="Delta收益率" value={summaryMetrics.deltaRate} />
+          <MetricCard title="Delta收益率" value={summary.deltaGrowthRate} />
         </Col>
         <Col span={6}>
-          <MetricCard title="收益率" value={summaryMetrics.rate} />
+          <MetricCard title="增长率" value={summary.growthRate} />
         </Col>
         <Col span={6}>
-          <MetricCard title="超额收益率" value={summaryMetrics.excessRate} />
+          <MetricCard title="超额收益率" value={summary.excessReturn} />
         </Col>
       </Row>
 
-      {/* 3. 表格字段选择区 */}
+      {/* 字段勾选面板 */}
       <div style={{ marginBottom: 12 }}>
         <Space size="small" align="baseline" wrap>
           <span>表格显示字段：</span>
@@ -166,7 +256,7 @@ export default function PortfolioOverview() {
         </Space>
       </div>
 
-      {/* 4. 汇总表格 */}
+      {/* 汇总表格，无数据展示空状态 */}
       <Table
         bordered
         columns={dynamicTableColumns}
@@ -175,10 +265,12 @@ export default function PortfolioOverview() {
         pagination={false}
         scroll={{ x: "max-content" }}
         size="middle"
+        loading={loading}
         style={{ marginBottom: 24 }}
+        locale={{ emptyText: <Empty description="暂无数据，请调整筛选条件查询" /> }}
       />
 
-      {/* 5. 图表区域 */}
+      {/* 图表组件 */}
       <PortfolioChart filter={activeFilter} />
     </Card>
   );

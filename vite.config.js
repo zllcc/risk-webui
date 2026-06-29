@@ -18,10 +18,17 @@ export default defineConfig({
     port: 3000,
     proxy: {
       // 匹配所有 /select 开头的接口
+      '/portfolio-overview': {
+        target: 'http://123.207.56.119:9666', // 后端根地址
+        changeOrigin: true, // 伪造源，解决跨域
+        rewrite: (path) => path, // 路径不删除/select，接口完整匹配
+        logLevel: 'info' // 打印完整转发路径日志
+      },
       '/select': {
         target: 'http://123.207.56.119:9666', // 后端根地址
         changeOrigin: true, // 伪造源，解决跨域
-        rewrite: (path) => path // 路径不删除/select，接口完整匹配
+        rewrite: (path) => path, // 路径不删除/select，接口完整匹配
+        logLevel: 'info' // 打印完整转发路径日志
       }
     }
   }
