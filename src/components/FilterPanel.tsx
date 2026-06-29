@@ -2,6 +2,8 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { Row, Col, Space, Select, DatePicker, Button } from 'antd';
 import type { SelectProps } from 'antd/es/select';
 import { queryInvestStrategy } from '@/api/investApi'
+import { getReferenceIndexList } from '@/api/overviewApi';
+import { ReferenceIndexItem } from '@/types/common';
 import dayjs from 'dayjs';
 
 const { RangePicker } = DatePicker;
@@ -12,13 +14,12 @@ interface TreeOption {
   children?: TreeOption[];
 }
 export interface FilterParams {
-  accountKeys: string[];
-  traderKeys: string[];
-  strategyKeys: string[];
-  timeQuick: string | null;
-  customDate: [dayjs.Dayjs, dayjs.Dayjs] | null;
-  benchmarkType: string;
-  subjectMatterKeys: string[];
+  accountCodes: string[];
+  tradeNames: string[];
+  strategyNames: string[];
+  startDate: string | null;
+  endDate: string | null;
+  referenceIndexConids: string[];
   sectorKeys: string[];
 }
 
@@ -74,9 +75,19 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ onSearch, pageType }) => {
 
   const [tempTimeQuick, setTempTimeQuick] = useState<string | null>(timeShortOpts[0]); // 快捷时间段选择
   const [tempCustomDate, setTempCustomDate] = useState<[dayjs.Dayjs, dayjs.Dayjs] | null>(null); // 自定义时间段选择
-  const [benchmarkType, setBenchmarkType] = useState('default'); // 业绩基准选择
+  const [benchmarkType, setBenchmarkType] = useState(''); // 业绩基准选择
 
   const [strategyList, setStrategyList] = useState<Array<{ strategyName: string }>>([]) // 策略列表
+  const [indexOptions, setIndexOptions] = useState<ReferenceIndexItem[]>([]);
+
+  const fetchIndexOptions = async () => {
+    try {
+      const data = await getReferenceIndexList();
+      setIndexOptions(data);
+    } catch (err) {
+      console.error('获取基准指数失败', err);
+    }
+  };
 
   const fetchData = async () => {
     try {
@@ -90,6 +101,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ onSearch, pageType }) => {
   }
 
   useEffect(() => {
+    fetchIndexOptions();
     fetchData()
   }, [])
 
@@ -109,13 +121,15 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ onSearch, pageType }) => {
   }, [selectedAccounts]);
 
   const handleQuery = () => {
+    console.log('查询按钮点击', selectedAccounts, selectedTraders, selectedStrategies, tempTimeQuick, tempCustomDate, benchmarkType, selectedSubjectMatter, selectedSectors);
+
     onSearch({
-      accountKeys: selectedAccounts,
-      traderKeys: selectedTraders,
-      strategyKeys: selectedStrategies,
-      timeQuick: tempTimeQuick,
-      customDate: tempCustomDate,
-      benchmarkType,
+      accountCodes: selectedAccounts,
+      tradeNames: selectedTraders,
+      strategyNames: selectedStrategies,
+      startDate: tempTimeQuick,
+      endDate: tempCustomDate,
+      referenceIndexConids: benchmarkType,
       subjectMatterKeys: selectedSubjectMatter,
       sectorKeys: selectedSectors,
     });
@@ -184,7 +198,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ onSearch, pageType }) => {
           mode="multiple"
           placeholder="先选操盘人再选策略"
           style={{ minWidth: 200 }}
-          options={strategyList.map(item => ({ value: item.strategyName, label: item.strategyName }))}
+          options={strategyList}
           value={selectedStrategies}
           onChange={setSelectedStrategies}
           allowClear
@@ -250,10 +264,13 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ onSearch, pageType }) => {
       label: '业绩基准',
       isShow: pageType === 'overview',
       content: (
-        <Select value={benchmarkType} onChange={setBenchmarkType} style={{ width: 200 }}>
-          <Select.Option value="default">默认对应关系</Select.Option>
-          <Select.Option value="custom">可手动切换</Select.Option>
-        </Select>
+        <Select
+          style={{ width: 200 }}
+          allowClear
+          options={indexOptions}
+          onChange={setBenchmarkType}
+          placeholder="请选择业绩基准"
+        />
       ),
     }
   ]

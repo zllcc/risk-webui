@@ -2,7 +2,8 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { Card, Table, Typography, Checkbox, Space, Row, Col, Empty } from 'antd';
 import FilterPanel, { FilterParams } from '@/components/FilterPanel';
 import PortfolioChart from '@/components/PortfolioChart';
-import { queryPortfolioOverviewList } from '@/api/overviewApi';
+import { queryPortfolioOverviewList, getReferenceIndexList } from '@/api/overviewApi';
+import { ReferenceIndexItem } from '@/types/common';
 import {
   PortfolioQueryParams,
   PortfolioTableRow,
