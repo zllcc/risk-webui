@@ -2,6 +2,8 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { Row, Col, Space, Select, DatePicker, Button } from 'antd';
 import type { SelectProps } from 'antd/es/select';
 import { queryInvestStrategy } from '@/api/investApi'
+import { getAccountSelectList, getTraderSelectList } from '@/api/accountApi'
+
 import { getReferenceIndexList } from '@/api/overviewApi';
 import { ReferenceIndexItem } from '@/types/common';
 import { getQuickDateRange } from '@/utils/dateRange';
@@ -9,11 +11,6 @@ import dayjs from 'dayjs';
 
 const { RangePicker } = DatePicker;
 
-interface TreeOption {
-  value: string;
-  label: string;
-  children?: TreeOption[];
-}
 export interface FilterParams {
   accountCodes: string[];
   tradeNames: string[];
@@ -22,45 +19,12 @@ export interface FilterParams {
   endDate: string | null;
   referenceIndexConids: string[];
   sectorKeys: string[];
+  subjectMatterKeys: string[];
 }
-
-const originTreeData: TreeOption[] = [
-  {
-    value: 'accA',
-    label: '账户A',
-    children: [
-      {
-        value: 'guo',
-        label: '郭老师',
-        children: [
-          { value: 'stock', label: '股票策略' },
-          { value: 'option', label: '期权策略' },
-        ],
-      },
-      {
-        value: 'hu',
-        label: '胡总',
-        children: [{ value: 'bond', label: '固收策略' }],
-      },
-    ],
-  },
-  {
-    value: 'accB',
-    label: '账户B',
-    children: [
-      {
-        value: 'kuka',
-        label: 'KUKA',
-        children: [{ value: 'mix', label: '混合策略' }],
-      },
-    ],
-  },
-];
 
 export const timeShortOpts = ["当日", "近7日", "30日", "YTD", "近1年"];
 export const subjectMatterOpts = ["Apple", "NVIDIA", "Tesla", "Microsoft", "Amazon", "Google", "Meta", "Netflix", "AMD", "Intel"];
 export const sectorOpts = ["Energy", "Materials", "Industrials", "ConsumerDiscretionary", "ConsumerStaples", "HealthCare", "Financials", "InformationTechnology", "CommunicationServices", "Utilities", "RealEstate"];
-
 
 interface FilterPanelProps {
   onSearch: (params: FilterParams) => void;
@@ -68,19 +32,55 @@ interface FilterPanelProps {
 }
 
 const FilterPanel: React.FC<FilterPanelProps> = ({ onSearch, pageType }) => {
-  const [selectedAccounts, setSelectedAccounts] = useState<string[]>([]); // 账号选择
-  const [selectedTraders, setSelectedTraders] = useState<string[]>([]); // 操盘人选择
-  const [selectedStrategies, setSelectedStrategies] = useState<string[]>([]); // 策略选择
-  const [selectedSubjectMatter, setSelectedSubjectMatter] = useState<string[]>([]); // 板块选择
-  const [selectedSectors, setSelectedSectors] = useState<string[]>([]); // 标的选择
+  // 选中值
+  const [selectedAccounts, setSelectedAccounts] = useState<string[]>([]);
+  const [selectedTraders, setSelectedTraders] = useState<string[]>([]);
+  const [selectedStrategies, setSelectedStrategies] = useState<string[]>([]);
+  const [selectedSubjectMatter, setSelectedSubjectMatter] = useState<string[]>([]);
+  const [selectedSectors, setSelectedSectors] = useState<string[]>([]);
 
-  const [tempTimeQuick, setTempTimeQuick] = useState<string | null>(timeShortOpts[0]); // 快捷时间段选择
-  const [tempCustomDate, setTempCustomDate] = useState<[dayjs.Dayjs, dayjs.Dayjs] | null>(null); // 自定义时间段选择
-  const [benchmarkType, setBenchmarkType] = useState<string[]>([]); // 业绩基准选择
+  const [tempTimeQuick, setTempTimeQuick] = useState<string | null>(timeShortOpts[0]);
+  const [tempCustomDate, setTempCustomDate] = useState<[dayjs.Dayjs, dayjs.Dayjs] | null>(null);
+  const [benchmarkType, setBenchmarkType] = useState<string[]>([]);
 
-  const [strategyList, setStrategyList] = useState<Array<{ strategyName: string }>>([]) // 策略列表
+  // 下拉选项数据源（后端接口）
+  const [accountOptions, setAccountOptions] = useState<SelectProps['options']>([]);
+  const [traderOptions, setTraderOptions] = useState<SelectProps['options']>([]);
+  const [strategyList, setStrategyList] = useState<Array<{ value: string; label: string }>>([]);
   const [indexOptions, setIndexOptions] = useState<ReferenceIndexItem[]>([]);
 
+  // 1. 获取账号下拉
+  const fetchAccountList = async () => {
+    try {
+      const res = await getAccountSelectList('');
+      setAccountOptions(res);
+    } catch (err) {
+      console.error('获取账号列表失败', err);
+    }
+  };
+
+  // 2. 根据选中账号获取操盘人
+  const fetchTraderList = async (codes: string[]) => {
+    try {
+      const res = await getTraderSelectList({ accountCodes: codes, traderName: '' });
+      setTraderOptions(res);
+    } catch (err) {
+      console.error('获取操盘人列表失败', err);
+      setTraderOptions([]);
+    }
+  };
+
+  // 3. 获取策略下拉
+  const fetchStrategyList = async () => {
+    try {
+      const res = await queryInvestStrategy('');
+      setStrategyList(res);
+    } catch (err) {
+      console.error('获取策略失败', err)
+    }
+  }
+
+  // 4. 获取基准指数
   const fetchIndexOptions = async () => {
     try {
       const data = await getReferenceIndexList();
@@ -90,39 +90,26 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ onSearch, pageType }) => {
     }
   };
 
-  const fetchData = async () => {
-    try {
-      // 传搜索关键词，空字符串查询全部
-      const res = await queryInvestStrategy('')
-      console.log('获取策略', res)
-      setStrategyList(res)
-    } catch (err) {
-      console.error('获取策略失败', err)
-    }
-  }
-
+  // 初始化加载基础下拉
   useEffect(() => {
+    fetchAccountList();
+    fetchTraderList([])
+    fetchStrategyList();
     fetchIndexOptions();
-    fetchData()
   }, [])
 
+  // 选中账号变化，重新拉取操盘人
+  useEffect(() => {
+    fetchTraderList(selectedAccounts);
+  }, [selectedAccounts])
 
-  const accountOptions = useMemo(() => originTreeData.map(acc => ({ value: acc.value, label: acc.label })), []);
+  // 选中操盘人变化，重新策略
+  useEffect(() => {
+    fetchStrategyList();
+  }, [selectedTraders])
 
-  const traderOptions = useMemo(() => {
-    const traders: SelectProps['options'] = [];
-    originTreeData.forEach(acc => {
-      if (selectedAccounts.includes(acc.value)) {
-        acc.children?.forEach(trader => {
-          traders.push({ value: trader.value, label: trader.label });
-        });
-      }
-    });
-    return traders;
-  }, [selectedAccounts]);
-
+  // 查询按钮
   const handleQuery = () => {
-    console.log('查询按钮点击', selectedAccounts, selectedTraders, selectedStrategies, tempTimeQuick, tempCustomDate, benchmarkType, selectedSubjectMatter, selectedSectors);
     const tempTimeQuickRange = tempTimeQuick ? getQuickDateRange(tempTimeQuick) : null;
     const startDate = tempCustomDate ? tempCustomDate[0].format('YYYY-MM-DD') : (tempTimeQuickRange ? tempTimeQuickRange[0] : null);
     const endDate = tempCustomDate ? tempCustomDate[1].format('YYYY-MM-DD') : (tempTimeQuickRange ? tempTimeQuickRange[1] : null);
@@ -138,30 +125,32 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ onSearch, pageType }) => {
     });
   };
 
+  // 快捷时间切换
   const handleQuickTimeChange = (val: string) => {
     setTempTimeQuick(val);
     setTempCustomDate(null);
   };
 
+  // 自定义日期切换
   const handleDateRangeChange = (vals: [dayjs.Dayjs, dayjs.Dayjs] | null) => {
     setTempCustomDate(vals);
     setTempTimeQuick(null);
   };
 
+  // 切换账号，清空下级选择
   const handleAccountChange = (vals: string[]) => {
     setSelectedAccounts(vals);
-    setSelectedTraders([]);
-    setSelectedStrategies([]);
+    // fetchTraderList([]);
+    // setSelectedStrategies([]);
   };
+
+  // 切换操盘人，清空策略
   const handleTraderChange = (vals: string[]) => {
     setSelectedTraders(vals);
-    setSelectedStrategies([]);
+    // setSelectedStrategies([]);
   };
 
-  // 总览：三项、时间、业绩基准
-  // 资产：三项、时间、模块、标的
-  // 分析：三项、时间
-
+  // 筛选项配置
   const formItemArr = [
     {
       label: '账号',
@@ -184,7 +173,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ onSearch, pageType }) => {
       content: (
         <Select
           mode="multiple"
-          placeholder="先选账号再选操盘人"
+          placeholder="选择操盘人"
           style={{ minWidth: 200 }}
           options={traderOptions}
           value={selectedTraders}
@@ -199,7 +188,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ onSearch, pageType }) => {
       content: (
         <Select
           mode="multiple"
-          placeholder="先选操盘人再选策略"
+          placeholder="选择策略"
           style={{ minWidth: 200 }}
           options={strategyList}
           value={selectedStrategies}
@@ -265,9 +254,11 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ onSearch, pageType }) => {
       isShow: pageType === 'overview',
       content: (
         <Select
+          mode="multiple"
           style={{ width: 200 }}
           allowClear
           options={indexOptions}
+          value={benchmarkType}
           onChange={setBenchmarkType}
           placeholder="请选择业绩基准"
         />
@@ -279,12 +270,14 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ onSearch, pageType }) => {
     <>
       <Row gutter={[16, 12]} style={{ marginBottom: 12 }} align="middle">
         {formItemArr.map((item, index) => (
-          item.isShow && <Col key={index} span={6}>
-            <div>{item.label}：</div>
-            <Space size="small" align="baseline">
-              {item.content}
-            </Space>
-          </Col>
+          item.isShow && (
+            <Col key={index} span={6}>
+              <div>{item.label}：</div>
+              <Space size="small" align="baseline">
+                {item.content}
+              </Space>
+            </Col>
+          )
         ))}
       </Row>
       <Row style={{ marginBottom: 24 }} align="middle" justify="end">

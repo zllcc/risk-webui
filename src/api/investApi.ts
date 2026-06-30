@@ -24,14 +24,3 @@ export function queryPositionRelation(params?: Record<string, any>) {
     data: params
   })
 }
-
-/**
- * 获取交易员列表
- */
-export function queryTraderList(params?: Record<string, any>) {
-  return request({
-    url: '/select/pc/trader',
-    method: 'POST',
-    data: params
-  })
-}
