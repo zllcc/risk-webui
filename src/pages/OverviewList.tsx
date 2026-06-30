@@ -2,8 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { Card, Table, Typography, Checkbox, Space, Row, Col, Empty } from 'antd';
 import FilterPanel, { FilterParams } from '@/components/FilterPanel';
 import PortfolioChart from '@/components/PortfolioChart';
-import { queryPortfolioOverviewList, getReferenceIndexList } from '@/api/overviewApi';
-import { ReferenceIndexItem } from '@/types/common';
+import { queryPortfolioOverviewList } from '@/api/overviewApi';
 import {
   PortfolioQueryParams,
   PortfolioTableRow,
@@ -80,7 +79,6 @@ const MetricCard: React.FC<{ title: string; value: string | number }> = ({ title
 export default function PortfolioOverview() {
   const defaultCheckedKeys = allFieldList.filter((item) => item.defaultShow).map((item) => item.key);
   const [checkedFieldKeys, setCheckedFieldKeys] = useState<string[]>(defaultCheckedKeys);
-  const [activeFilter, setActiveFilter] = useState<FilterParams | null>(null);
   // 表格初始为空，完全依赖后端接口
   const [tableData, setTableData] = useState<Record<string, any>[]>([]);
 
@@ -173,42 +171,8 @@ export default function PortfolioOverview() {
       });
   }, [checkedFieldKeys]);
 
-  // 顶部指标汇总计算
-  // const summaryMetrics = useMemo(() => {
-  //   if (!activeFilter || tableData.length === 0) {
-  //     return {
-  //       profitAmount: '--',
-  //       deltaRate: '--',
-  //       rate: '--',
-  //       excessRate: '--'
-  //     };
-  //   }
-  //   const validData = tableData.filter(item => item.totalProfit !== null);
-  //   if (validData.length === 0) {
-  //     return {
-  //       profitAmount: '--',
-  //       deltaRate: '--',
-  //       rate: '--',
-  //       excessRate: '--'
-  //     };
-  //   }
-
-  //   const totalProfit = validData.reduce((sum, item) => sum + item.totalProfit, 0);
-  //   const avgDeltaRate = validData.reduce((sum, item) => sum + item.deltaRate, 0) / validData.length;
-  //   const avgRate = validData.reduce((sum, item) => sum + item.rate, 0) / validData.length;
-  //   const avgExcessRate = validData.reduce((sum, item) => sum + item.excessRate, 0) / validData.length;
-
-  //   return {
-  //     profitAmount: totalProfit.toLocaleString(),
-  //     deltaRate: `${(avgDeltaRate * 100).toFixed(2)}%`,
-  //     rate: `${(avgRate * 100).toFixed(2)}%`,
-  //     excessRate: `${(avgExcessRate * 100).toFixed(2)}%`
-  //   };
-  // }, [activeFilter, tableData]);
-
   // 筛选回调，更新请求参数触发接口重拉
   const handleSearch = (params: FilterParams) => {
-    setActiveFilter(params);
     setQueryParams(prev => ({
       ...prev,
       accountCodes: params.accountCodes ?? [],
@@ -272,7 +236,7 @@ export default function PortfolioOverview() {
       />
 
       {/* 图表组件 */}
-      <PortfolioChart filter={activeFilter} />
+      <PortfolioChart chartData={chartData} />
     </Card>
   );
 }

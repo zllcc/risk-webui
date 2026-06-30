@@ -4,6 +4,7 @@ import type { SelectProps } from 'antd/es/select';
 import { queryInvestStrategy } from '@/api/investApi'
 import { getReferenceIndexList } from '@/api/overviewApi';
 import { ReferenceIndexItem } from '@/types/common';
+import { getQuickDateRange } from '@/utils/dateRange';
 import dayjs from 'dayjs';
 
 const { RangePicker } = DatePicker;
@@ -75,7 +76,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ onSearch, pageType }) => {
 
   const [tempTimeQuick, setTempTimeQuick] = useState<string | null>(timeShortOpts[0]); // 快捷时间段选择
   const [tempCustomDate, setTempCustomDate] = useState<[dayjs.Dayjs, dayjs.Dayjs] | null>(null); // 自定义时间段选择
-  const [benchmarkType, setBenchmarkType] = useState(''); // 业绩基准选择
+  const [benchmarkType, setBenchmarkType] = useState<string[]>([]); // 业绩基准选择
 
   const [strategyList, setStrategyList] = useState<Array<{ strategyName: string }>>([]) // 策略列表
   const [indexOptions, setIndexOptions] = useState<ReferenceIndexItem[]>([]);
@@ -122,13 +123,15 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ onSearch, pageType }) => {
 
   const handleQuery = () => {
     console.log('查询按钮点击', selectedAccounts, selectedTraders, selectedStrategies, tempTimeQuick, tempCustomDate, benchmarkType, selectedSubjectMatter, selectedSectors);
-
+    const tempTimeQuickRange = tempTimeQuick ? getQuickDateRange(tempTimeQuick) : null;
+    const startDate = tempCustomDate ? tempCustomDate[0].format('YYYY-MM-DD') : (tempTimeQuickRange ? tempTimeQuickRange[0] : null);
+    const endDate = tempCustomDate ? tempCustomDate[1].format('YYYY-MM-DD') : (tempTimeQuickRange ? tempTimeQuickRange[1] : null);
     onSearch({
       accountCodes: selectedAccounts,
       tradeNames: selectedTraders,
       strategyNames: selectedStrategies,
-      startDate: tempTimeQuick,
-      endDate: tempCustomDate,
+      startDate,
+      endDate,
       referenceIndexConids: benchmarkType,
       subjectMatterKeys: selectedSubjectMatter,
       sectorKeys: selectedSectors,
@@ -213,11 +216,8 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ onSearch, pageType }) => {
           value={tempTimeQuick}
           onChange={handleQuickTimeChange}
           style={{ width: 200 }}
-        >
-          {timeShortOpts.map((item) => (
-            <Select.Option key={item} value={item}>{item}</Select.Option>
-          ))}
-        </Select>
+          options={timeShortOpts.map(item => ({ value: item, label: item }))}
+        />
       ),
     },
     {
