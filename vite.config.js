@@ -36,6 +36,12 @@ export default defineConfig({
         rewrite: path => path,
         logLevel: 'info'
       },
+      '/position': {
+        target: 'http://123.207.56.119:9666',
+        changeOrigin: true,
+        rewrite: path => path,
+        logLevel: 'info'
+      },
     }
   }
 })

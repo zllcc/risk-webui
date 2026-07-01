@@ -1,51 +1,18 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   Card, Tabs, Select, Table, Checkbox,
-  Modal, Space, Typography, Row, Col
+  Space, Typography, Row, Col, message
 } from 'antd';
-import ReactECharts from 'echarts-for-react';
 // 引入封装好的筛选组件与类型
 import FilterPanel, { FilterParams } from '@/components/FilterPanel';
-// 引入持仓分配弹窗组件
-import AllocatePositionModal, { PositionRowItem } from '@/components/AllocatePositionModal';
+import { secTypeArr } from '@/utils/common';
+import { getPositionList, PositionRecord, PositionQueryParams } from '@/api/positionApi';
 
 const { TabPane } = Tabs;
 const { Option } = Select;
 const { Title } = Typography;
 
-// ====================== 模拟持仓表格数据（匹配持仓列表表头） ======================
-const mockPositionData: PositionRowItem[] = [
-  {
-    id: 1,
-    account: 'U123456',
-    contract: 'AAPL',
-    amount: 100,
-    avgCostPrice: 152.35,
-    marketPrice: 158.62,
-    marketValue: 15862,
-    updateTime: '2026-06-23 15:30:00',
-    realizedProfit: 23600,
-    unrealizedProfit: 627,
-    unAllocateAmount: 10,
-    totalAmount: 100
-  },
-  {
-    id: 2,
-    account: 'U654321',
-    contract: 'MSFT',
-    amount: 50,
-    avgCostPrice: 320.10,
-    marketPrice: 335.40,
-    marketValue: 16770,
-    updateTime: '2026-06-23 15:30:00',
-    realizedProfit: 12500,
-    unrealizedProfit: 765,
-    unAllocateAmount: 0,
-    totalAmount: 50
-  }
-];
-
-// ====================== 所有可配置列（持仓列表表头，按图片1） ======================
+// ====================== 所有可配置列 ======================
 const allColumns = [
   { key: "account", label: "账号" },
   { key: "contract", label: "合约" },
@@ -59,64 +26,87 @@ const allColumns = [
   { key: "unAllocateAmount", label: "未分配数量" },
 ];
 
+// 后端数据 → 前端表格行转换
+const transformPositionRecord = (item: PositionRecord) => {
+  return {
+    id: item.id,
+    account: item.accountCode,
+    contract: item.symbol,
+    amount: item.positionQty,
+    avgCostPrice: item.avgCost,
+    marketPrice: item.marketPrice,
+    marketValue: item.marketValue,
+    updateTime: new Date().toLocaleString(), // TODO：后端无更新时间，临时填充
+    realizedProfit: item.realizedPnl,
+    unrealizedProfit: item.unrealizedPnl,
+    unAllocateAmount: item.remainQty,
+    totalAmount: item.positionQty
+  };
+};
+
 // ====================== 主页面 ======================
 export default function AssetList() {
-  const [activeTab, setActiveTab] = useState("股票");
+  // Tab证券类型
+  const [activeTab, setActiveTab] = useState("STK");
   const [region, setRegion] = useState("CN");
-  const [tableData, setTableData] = useState(mockPositionData);
+  // 表格数据、加载态、分页
+  const [tableData, setTableData] = useState<ReturnType<typeof transformPositionRecord>[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [pageNum, setPageNum] = useState(1);
+  const [pageTotal, setPageTotal] = useState(0);
+  const pageSize = 10;
+
   // 默认展示全部列
   const [visibleCols, setVisibleCols] = useState(allColumns.map(item => item.key));
-  // 图表弹窗状态
-  const [modalVisible, setModalVisible] = useState(false);
-  const [chartTitle, setChartTitle] = useState("");
-  const [chartType, setChartType] = useState("profit");
 
-  // 分配弹窗状态
-  const [allocateModalOpen, setAllocateModalOpen] = useState(false);
-  const [currentPosition, setCurrentPosition] = useState<PositionRowItem | null>(null);
+  // 缓存筛选条件
+  const [searchParams, setSearchParams] = useState<FilterParams | null>(null);
 
-  // 切换 Tab 加载对应数据（简化，统一展示持仓列表）
+  // 请求持仓接口
+  const fetchPositionData = useCallback(async () => {
+    setLoading(true);
+    try {
+      // 组装完整接口入参，新增tradeNames/strategyNames/startDate/endDate/sectors
+      const apiParams: PositionQueryParams = {
+        pageNum,
+        pageSize,
+        orderColumn: "id",
+        orderType: "desc",
+        idList: [],
+        accountCodes: searchParams?.accountCodes ?? [],
+        conids: [],
+        secType: activeTab,
+        // 新增筛选字段，无值时兜底空数组/空字符串
+        tradeNames: searchParams?.tradeNames ?? [],
+        strategyNames: searchParams?.strategyNames ?? [],
+        startDate: searchParams?.startDate ?? "",
+        endDate: searchParams?.endDate ?? "",
+        sectors: searchParams?.sectorKeys ?? [],
+      };
+      const res = await getPositionList(apiParams);
+      // 转换后端数据
+      const list = res.records.map(transformPositionRecord);
+      setTableData(list);
+      setPageTotal(res.total);
+    } catch (err) {
+      console.error('加载持仓列表失败', err);
+      message.error('数据加载失败，请稍后重试');
+      setTableData([]);
+      setPageTotal(0);
+    } finally {
+      setLoading(false);
+    }
+  }, [pageNum, activeTab, searchParams]);
+
+  // 切换Tab/页码/筛选条件 重新请求
   useEffect(() => {
-    setTableData(mockPositionData);
-  }, [activeTab]);
+    fetchPositionData();
+  }, [fetchPositionData]);
 
   // 筛选查询回调
   const handleSearch = (params: FilterParams) => {
-    console.log('资产列表筛选条件', params);
-    setTableData(mockPositionData);
-  };
-
-  // 分配弹窗确认回调
-  const handleAllocateConfirm = (pos: PositionRowItem, allocateList: any[]) => {
-    console.log('执行分配操作', pos, allocateList);
-    // 此处调用分配接口，成功后刷新表格数据
-  };
-
-  // 打开图表弹窗
-  const showChart = (record, type) => {
-    setChartTitle(`${record.contract} - ${type === "profit" ? "每日盈亏趋势" : "市值走势"}`);
-    setChartType(type);
-    setModalVisible(true);
-  };
-
-  // 图表配置
-  const getChartOption = () => {
-    const xData = ["1日", "2日", "3日", "4日", "5日", "6日", "7日"];
-    const profitData = [12500, -8200, 6300, -4100, 9200, 5400, 6850];
-    const valueData = [102, 105, 103, 107, 106, 109, 112];
-
-    return {
-      tooltip: { trigger: "axis" },
-      xAxis: { data: xData },
-      yAxis: {},
-      series: [{
-        type: "line",
-        smooth: true,
-        data: chartType === "profit" ? profitData : valueData,
-        lineStyle: { width: 2 },
-        itemStyle: { color: chartType === "profit" ? "#3498db" : "#e74c3c" }
-      }]
-    };
+    setSearchParams(params);
+    setPageNum(1); // 查询重置到第一页
   };
 
   // 动态生成表格列
@@ -129,18 +119,18 @@ export default function AssetList() {
         key: col.key,
       };
 
-      // 实现盈亏、未实现盈亏 点击打开盈亏图表
+      // 盈亏仅展示颜色，移除点击图表跳转逻辑
       if (["realizedProfit", "unrealizedProfit"].includes(col.key)) {
-        item.render = (val: number, record: PositionRowItem) => (
-          <a onClick={() => showChart(record, "profit")} style={{ color: val >= 0 ? "#f5222d" : "#52c41a" }}>
-            {val >= 0 ? "+" : ""}{val.toLocaleString()}
-          </a>
+        item.render = (val: number) => (
+          <span style={{ color: val >= 0 ? "#f5222d" : "#52c41a" }}>
+            {val >= 0 ? "+" : ""}{val?.toLocaleString() ?? 0}
+          </span>
         );
       }
 
-      // 市场值、数量、价格千分位格式化
-      else if (["amount", "avgCostPrice", "marketPrice", "marketValue", "realizedProfit", "unrealizedProfit", "unAllocateAmount"].includes(col.key)) {
-        item.render = (val: number) => val.toLocaleString();
+      // 数值千分位格式化
+      else if (["amount", "avgCostPrice", "marketPrice", "marketValue", "unAllocateAmount"].includes(col.key)) {
+        item.render = (val: number) => val?.toLocaleString() ?? 0;
       }
 
       return item;
@@ -148,19 +138,23 @@ export default function AssetList() {
 
   return (
     <Card title={<Title level={5}>持仓列表</Title>}>
-      {/* 1. 顶部筛选组件：账号/操盘人/策略/时间段查询 */}
+      {/* 1. 顶部筛选组件 */}
       <FilterPanel onSearch={handleSearch} pageType="asset" />
 
       {/* 2. 资产分类Tab + 地区下拉 */}
       <Row justify="space-between" align="middle" style={{ marginBottom: 16, marginTop: 16 }}>
         <Col>
-          <Tabs activeKey={activeTab} onChange={setActiveTab} type="card">
-            <TabPane tab="标准资产" key="标准资产" />
-            <TabPane tab="非标资产" key="非标资产" />
-            <TabPane tab="股票" key="股票" />
-            <TabPane tab="债券" key="债券" />
-            <TabPane tab="期货" key="期货" />
-            <TabPane tab="期权" key="期权" />
+          <Tabs
+            activeKey={activeTab}
+            onChange={(key) => {
+              setActiveTab(key);
+              setPageNum(1); // 切换Tab重置第一页
+            }}
+            type="card"
+          >
+            {secTypeArr.map(item => (
+              <TabPane tab={item.label} key={item.key} />
+            ))}
           </Tabs>
         </Col>
         <Col>
@@ -178,7 +172,7 @@ export default function AssetList() {
         </Col>
       </Row>
 
-      {/* 3. 表头字段配置，移至表格上方独立区域 */}
+      {/* 3. 表格列显隐配置 */}
       <div style={{ marginBottom: 16, padding: '8px 12px', borderRadius: 4 }}>
         <Space align="baseline" wrap>
           <span style={{ fontWeight: 500 }}>表格显示字段：</span>
@@ -195,33 +189,22 @@ export default function AssetList() {
         </Space>
       </div>
 
-      {/* 4. 持仓表格，max-content 自适应横向滚动 */}
+      {/* 4. 持仓表格 + 分页 */}
       <Table
+        loading={loading}
         columns={tableColumns}
         dataSource={tableData}
         rowKey="id"
         bordered
-        pagination={false}
         scroll={{ x: "max-content" }}
-      />
-
-      {/* 5. 单资产趋势图表弹窗 */}
-      <Modal
-        title={chartTitle}
-        open={modalVisible}
-        onCancel={() => setModalVisible(false)}
-        footer={null}
-        width={700}
-      >
-        <ReactECharts option={getChartOption()} style={{ height: 400 }} />
-      </Modal>
-
-      {/* 6. 持仓分配弹窗组件 */}
-      <AllocatePositionModal
-        open={allocateModalOpen}
-        data={currentPosition}
-        onCancel={() => setAllocateModalOpen(false)}
-        onConfirm={handleAllocateConfirm}
+        pagination={{
+          current: pageNum,
+          pageSize,
+          total: pageTotal,
+          onChange: (page) => setPageNum(page),
+          showSizeChanger: false,
+          showTotal: (total) => `共 ${total} 条持仓`
+        }}
       />
     </Card>
   );
