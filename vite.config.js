@@ -29,7 +29,13 @@ export default defineConfig({
         changeOrigin: true, // 伪造源，解决跨域
         rewrite: (path) => path, // 路径不删除/select，接口完整匹配
         logLevel: 'info' // 打印完整转发路径日志
-      }
+      },
+      '/contract-execution': {
+        target: 'http://123.207.56.119:9666',
+        changeOrigin: true,
+        rewrite: path => path,
+        logLevel: 'info'
+      },
     }
   }
 })

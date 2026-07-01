@@ -1,11 +1,8 @@
 import { useState, useEffect } from 'react';
 import {
-  Card, Tabs, Select, Table, Button, Checkbox,
-  Modal, Form, Space, Tag, Typography, Row, Col
+  Card, Tabs, Select, Table, Checkbox,
+  Modal, Space, Typography, Row, Col
 } from 'antd';
-import {
-  SettingOutlined, BarChartOutlined
-} from '@ant-design/icons';
 import ReactECharts from 'echarts-for-react';
 // 引入封装好的筛选组件与类型
 import FilterPanel, { FilterParams } from '@/components/FilterPanel';
@@ -60,13 +57,10 @@ const allColumns = [
   { key: "realizedProfit", label: "实现盈亏" },
   { key: "unrealizedProfit", label: "未实现盈亏" },
   { key: "unAllocateAmount", label: "未分配数量" },
-  { key: "action", label: "操作" },
 ];
 
 // ====================== 主页面 ======================
 export default function AssetList() {
-  // 筛选组件生效参数
-  const [activeFilter, setActiveFilter] = useState<FilterParams | null>(null);
   const [activeTab, setActiveTab] = useState("股票");
   const [region, setRegion] = useState("CN");
   const [tableData, setTableData] = useState(mockPositionData);
@@ -88,15 +82,8 @@ export default function AssetList() {
 
   // 筛选查询回调
   const handleSearch = (params: FilterParams) => {
-    setActiveFilter(params);
     console.log('资产列表筛选条件', params);
     setTableData(mockPositionData);
-  };
-
-  // 打开分配弹窗，传入当前行数据
-  const openAllocateModal = (record: PositionRowItem) => {
-    setCurrentPosition(record);
-    setAllocateModalOpen(true);
   };
 
   // 分配弹窗确认回调
@@ -142,15 +129,8 @@ export default function AssetList() {
         key: col.key,
       };
 
-      // 操作列：分配按钮
-      if (col.key === "action") {
-        item.render = (_: any, record: PositionRowItem) => (
-          <Button type="link" onClick={() => openAllocateModal(record)}>分配</Button>
-        );
-      }
-
       // 实现盈亏、未实现盈亏 点击打开盈亏图表
-      else if (["realizedProfit", "unrealizedProfit"].includes(col.key)) {
+      if (["realizedProfit", "unrealizedProfit"].includes(col.key)) {
         item.render = (val: number, record: PositionRowItem) => (
           <a onClick={() => showChart(record, "profit")} style={{ color: val >= 0 ? "#f5222d" : "#52c41a" }}>
             {val >= 0 ? "+" : ""}{val.toLocaleString()}

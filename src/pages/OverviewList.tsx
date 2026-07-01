@@ -8,6 +8,7 @@ import {
   PortfolioTableRow,
   PortfolioChartItem
 } from '@/types/portfolio';
+import { getQuickDateRange } from '@/utils/dateRange';
 
 const { Title } = Typography;
 
@@ -87,8 +88,8 @@ export default function PortfolioOverview() {
     accountCodes: [],
     tradeNames: [],
     strategyNames: [],
-    startDate: '2026-06-29',
-    endDate: '2026-06-29',
+    startDate: getQuickDateRange('当日')[0],
+    endDate: getQuickDateRange('当日')[1],
     referenceIndexConids: [],
   });
 

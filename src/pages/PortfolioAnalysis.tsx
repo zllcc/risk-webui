@@ -103,7 +103,7 @@ const PortfolioAnalysis: React.FC = () => {
     },
     {
       key: 'greek',
-      title: '�衍生品希腊敞口总览',
+      title: '衍生品希腊敞口总览',
       span: 24,
       content: <RiskGreekDashboard />,
     },

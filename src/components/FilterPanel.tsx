@@ -1,9 +1,8 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Row, Col, Space, Select, DatePicker, Button } from 'antd';
 import type { SelectProps } from 'antd/es/select';
-import { queryInvestStrategy } from '@/api/investApi'
+import { queryInvestStrategy, getContractSectorList, getContractList } from '@/api/investApi'
 import { getAccountSelectList, getTraderSelectList } from '@/api/accountApi'
-
 import { getReferenceIndexList } from '@/api/overviewApi';
 import { ReferenceIndexItem } from '@/types/common';
 import { getQuickDateRange } from '@/utils/dateRange';
@@ -17,14 +16,12 @@ export interface FilterParams {
   strategyNames: string[];
   startDate: string | null;
   endDate: string | null;
-  referenceIndexConids: string[];
-  sectorKeys: string[];
-  subjectMatterKeys: string[];
+  referenceIndexConids?: string[];
+  conids?: string[];
+  sectors?: string[];
 }
 
 export const timeShortOpts = ["当日", "近7日", "30日", "YTD", "近1年"];
-export const subjectMatterOpts = ["Apple", "NVIDIA", "Tesla", "Microsoft", "Amazon", "Google", "Meta", "Netflix", "AMD", "Intel"];
-export const sectorOpts = ["Energy", "Materials", "Industrials", "ConsumerDiscretionary", "ConsumerStaples", "HealthCare", "Financials", "InformationTechnology", "CommunicationServices", "Utilities", "RealEstate"];
 
 interface FilterPanelProps {
   onSearch: (params: FilterParams) => void;
@@ -36,8 +33,8 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ onSearch, pageType }) => {
   const [selectedAccounts, setSelectedAccounts] = useState<string[]>([]);
   const [selectedTraders, setSelectedTraders] = useState<string[]>([]);
   const [selectedStrategies, setSelectedStrategies] = useState<string[]>([]);
-  const [selectedSubjectMatter, setSelectedSubjectMatter] = useState<string[]>([]);
-  const [selectedSectors, setSelectedSectors] = useState<string[]>([]);
+  const [selectedSubjectMatter, setSelectedSubjectMatter] = useState<string[]>([]); // 板块
+  const [selectedSectors, setSelectedSectors] = useState<string[]>([]); // 标的
 
   const [tempTimeQuick, setTempTimeQuick] = useState<string | null>(timeShortOpts[0]);
   const [tempCustomDate, setTempCustomDate] = useState<[dayjs.Dayjs, dayjs.Dayjs] | null>(null);
@@ -48,6 +45,8 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ onSearch, pageType }) => {
   const [traderOptions, setTraderOptions] = useState<SelectProps['options']>([]);
   const [strategyList, setStrategyList] = useState<Array<{ value: string; label: string }>>([]);
   const [indexOptions, setIndexOptions] = useState<ReferenceIndexItem[]>([]);
+  const [sectorOptions, setSectorOptions] = useState<SelectProps['options']>([]); // 板块下拉
+  const [contractOptions, setContractOptions] = useState<SelectProps['options']>([]); // 标的下拉
 
   // 1. 获取账号下拉
   const fetchAccountList = async () => {
@@ -90,12 +89,33 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ onSearch, pageType }) => {
     }
   };
 
-  // 初始化加载基础下拉
+  // 5. 获取板块下拉
+  const fetchSectorOptions = async () => {
+    try {
+      const res = await getContractSectorList();
+      setSectorOptions(res);
+    } catch (err) {
+      console.error('获取板块列表失败', err);
+    }
+  };
+
+  // 6. 获取标的下拉（传空symbol查全部）
+  const fetchContractOptions = async () => {
+    try {
+      const res = await getContractList('');
+      setContractOptions(res);
+    } catch (err) {
+      console.error('获取标的列表失败', err);
+    }
+  };
+
+  // 初始化加载所有基础下拉
   useEffect(() => {
     fetchAccountList();
-    fetchTraderList([])
-    fetchStrategyList();
     fetchIndexOptions();
+    fetchStrategyList();
+    fetchSectorOptions();
+    fetchContractOptions();
   }, [])
 
   // 选中账号变化，重新拉取操盘人
@@ -103,25 +123,23 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ onSearch, pageType }) => {
     fetchTraderList(selectedAccounts);
   }, [selectedAccounts])
 
-  // 选中操盘人变化，重新策略
-  useEffect(() => {
-    fetchStrategyList();
-  }, [selectedTraders])
-
   // 查询按钮
   const handleQuery = () => {
     const tempTimeQuickRange = tempTimeQuick ? getQuickDateRange(tempTimeQuick) : null;
-    const startDate = tempCustomDate ? tempCustomDate[0].format('YYYY-MM-DD') : (tempTimeQuickRange ? tempTimeQuickRange[0] : null);
-    const endDate = tempCustomDate ? tempCustomDate[1].format('YYYY-MM-DD') : (tempTimeQuickRange ? tempTimeQuickRange[1] : null);
+    const startDate = tempCustomDate ? tempCustomDate[0].format('YYYY-MM-DD HH:mm:ss') : (tempTimeQuickRange ? tempTimeQuickRange[0] : null);
+    const endDate = tempCustomDate ? tempCustomDate[1].format('YYYY-MM-DD HH:mm:ss') : (tempTimeQuickRange ? tempTimeQuickRange[1] : null);
+    const typeParams: {
+    referenceIndexConids?: string[];
+    conids?: string[];
+    sectors?: string[];
+    } = pageType === 'overview' ? { referenceIndexConids: benchmarkType } : { conids: selectedSectors, sectors: selectedSubjectMatter };
     onSearch({
       accountCodes: selectedAccounts,
       tradeNames: selectedTraders,
       strategyNames: selectedStrategies,
       startDate,
       endDate,
-      referenceIndexConids: benchmarkType,
-      subjectMatterKeys: selectedSubjectMatter,
-      sectorKeys: selectedSectors,
+      ...typeParams
     });
   };
 
@@ -140,14 +158,11 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ onSearch, pageType }) => {
   // 切换账号，清空下级选择
   const handleAccountChange = (vals: string[]) => {
     setSelectedAccounts(vals);
-    // fetchTraderList([]);
-    // setSelectedStrategies([]);
   };
 
   // 切换操盘人，清空策略
   const handleTraderChange = (vals: string[]) => {
     setSelectedTraders(vals);
-    // setSelectedStrategies([]);
   };
 
   // 筛选项配置
@@ -227,7 +242,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ onSearch, pageType }) => {
           mode="multiple"
           placeholder="选择标的"
           style={{ minWidth: 200 }}
-          options={sectorOpts.map(item => ({ value: item, label: item }))}
+          options={contractOptions}
           value={selectedSectors}
           onChange={(val) => setSelectedSectors(val)}
           allowClear
@@ -242,7 +257,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ onSearch, pageType }) => {
           mode="multiple"
           placeholder="选择板块"
           style={{ minWidth: 200 }}
-          options={subjectMatterOpts.map(item => ({ value: item, label: item }))}
+          options={sectorOptions}
           value={selectedSubjectMatter}
           onChange={setSelectedSubjectMatter}
           allowClear
