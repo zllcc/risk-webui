@@ -123,7 +123,6 @@ export default function TradeList() {
 
   // 分配提交回调
   const handleAllocateConfirm = (tradeInfo: TradeTableItem, allocateList: any[]) => {
-    console.log('分配提交', tradeInfo.originRecord, allocateList);
     fetchTradeList();
     setAllocateModalOpen(false);
   };
@@ -217,12 +216,14 @@ export default function TradeList() {
         />
       </Row>
 
-      <TradeAllocateModal
-        open={allocateModalOpen}
-        tradeData={currentTrade}
-        onCancel={() => setAllocateModalOpen(false)}
-        onConfirm={handleAllocateConfirm}
-      />
+      {allocateModalOpen && currentTrade &&
+        (<TradeAllocateModal
+          open={allocateModalOpen}
+          tradeData={currentTrade}
+          onCancel={() => setAllocateModalOpen(false)}
+          onConfirm={handleAllocateConfirm}
+        />)
+      }
     </Card>
   );
 }

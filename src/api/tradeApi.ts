@@ -47,6 +47,22 @@ export interface TradePageRes {
   data: TradePageData;
 }
 
+// 分配接口详情入参
+interface AllocateDetailItem {
+  accountCode: string;
+  conid: number;
+  strategyName: string;
+  traderName: string;
+  allocateQty: number;
+}
+
+// 分配接口整体入参
+export interface AllocateApiParams {
+  id: number;
+  operateType: number;
+  details: AllocateDetailItem[];
+}
+
 /**
  * POST /contract-execution/pc/query-page
  * 分页查询交易执行明细
@@ -54,6 +70,14 @@ export interface TradePageRes {
 export function getTradePageList(params: TradePageParams) {
   return request<TradePageRes>({
     url: '/contract-execution/pc/query-page',
+    method: 'POST',
+    data: params
+  });
+}
+
+export function allocateTrade(params: AllocateApiParams) {
+  return request<{ data: boolean }>({
+    url: '/contract-execution/pc/allocate',
     method: 'POST',
     data: params
   });
