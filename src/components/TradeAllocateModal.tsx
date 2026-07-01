@@ -101,7 +101,7 @@ const TradeAllocateModal: React.FC<TradeAllocateModalProps> = ({ open, tradeData
 
       } catch (err) {
         console.error('弹窗初始化加载失败', err);
-        message.error('加载数据失败');
+        // message.error('加载数据失败');
       } finally {
         setOptionLoading(false);
       }
@@ -147,18 +147,18 @@ const TradeAllocateModal: React.FC<TradeAllocateModalProps> = ({ open, tradeData
     // 空行校验
     const emptyRow = allocateRows.find(item => !item.trader || !item.strategy);
     if (emptyRow) {
-      message.warn('请完整填写每一行的交易员与策略');
+      message.info('请完整填写每一行的交易员与策略');
       return;
     }
 
     // 总量校验
     const totalAllocate = allocateRows.reduce((sum, item) => sum + item.amount, 0);
     if (totalAllocate <= 0) {
-      message.warn('分配总数量不能为0');
+      message.info('分配总数量不能为0');
       return;
     }
     if (totalAllocate > tradeData.unAllocateAmount) {
-      message.warn(`分配总量不可超过未分配数量 ${tradeData.unAllocateAmount}`);
+      message.info(`分配总量不可超过未分配数量 ${tradeData.unAllocateAmount}`);
       return;
     }
 
@@ -184,7 +184,6 @@ const TradeAllocateModal: React.FC<TradeAllocateModalProps> = ({ open, tradeData
         message.error('分配失败，请重试');
       }
     } catch (err) {
-      console.error('分配接口异常', err);
       message.error('分配接口异常，请稍后重试');
     } finally {
       setSubmitLoading(false);
@@ -286,7 +285,7 @@ const TradeAllocateModal: React.FC<TradeAllocateModalProps> = ({ open, tradeData
           </Row>
         ))}
 
-        <Button block onClick={addAllocateRow} style={{ marginTop: 16 }}>新增分配行</Button>
+        <Button block disabled={allocateRows.length >= tradeData.unAllocateAmount} onClick={addAllocateRow} style={{ marginTop: 16 }}>新增分配行</Button>
       </Spin>
     </Modal>
   );

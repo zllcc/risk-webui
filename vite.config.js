@@ -31,7 +31,7 @@ export default defineConfig({
         logLevel: 'info' // 打印完整转发路径日志
       },
       '/contract-execution': {
-        target: 'http://123.207.56.119:9666',
+        target: 'http://192.168.0.109:9666',
         changeOrigin: true,
         rewrite: path => path,
         logLevel: 'info'
