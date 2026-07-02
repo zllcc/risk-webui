@@ -59,7 +59,6 @@ const RiskGreekDashboard = () => {
             <div className={item.highlight ? styles.greekItemActive : styles.greekItem}>
               <div className={styles.labelRow}>
                 <Text className={styles.labelText}>{item.label}</Text>
-                <span className={styles.dropIcon}>⌄</span>
               </div>
               <Title level={2} className={styles.valueText}>{item.value}</Title>
               <div className={styles.miniChart}></div>

@@ -6,7 +6,6 @@ import { CloseOutlined } from '@ant-design/icons';
 import AccountModalContent from '@/components/AccountModalContent';
 import ComponotsModel from '@/components/CompModel'
 import AttributionHeatChart from '@/components/AttributionHeatChart';
-import HorizontalBarContribution from '@/components/HorizontalBar';
 import DonutAssetPie from '@/components/DonutAssetPie';
 import RiskDashboard from '@/components/RiskVarPanel';
 import FilterPanel, { FilterParams } from '@/components/FilterPanel';
@@ -25,7 +24,6 @@ const PortfolioAnalysis: React.FC = () => {
     // 组件展示状态
   const [selectedKeys, setSelectedKeys] = useState<string[]>([
     'attribution',
-    'attrRanking',
     'concentration',
     'quantitativeRisk',
     'greek',
@@ -67,7 +65,7 @@ const PortfolioAnalysis: React.FC = () => {
     {
       key: 'attribution',
       title: '收益归因',
-      span: 8,
+      span: 12,
       content:
       <>
         <Text type="secondary">当前筛选账户数量：{activeFilter.accountKeys.length}</Text>
@@ -75,15 +73,9 @@ const PortfolioAnalysis: React.FC = () => {
       </>
     },
     {
-      key: 'attrRanking',
-      title: '归因排名',
-      span: 8,
-      content: <HorizontalBarContribution filter={activeFilter} />,
-    },
-    {
       key: 'concentration',
       title: '集中度风险',
-      span: 8, 
+      span: 12, 
       content: (
         <Tabs activeKey={concentrationTab} onChange={setConcentrationTab} size="small">
           <TabPane tab="资产占比环形图" key="asset">
@@ -98,7 +90,7 @@ const PortfolioAnalysis: React.FC = () => {
     {
       key: 'quantitativeRisk',
       title: '量化风险指标',
-      span: 16,
+      span: 24,
       content: <RiskDashboard filter={activeFilter} />,
     },
     {
