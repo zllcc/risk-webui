@@ -62,12 +62,24 @@ export default function Login() {
   return (
     <ConfigProvider theme={loginTheme}>
       <div style={{
-        height: '100vh',
-        display: 'flex',
+        position: 'absolute',
         alignItems: 'center',
         justifyContent: 'center',
         background: '#0E1117',
+        width: '400px',
+        left: '50%',
+        marginLeft: '-200px',
+        textAlign: 'center',
+        marginTop: '120px',
       }}>
+        <div style={{
+          marginBottom: 64,
+          color: '#fff',
+          fontSize: 30,
+          
+        }}>
+          家办财务风控系统
+        </div>
         <Card title="系统登录" style={{ width: 400 }}>
           <Form onFinish={onFinish} layout="vertical">
             <Form.Item
