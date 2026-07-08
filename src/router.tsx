@@ -5,6 +5,7 @@ import OverviewList from './pages/OverviewList.tsx';
 import TradeList from './pages/TradeList.tsx';
 import PortfolioAnalysis from './pages/PortfolioAnalysis.tsx';
 import BasicLayout from './layouts/BasicLayout.tsx';
+import TraderPrincipal from './pages/TraderPrincipal.tsx';
 
 // 路由守卫：简单用 localStorage 模拟登录
 const PrivateRoute = ({ children } : any ) => {
@@ -28,6 +29,7 @@ export default function Router() {
         { path: 'asset-list', element: <AssetList /> },
         { path: 'trade-list', element: <TradeList /> },
         { path: 'asset-analysis', element: <PortfolioAnalysis /> },
+        { path: 'trader-principal', element: <TraderPrincipal /> },
       ],
     },
   ]);

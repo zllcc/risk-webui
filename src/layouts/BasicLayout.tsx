@@ -13,6 +13,7 @@ const navMenus = [
   { path: '/asset-list', label: '持仓列表', icon: <DashboardOutlined /> },
   { path: '/trade-list', label: '交易列表', icon: <FileTextOutlined /> },
   { path: '/asset-analysis', label: '投资组合分析', icon: <FileTextOutlined /> },
+  { path: '/trader-principal', label: '交易员本金', icon: <FileTextOutlined /> }
 ];
 
 export default function BasicLayout() {
