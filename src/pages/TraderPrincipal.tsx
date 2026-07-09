@@ -163,7 +163,7 @@ export default function TraderPrincipalPage() {
       </Space>
 
       {/* 操作按钮区 */}
-      <Space style={{ marginBottom: 10 }}>
+      <Space style={{ marginBottom: 10, marginLeft: 24 }}>
         <Button type="primary" onClick={openAddModal}>新增</Button>
         <Button onClick={() => setStrategyModalOpen(true)}>策略配置</Button>
       </Space>
