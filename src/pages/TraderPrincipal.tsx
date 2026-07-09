@@ -148,15 +148,6 @@ export default function TraderPrincipalPage() {
     setStrategyList(prev => prev.map(item => item.id === rowId ? { ...item, strategyName: val } : item));
   };
 
-  // 页面全局提交/重置
-  const handlePageSubmit = () => {
-    console.log('全局提交数据', topPrincipal, mainTableData, strategyList);
-  };
-  const handlePageCancel = () => {
-    setTopPrincipal(100);
-    setMainTableData([]);
-  };
-
   return (
     <Card title="交易员本金配置">
       {/* 顶部输入区域 */}
@@ -186,12 +177,6 @@ export default function TraderPrincipalPage() {
         bordered
         style={{ marginBottom: 22 }}
       />
-
-      {/* 页面底部全局按钮 */}
-      <Space>
-        <Button type="primary" onClick={handlePageSubmit}>确定</Button>
-        <Button onClick={handlePageCancel}>取消</Button>
-      </Space>
 
       {/* 1. 新增/编辑表单弹窗 */}
       <TraderFormModal
