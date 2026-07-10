@@ -145,7 +145,7 @@ export default function TradeList() {
       } else if (col.key === "profitLoss") {
         colConfig.render = (val: number) => (
           <span style={{ color: val >= 0 ? "#f5222d" : "#52c41a" }}>
-            {val >= 0 ? "+" : ""}{val.toLocaleString()}
+            {val > 0 ? "+" : ""}{val?.toLocaleString()}
           </span>
         );
       } else if (["quantity", "matchPrice", "fee", "unAllocateAmount"].includes(col.key)) {

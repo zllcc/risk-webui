@@ -62,6 +62,55 @@ export interface AllocateApiParams {
   operateType: number;
   details: AllocateDetailItem[];
 }
+// 交易员基础实体
+export interface TraderItem {
+  id: number;
+  traderName: string;
+  capital: number;
+  modifiedTime: string;
+}
+
+// 变更历史记录
+export interface TraderModifiedHistory {
+  orgTraderName: string;
+  orgCapital: number;
+  currentTraderName: string;
+  currentCapital: number;
+  modifiedTime: string;
+}
+
+// 交易员详情返回
+export interface TraderDetailRes {
+  id: number;
+  traderName: string;
+  capital: number;
+  modifiedHistoryList: TraderModifiedHistory[];
+}
+
+// 分页查询入参
+export interface TraderPageParams {
+  pageNum: number;
+  pageSize: number;
+  orderColumn: string;
+  orderType: 'asc' | 'desc';
+  idList: number[];
+  traderName: string;
+}
+
+// 分页返回结构
+export interface TraderPageRes {
+  size: number;
+  records: TraderItem[];
+  current: number;
+  total: number;
+}
+
+// 新增/编辑/删除共用入参
+export interface TraderOperateParams {
+  id: number;
+  traderName: string;
+  capital: number;
+}
 
 /**
  * POST /contract-execution/pc/query-page
@@ -78,6 +127,61 @@ export function getTradePageList(params: TradePageParams) {
 export function allocateTrade(params: AllocateApiParams) {
   return request<{ data: boolean }>({
     url: '/contract-execution/pc/allocate',
+    method: 'POST',
+    data: params
+  });
+}
+
+/**
+ * 新增交易员 /trader/pc/create
+ */
+export function createTrader(params: TraderOperateParams) {
+  return request<number>({
+    url: '/trader/pc/create',
+    method: 'POST',
+    data: params
+  });
+}
+
+/**
+ * 删除交易员 /trader/pc/delete
+ */
+export function deleteTrader(params: TraderOperateParams) {
+  return request<number>({
+    url: '/trader/pc/delete',
+    method: 'POST',
+    data: params
+  });
+}
+
+/**
+ * 获取交易员详情（含变更记录） /trader/pc/detail
+ */
+export function getTraderDetail(params: TraderOperateParams) {
+  return request<TraderDetailRes>({
+    url: '/trader/pc/detail',
+    method: 'POST',
+    data: params
+  });
+}
+
+/**
+ * 分页查询交易员列表 /trader/pc/query-page
+ */
+export function queryTraderPage(params: TraderPageParams) {
+  return request<TraderPageRes>({
+    url: '/trader/pc/query-page',
+    method: 'POST',
+    data: params
+  });
+}
+
+/**
+ * 更新交易员 /trader/pc/update
+ */
+export function updateTrader(params: TraderOperateParams) {
+  return request<number>({
+    url: '/trader/pc/update',
     method: 'POST',
     data: params
   });
