@@ -29,7 +29,7 @@ export default function Router() {
         { path: 'asset-list', element: <AssetList /> },
         { path: 'trade-list', element: <TradeList /> },
         { path: 'asset-analysis', element: <PortfolioAnalysis /> },
-        { path: 'trader', element: <TraderPrincipalPage /> },
+        { path: 'trader-manage', element: <TraderPrincipalPage /> },
       ],
     },
   ]);

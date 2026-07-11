@@ -1,6 +1,6 @@
 import { Layout, Button, Typography, Space, ConfigProvider, theme } from 'antd';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { LogoutOutlined, FileTextOutlined, DashboardOutlined } from '@ant-design/icons';
+import { LogoutOutlined } from '@ant-design/icons';
 import locale from 'antd/locale/zh_CN';
 const { darkAlgorithm } = theme;
 
@@ -9,11 +9,11 @@ const { Title } = Typography;
 
 // 导航菜单配置，统一管理路由、名称、图标
 const navMenus = [
-  { path: '/overview', label: '总览', icon: <DashboardOutlined /> },
-    { path: '/asset-list', label: '持仓列表', icon: <DashboardOutlined /> },
-  { path: '/trade-list', label: '交易列表', icon: <FileTextOutlined /> },
-  { path: '/asset-analysis', label: '投资组合分析', icon: <FileTextOutlined /> },
-  { path: '/trader', label: '交易员本金', icon: <FileTextOutlined /> },
+  { path: '/overview', label: '总览' },
+    { path: '/asset-list', label: '持仓列表' },
+  { path: '/trade-list', label: '交易列表' },
+  { path: '/asset-analysis', label: '投资组合分析' },
+  { path: '/trader-manage', label: '交易员管理' },
 ];
 
 export default function BasicLayout() {
