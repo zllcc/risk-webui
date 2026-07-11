@@ -1,10 +1,20 @@
-import { useState } from 'react';
-import { Card, Input, InputNumber, Table, Button, Space, Typography } from 'antd';
+import { useState, useEffect } from 'react';
+import { Card, Input, InputNumber, Table, Button, Space, Typography, message } from 'antd';
 import type { TableProps } from 'antd';
 // 导入抽离弹窗组件
 import TraderFormModal, { ModalOperateType } from '@/components/TraderFormModal';
 import ChangeRecordModal, { ChangeRecordRow } from '@/components/ChangeRecordModal';
-import StrategyConfigModal, { StrategyItem } from '@/components/StrategyConfigModal';
+import StrategyConfigModal from '@/components/StrategyConfigModal';
+import {
+  createTrader,
+  deleteTrader,
+  queryTraderPage,
+  updateTrader,
+  TraderPageParams,
+  TraderItem,
+  TraderModifiedHistory
+} from '@/api/tradeApi';
+import { queryStrategyPage, StrategyItem, StrategyUpdateParams, updateStrategyBatch } from '@/api/strategyApi';
 
 const { Title } = Typography;
 
@@ -14,8 +24,6 @@ interface MainTableRow {
   traderName: string;
   principal: number;
   updateTime: string;
-  // 绑定本条数据对应的所有变更记录
-  recordList: ChangeRecordRow[];
 }
 
 export default function TraderPrincipalPage() {
@@ -39,11 +47,84 @@ export default function TraderPrincipalPage() {
   const [operateType, setOperateType] = useState<ModalOperateType>('add');
   const [modalTrader, setModalTrader] = useState('');
   const [modalPrincipal, setModalPrincipal] = useState(0);
-  const [currentEditRow, setCurrentEditRow] = useState<MainTableRow | null>(null);
+  const [currentEditRow, setCurrentEditRow] = useState<MainTableRow | null>({ id: '', traderName: '', principal: 0, updateTime: '' });
 
   // 变更记录弹窗状态
   const [recordModalOpen, setRecordModalOpen] = useState(false);
-  const [showRecordList, setShowRecordList] = useState<ChangeRecordRow[]>([]);
+  // 分页状态
+  const [pageNum, setPageNum] = useState(1);
+  const pageSize = 10;
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(false);
+
+  // 加载交易员列表
+  const fetchTraderList = async () => {
+    setLoading(true);
+    try {
+      const params: TraderPageParams = {
+        pageNum,
+        pageSize,
+        orderColumn: 'id',
+        orderType: 'desc',
+        idList: [],
+        traderName: ''
+      };
+      const res = await queryTraderPage(params);
+      // 后端records 映射前端表格数据，绑定变更记录数组
+      const tableData = res.records.map(item => ({
+        id: item.id,
+        traderName: item.traderName,
+        principal: item.capital,
+        updateTime: item.modifiedTime,
+      }));
+      setMainTableData(tableData);
+      setTotal(res.total);
+    } catch (err) {
+      message.error('加载交易员列表失败');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTraderList();
+  }, [pageNum, pageSize]);
+
+  const submitFormModal = async (trader: string, capital: number) => {
+  if (!trader) {
+    message.warn('请输入交易员名称');
+    return;
+  }
+  if (capital <= 0) {
+    message.warn('本金必须大于0');
+    return;
+  }
+  try {
+    if (operateType === 'add') {
+      // 新增接口
+      await createTrader({
+        id: 0,
+        traderName: trader,
+        capital: capital
+      });
+      message.success('新增成功');
+    } else if (operateType === 'edit' && currentEditRow) {
+      // 更新接口
+      await updateTrader({
+        id: currentEditRow.id,
+        traderName: trader,
+        capital: capital
+      });
+      message.success('编辑成功');
+    }
+    setFormModalOpen(false);
+    fetchTraderList(); // 刷新列表
+  } catch (err) {
+    message.error('操作失败，请重试');
+  }
+};
+
+
 
   // ========== 表格列配置 ==========
   const mainTableCols: TableProps<MainTableRow>['columns'] = [
@@ -58,9 +139,22 @@ export default function TraderPrincipalPage() {
         <Space>
           <Button type="link" size="small" onClick={() => openRecordModal(row)}>查看</Button>
           <Button type="link" size="small" onClick={() => openEditModal(row)}>编辑</Button>
-          <Button type="link" size="small" danger onClick={() => {
-            setMainTableData(prev => prev.filter(item => item.id !== row.id));
-          }}>删除</Button>
+          <Button
+            type="link"
+            size="small"
+            danger
+            onClick={async () => {
+              await deleteTrader({
+                id: row.id,
+                traderName: row.traderName,
+                capital: row.principal
+              });
+              message.success('删除成功');
+              fetchTraderList();
+            }}
+          >
+            删除
+          </Button>
         </Space>
       )
     }
@@ -68,7 +162,7 @@ export default function TraderPrincipalPage() {
 
   // 打开变更记录弹窗（查看按钮）
   const openRecordModal = (row: MainTableRow) => {
-    setShowRecordList(row.recordList);
+    setCurrentEditRow(row);
     setRecordModalOpen(true);
   };
 
@@ -88,53 +182,6 @@ export default function TraderPrincipalPage() {
     setModalTrader(row.traderName);
     setModalPrincipal(row.principal);
     setFormModalOpen(true);
-  };
-
-  // 表单弹窗确认提交
-  const submitFormModal = (trader: string, principal: number) => {
-    const now = new Date().toLocaleString();
-    if (operateType === 'add') {
-      // 新增数据，初始化空变更记录
-      const newRow: MainTableRow = {
-        id: crypto.randomUUID(),
-        traderName: trader,
-        principal: principal,
-        updateTime: now,
-        recordList: [
-          {
-            oldTrader: '-',
-            oldPrincipal: 0,
-            newTrader: trader,
-            newPrincipal: principal,
-            changeDate: now
-          }
-        ]
-      };
-      setMainTableData(prev => [...prev, newRow]);
-    }
-    if (operateType === 'edit' && currentEditRow) {
-      // 编辑，追加一条变更记录
-      const newRecord: ChangeRecordRow = {
-        oldTrader: currentEditRow.traderName,
-        oldPrincipal: currentEditRow.principal,
-        newTrader: trader,
-        newPrincipal: principal,
-        changeDate: now
-      };
-      setMainTableData(prev => prev.map(item => {
-        if (item.id === currentEditRow.id) {
-          return {
-            ...item,
-            traderName: trader,
-            principal: principal,
-            updateTime: now,
-            recordList: [...item.recordList, newRecord]
-          };
-        }
-        return item;
-      }));
-    }
-    setFormModalOpen(false);
   };
 
   // ========== 策略弹窗交互 ==========
@@ -193,7 +240,9 @@ export default function TraderPrincipalPage() {
       {/* 2. 变更记录弹窗（点击查看弹出） */}
       <ChangeRecordModal
         open={recordModalOpen}
-        recordList={showRecordList}
+        traderId={currentEditRow?.id}
+        traderName={currentEditRow?.traderName}
+        capital={currentEditRow?.principal}
         onCancel={() => setRecordModalOpen(false)}
       />
 
