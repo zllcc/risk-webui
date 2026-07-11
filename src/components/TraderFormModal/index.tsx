@@ -4,7 +4,6 @@ export type ModalOperateType = 'add' | 'edit';
 
 export interface TraderFormModalProps {
   open: boolean;
-  operateType: ModalOperateType;
   traderName: string;
   principal: number;
   onCancel: () => void;
@@ -15,7 +14,6 @@ export interface TraderFormModalProps {
 
 const TraderFormModal: React.FC<TraderFormModalProps> = ({
   open,
-  operateType,
   traderName,
   principal,
   onCancel,
@@ -23,11 +21,10 @@ const TraderFormModal: React.FC<TraderFormModalProps> = ({
   onChangeTrader,
   onChangePrincipal,
 }) => {
-  const modalTitle = operateType === 'add' ? '新增条目' : '编辑条目';
 
   return (
     <Modal
-      title={modalTitle}
+      title="新增交易员"
       open={open}
       onCancel={onCancel}
       footer={

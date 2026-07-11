@@ -1,63 +1,55 @@
 import { useState, useEffect } from 'react';
-import { Card, Input, InputNumber, Table, Button, Space, Typography, message } from 'antd';
+import { Card, Input, Table, Button, Space, message } from 'antd';
 import type { TableProps } from 'antd';
 // 导入抽离弹窗组件
-import TraderFormModal, { ModalOperateType } from '@/components/TraderFormModal';
-import ChangeRecordModal, { ChangeRecordRow } from '@/components/ChangeRecordModal';
+import TraderFormModal from '@/components/TraderFormModal';
+import ChangeRecordModal from '@/components/ChangeRecordModal';
 import StrategyConfigModal from '@/components/StrategyConfigModal';
 import {
   createTrader,
   deleteTrader,
   queryTraderPage,
-  updateTrader,
   TraderPageParams,
-  TraderItem,
-  TraderModifiedHistory
 } from '@/api/tradeApi';
-import { queryStrategyPage, StrategyItem, StrategyUpdateParams, updateStrategyBatch } from '@/api/strategyApi';
-
-const { Title } = Typography;
+import { StrategyItem } from '@/api/strategyApi';
 
 // ========== 类型定义 ==========
 interface MainTableRow {
-  id: string;
+  id: number;
   traderName: string;
   principal: number;
   updateTime: string;
 }
 
 export default function TraderPrincipalPage() {
-  // 顶部基础信息
-  const [topTrader] = useState('张三');
-  const [topPrincipal, setTopPrincipal] = useState<number>(100);
+  // 搜索条件：交易员名称（传给接口traderName）
+  const [searchTraderName, setSearchTraderName] = useState('');
+  const [traderName, setTraderName] = useState('');
 
-  // 下方主表格数据（每条数据自带自身变更流水）
+  // 下方主表格数据
   const [mainTableData, setMainTableData] = useState<MainTableRow[]>([]);
 
   // 策略配置弹窗
   const [strategyModalOpen, setStrategyModalOpen] = useState(false);
-  const [strategyList, setStrategyList] = useState<StrategyItem[]>([
-    { id: '1', strategyName: '进攻型' },
-    { id: '2', strategyName: '进攻型' },
-    { id: '3', strategyName: '进攻型' },
-  ]);
+  const [strategyList, setStrategyList] = useState<StrategyItem[]>([]);
 
   // 新增/编辑表单弹窗状态
   const [formModalOpen, setFormModalOpen] = useState(false);
-  const [operateType, setOperateType] = useState<ModalOperateType>('add');
   const [modalTrader, setModalTrader] = useState('');
   const [modalPrincipal, setModalPrincipal] = useState(0);
-  const [currentEditRow, setCurrentEditRow] = useState<MainTableRow | null>({ id: '', traderName: '', principal: 0, updateTime: '' });
+  const [currentEditRow, setCurrentEditRow] = useState<MainTableRow | null>(null);
 
   // 变更记录弹窗状态
   const [recordModalOpen, setRecordModalOpen] = useState(false);
+  const [recordMode, setRecordMode] = useState<'view' | 'edit'>('view');
+
   // 分页状态
   const [pageNum, setPageNum] = useState(1);
   const pageSize = 10;
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
 
-  // 加载交易员列表
+  // 加载交易员列表（携带搜索条件traderName）
   const fetchTraderList = async () => {
     setLoading(true);
     try {
@@ -67,10 +59,10 @@ export default function TraderPrincipalPage() {
         orderColumn: 'id',
         orderType: 'desc',
         idList: [],
-        traderName: ''
+        traderName: searchTraderName // 搜索条件传给后端对应字段
       };
       const res = await queryTraderPage(params);
-      // 后端records 映射前端表格数据，绑定变更记录数组
+      // 后端records 映射前端表格数据
       const tableData = res.records.map(item => ({
         id: item.id,
         traderName: item.traderName,
@@ -86,45 +78,47 @@ export default function TraderPrincipalPage() {
     }
   };
 
+  // 分页、搜索条件变更自动刷新
   useEffect(() => {
     fetchTraderList();
-  }, [pageNum, pageSize]);
+  }, [pageNum, pageSize, traderName]);
 
+  // 查询按钮：重置到第一页，触发接口请求
+  const handleSearch = () => {
+    setPageNum(1);
+    setTraderName(searchTraderName);
+  };
+
+  // 重置按钮：清空搜索框，回到第一页
+  const handleReset = () => {
+    setSearchTraderName('');
+    setTraderName('');
+    setPageNum(1);
+  };
+
+  // 新增弹窗提交
   const submitFormModal = async (trader: string, capital: number) => {
-  if (!trader) {
-    message.warn('请输入交易员名称');
-    return;
-  }
-  if (capital <= 0) {
-    message.warn('本金必须大于0');
-    return;
-  }
-  try {
-    if (operateType === 'add') {
-      // 新增接口
+    if (!trader) {
+      message.warning('请输入交易员名称');
+      return;
+    }
+    if (capital <= 0) {
+      message.warning('本金必须大于0');
+      return;
+    }
+    try {
       await createTrader({
         id: 0,
         traderName: trader,
         capital: capital
       });
       message.success('新增成功');
-    } else if (operateType === 'edit' && currentEditRow) {
-      // 更新接口
-      await updateTrader({
-        id: currentEditRow.id,
-        traderName: trader,
-        capital: capital
-      });
-      message.success('编辑成功');
+      setFormModalOpen(false);
+      fetchTraderList();
+    } catch (err) {
+      message.error('操作失败，请重试');
     }
-    setFormModalOpen(false);
-    fetchTraderList(); // 刷新列表
-  } catch (err) {
-    message.error('操作失败，请重试');
-  }
-};
-
-
+  };
 
   // ========== 表格列配置 ==========
   const mainTableCols: TableProps<MainTableRow>['columns'] = [
@@ -137,8 +131,8 @@ export default function TraderPrincipalPage() {
       width: 260,
       render: (_record, row) => (
         <Space>
-          <Button type="link" size="small" onClick={() => openRecordModal(row)}>查看</Button>
-          <Button type="link" size="small" onClick={() => openEditModal(row)}>编辑</Button>
+          <Button type="link" size="small" onClick={() => openRecordModal(row, 'view')}>查看</Button>
+          <Button type="link" size="small" onClick={() => openRecordModal(row, 'edit')}>编辑</Button>
           <Button
             type="link"
             size="small"
@@ -160,27 +154,18 @@ export default function TraderPrincipalPage() {
     }
   ];
 
-  // 打开变更记录弹窗（查看按钮）
-  const openRecordModal = (row: MainTableRow) => {
+  // 打开变更记录弹窗（查看｜编辑）
+  const openRecordModal = (row: MainTableRow, mode: 'view' | 'edit') => {
+    setRecordMode(mode);
     setCurrentEditRow(row);
     setRecordModalOpen(true);
   };
 
   // 打开新增弹窗
   const openAddModal = () => {
-    setOperateType('add');
     setCurrentEditRow(null);
     setModalTrader('');
     setModalPrincipal(0);
-    setFormModalOpen(true);
-  };
-
-  // 打开编辑弹窗
-  const openEditModal = (row: MainTableRow) => {
-    setOperateType('edit');
-    setCurrentEditRow(row);
-    setModalTrader(row.traderName);
-    setModalPrincipal(row.principal);
     setFormModalOpen(true);
   };
 
@@ -197,38 +182,51 @@ export default function TraderPrincipalPage() {
 
   return (
     <Card title="交易员本金配置">
-      {/* 顶部输入区域 */}
-      <Space size={32} style={{ marginBottom: 18 }}>
-        <Space>
-          <span>交易员</span>
-          <Input value={topTrader} disabled style={{ width: 200 }} />
-        </Space>
-        <Space>
-          <span>本金</span>
-          <InputNumber value={topPrincipal} onChange={val => setTopPrincipal(val ?? 0)} style={{ width: 200 }} min={0} />
-        </Space>
+      {/* 顶部搜索区域 */}
+      <Space size={12} style={{ marginBottom: 18, alignItems: 'center' }}>
+        <span>交易员：</span>
+        <Input
+          placeholder="请输入交易员名称搜索"
+          value={searchTraderName}
+          onChange={(e) => setSearchTraderName(e.target.value)}
+          style={{ width: 240 }}
+        />
+        <Button type="primary" onClick={handleSearch}>查询</Button>
+        <Button onClick={handleReset}>重置</Button>
       </Space>
 
-      {/* 操作按钮区 */}
-      <Space style={{ marginBottom: 10, marginLeft: 24 }}>
+      {/* 操作按钮区：左右两端对齐，按钮居右 */}
+      <Space
+        style={{
+          marginBottom: 10,
+          width: '100%',
+          justifyContent: 'flex-end'
+        }}
+      >
         <Button type="primary" onClick={openAddModal}>新增</Button>
         <Button onClick={() => setStrategyModalOpen(true)}>策略配置</Button>
       </Space>
 
-      {/* 主数据表格 */}
+      {/* 主数据表格 + 分页 */}
       <Table
         rowKey="id"
         columns={mainTableCols}
         dataSource={mainTableData}
-        pagination={false}
+        loading={loading}
         bordered
         style={{ marginBottom: 22 }}
+        pagination={{
+          current: pageNum,
+          pageSize,
+          total,
+          onChange: (page) => setPageNum(page),
+          showTotal: (totalNum) => `共 ${totalNum} 条`
+        }}
       />
 
       {/* 1. 新增/编辑表单弹窗 */}
       <TraderFormModal
         open={formModalOpen}
-        operateType={operateType}
         traderName={modalTrader}
         principal={modalPrincipal}
         onCancel={() => setFormModalOpen(false)}
@@ -237,14 +235,18 @@ export default function TraderPrincipalPage() {
         onChangePrincipal={setModalPrincipal}
       />
 
-      {/* 2. 变更记录弹窗（点击查看弹出） */}
-      <ChangeRecordModal
-        open={recordModalOpen}
-        traderId={currentEditRow?.id}
-        traderName={currentEditRow?.traderName}
-        capital={currentEditRow?.principal}
-        onCancel={() => setRecordModalOpen(false)}
-      />
+      {/* 查看/编辑共用变更记录弹窗 */}
+      {currentEditRow && (
+        <ChangeRecordModal
+          open={recordModalOpen}
+          mode={recordMode}
+          traderId={currentEditRow.id}
+          traderName={currentEditRow.traderName}
+          capital={currentEditRow.principal}
+          onCancel={() => setRecordModalOpen(false)}
+          fetchTraderList={() => fetchTraderList()}
+        />
+      )}
 
       {/* 3. 策略配置弹窗 */}
       <StrategyConfigModal
