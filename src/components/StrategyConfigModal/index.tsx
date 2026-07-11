@@ -104,7 +104,7 @@ const StrategyConfigModal: React.FC<StrategyModalProps> = ({
   return (
     <Modal
       title={<>
-        <Text style={{ marginRight: '24px' }}>策略配置</Text>
+        <span style={{ paddingRight: '12px' }}>策略配置</span>
         <Button type="link" onClick={onAddRow}>新增</Button>
       </>}
       open={open}

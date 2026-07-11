@@ -111,6 +111,7 @@ export default function BasicLayout() {
             token: {
               colorPrimary: '#1677ff',
               colorBgBase: '#0E1117', // 全局背景色
+              colorLinkHover: '#0958d9', // 按钮 hover 文本色
             },
           }}
         >
