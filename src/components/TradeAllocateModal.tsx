@@ -286,11 +286,12 @@ const TradeAllocateModal: React.FC<TradeAllocateModalProps> = ({ open, tradeData
         ))}
 
         <Button
+          type="dashed"
           block
           icon={<PlusOutlined />}
           disabled={allocateRows.length >= tradeData.unAllocateAmount}
           onClick={addAllocateRow}
-          style={{ width: 160 }}
+          style={{ marginTop: 16, width: 160 }}
         >新增分配行</Button>
       </Spin>
     </Modal>
