@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Row, Col, Select, InputNumber, Button, Space, Typography, message, Spin } from 'antd';
-import { DeleteOutlined } from '@ant-design/icons';
+import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import { allocateTrade, AllocateApiParams } from '@/api/tradeApi';
 import { getTraderSelectList } from '@/api/accountApi';
 import { queryInvestStrategy } from '@/api/investApi';
@@ -169,7 +169,7 @@ const TradeAllocateModal: React.FC<TradeAllocateModalProps> = ({ open, tradeData
         operateType: 2,
         details: allocateRows.map(item => ({
           accountCode: tradeData.account,
-          conid: tradeData.id,
+          conid: tradeData?.originRecord?.conid,
           strategyName: item.strategy,
           traderName: item.trader,
           allocateQty: item.amount
@@ -285,7 +285,13 @@ const TradeAllocateModal: React.FC<TradeAllocateModalProps> = ({ open, tradeData
           </Row>
         ))}
 
-        <Button block disabled={allocateRows.length >= tradeData.unAllocateAmount} onClick={addAllocateRow} style={{ marginTop: 16 }}>新增分配行</Button>
+        <Button
+          block
+          icon={<PlusOutlined />}
+          disabled={allocateRows.length >= tradeData.unAllocateAmount}
+          onClick={addAllocateRow}
+          style={{ width: 160 }}
+        >新增分配行</Button>
       </Spin>
     </Modal>
   );
