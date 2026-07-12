@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react'
 import path from 'path'
 
 const NORMAL_TARGET = 'http://123.207.56.119:9666';
+// const NORMAL_TARGET = 'http://192.168.0.109:9666';
 
 export default defineConfig({
   plugins: [react()],
@@ -38,7 +39,7 @@ export default defineConfig({
         rewrite: path => path,
         logLevel: 'info'
       },
-      '/position': {
+      '/position-relation-history': {
         target: NORMAL_TARGET,
         changeOrigin: true,
         rewrite: path => path,
@@ -56,6 +57,12 @@ export default defineConfig({
         rewrite: path => path,
         logLevel: 'info'
       },
+      '/risk-dashboard': {
+        target: NORMAL_TARGET,
+        changeOrigin: true,
+        rewrite: path => path,
+        logLevel: 'info'
+      }
     }
   }
 })
