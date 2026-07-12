@@ -34,7 +34,7 @@ const transformTradeRecord = (item: TradeRecordItem) => {
     id: item.id,
     account: item.accountCode,
     contract: item.symbol,
-    buySell: item.side === 'BUY' ? '买' : item.side === 'SELL' ? '卖' : '--',
+    buySell: item.side === 'BOT' ? '买' : item.side === 'SLD' ? '卖' : '--',
     quantity: item.shares,
     matchPrice: Number(item.price) || 0,
     profitLoss: item.realizedPnl,
