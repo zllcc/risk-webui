@@ -19,6 +19,7 @@ export interface FilterParams {
   referenceIndexConids?: string[];
   conids?: string[];
   sectors?: string[];
+  dailyDate?: string | null;
 }
 
 export const timeShortOpts = ["当日", "近7日", "30日", "YTD", "近1年"];

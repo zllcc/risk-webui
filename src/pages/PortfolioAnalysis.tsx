@@ -35,12 +35,12 @@ const PortfolioAnalysis: React.FC = () => {
 
   // 全局生效筛选参数
   const [activeFilter, setActiveFilter] = useState<FilterParams>({
-    accountKeys: [],
-    traderKeys: [],
-    strategyKeys: [],
-    timeQuick: 'MTD',
-    customDate: null,
-    benchmarkType: 'default'
+    accountCodes: [],
+    tradeNames: [],
+    strategyNames: [],
+    startDate: '',
+    endDate: '',
+    dailyDate: ''
   });
 
   // 卡片头部复用组件
@@ -61,6 +61,8 @@ const PortfolioAnalysis: React.FC = () => {
     setcomponentsModalOpen(false);
   };
 
+  console.log('当前选中组件：', activeFilter);
+
   const cardArray = [
     {
       key: 'attribution',
@@ -68,7 +70,7 @@ const PortfolioAnalysis: React.FC = () => {
       span: 12,
       content:
       <>
-        <Text type="secondary">当前筛选账户数量：{activeFilter.accountKeys.length}</Text>
+        <Text type="secondary">当前筛选账户数量：{activeFilter.accountCodes.length}</Text>
         <AttributionHeatChart filter={activeFilter} />
       </>
     },

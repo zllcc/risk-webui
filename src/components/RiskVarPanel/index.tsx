@@ -28,11 +28,11 @@ const RiskDashboard: React.FC<Props> = ({ filter }) => {
       try {
         // 转换筛选参数为后端接口入参，完全对齐后端字段
         const reqParams: RiskQueryParams = {
-          accountCodes: filter.accountKeys,
-          tradeNames: filter.operatorKeys,
-          strategyNames: filter.strategyKeys,
-          startDate: filter.customDate?.[0] || '',
-          endDate: filter.customDate?.[1] || '',
+          accountCodes: filter.accountCodes,
+          tradeNames: filter.tradeNames,
+          strategyNames: filter.strategyNames,
+          startDate: filter.startDate || '',
+          endDate: filter.endDate || '',
         };
         const res = await queryRiskDashboard(reqParams);
         setRiskData(res);
