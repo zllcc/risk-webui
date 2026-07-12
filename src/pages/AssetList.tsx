@@ -44,8 +44,8 @@ const transformPositionRecord = (item: PositionRecord) => {
     marketPrice: item.marketPrice,
     marketValue: item.marketValue,
     updateTime: new Date().toLocaleString(), // TODO：后端无更新时间，临时填充
-    unrealizedProfit:item.realizedPnl,
-    realizedProfit:item.unrealizedPnl,
+    unrealizedProfit:item.unrealizedPnl,
+    realizedProfit:item.realizedPnl,
     dayRealizedProfit: item.dailyRealizedPnl,
     dayUnrealizedProfit: item.dailyUnrealizedPnl,
     commissionAndFees:item.commissionAndFees,
