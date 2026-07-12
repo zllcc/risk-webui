@@ -14,16 +14,21 @@ const { Title } = Typography;
 
 // ====================== 所有可配置列 ======================
 const allColumns = [
+  { key: "traderName", label: "操盘人" },
+  { key: "strategyName", label: "策略" },
   { key: "account", label: "账号" },
   { key: "contract", label: "合约" },
   { key: "amount", label: "数量" },
   { key: "avgCostPrice", label: "平均成本价" },
   { key: "marketPrice", label: "市场价格" },
   { key: "marketValue", label: "市场值" },
-  { key: "updateTime", label: "最后更新时间" },
-  { key: "realizedProfit", label: "实现盈亏" },
   { key: "unrealizedProfit", label: "未实现盈亏" },
-  { key: "unAllocateAmount", label: "未分配数量" },
+  { key: "realizedProfit", label: "实现盈亏" },
+  { key: "dayUnrealizedProfit", label: "当日未实现盈亏" },
+  { key: "dayRealizedProfit", label: "当日实现盈亏" },
+  { key: "commissionAndFees", label: "佣金及各项费用" },
+  { key: "dailyDate", label: "日期" },
+  { key: "updateTime", label: "最后更新时间" },
 ];
 
 // 后端数据 → 前端表格行转换
@@ -31,16 +36,21 @@ const transformPositionRecord = (item: PositionRecord) => {
   return {
     id: item.id,
     account: item.accountCode,
+    traderName: item.traderName,
+    strategyName: item.strategyName,
     contract: item.symbol,
     amount: item.positionQty,
     avgCostPrice: item.avgCost,
     marketPrice: item.marketPrice,
     marketValue: item.marketValue,
     updateTime: new Date().toLocaleString(), // TODO：后端无更新时间，临时填充
-    realizedProfit: item.realizedPnl,
-    unrealizedProfit: item.unrealizedPnl,
-    unAllocateAmount: item.remainQty,
-    totalAmount: item.positionQty
+    unrealizedProfit:item.realizedPnl,
+    realizedProfit:item.unrealizedPnl,
+    dayRealizedProfit: item.dailyRealizedPnl,
+    dayUnrealizedProfit: item.dailyUnrealizedPnl,
+    commissionAndFees:item.commissionAndFees,
+    totalAmount: item.positionQty,
+    dailyDate:item.dailyDate
   };
 };
 

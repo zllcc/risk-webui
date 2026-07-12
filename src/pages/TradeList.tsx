@@ -20,7 +20,8 @@ const allTradeColumns = [
   { key: "buySell", label: "买卖" },
   { key: "quantity", label: "数量" },
   { key: "matchPrice", label: "成交单价" },
-  { key: "profitLoss", label: "盈亏" },
+  { key: "profitLoss", label: "未实现盈亏" },
+  { key: "calExecutionRealizedPnl", label: "已实现盈亏" },
   { key: "fee", label: "佣金及各项费用" },
   { key: "currency", label: "结算币种" },
   { key: "tradeTime", label: "成交时间" },
@@ -37,11 +38,12 @@ const transformTradeRecord = (item: TradeRecordItem) => {
     buySell: item.side === 'BOT' ? '买' : item.side === 'SLD' ? '卖' : '--',
     quantity: item.shares,
     matchPrice: Number(item.price) || 0,
-    profitLoss: item.realizedPnl,
+    profitLoss: item.calExecutionUnrealizedPnl,
+    calExecutionRealizedPnl:item.calExecutionRealizedPnl,
     fee: Number(item.commissionAndFees) || 0,
     currency: item.currency,
     tradeTime: item.time,
-    unAllocateAmount: item.remainQty,
+    unAllocateAmount: item.allocateRemainQty,
     // 保存后端完整原始对象，传给分配弹窗
     originRecord: item
   };
