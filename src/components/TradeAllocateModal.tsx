@@ -157,8 +157,8 @@ const TradeAllocateModal: React.FC<TradeAllocateModalProps> = ({ open, tradeData
       message.info('分配总数量不能为0');
       return;
     }
-    if (totalAllocate > tradeData.unAllocateAmount) {
-      message.info(`分配总量不可超过未分配数量 ${tradeData.unAllocateAmount}`);
+    if (totalAllocate > tradeData.quantity) {
+      message.info(`分配总量不可超过交易数量 ${tradeData.quantity}`);
       return;
     }
 
