@@ -42,7 +42,7 @@ export interface PositionRes {
 // 查询持仓列表
 export function getPositionList(params: PositionQueryParams) {
   return request<PositionRes>({
-    url: '/position/pc/query-page',
+    url: '/position-relation-history/pc/query-page',
     method: 'POST',
     data: params
   });
