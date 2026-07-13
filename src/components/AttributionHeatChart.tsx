@@ -68,7 +68,7 @@ const PositionTreemap: React.FC<Props> = ({ filter }) => {
           strategyNames: filter.strategyNames,
           startDate: filter.startDate || '',
           endDate: filter.endDate || '',
-          dailyDate: filter.dailyDate || ''
+          dateType: filter.dateType || null,
         };
         const res = await queryTop10Profit(reqParams);
         const chartData = transformTreeData(res);

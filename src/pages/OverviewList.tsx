@@ -88,9 +88,10 @@ export default function PortfolioOverview() {
     accountCodes: [],
     tradeNames: [],
     strategyNames: [],
-    startDate: getQuickDateRange('当日')[0],
-    endDate: getQuickDateRange('当日')[1],
+    startDate: '',
+    endDate: '',
     referenceIndexConids: [],
+    dateType: 1,
   });
 
   const [chartData, setChartData] = useState<PortfolioChartItem[]>([]);
@@ -181,7 +182,8 @@ export default function PortfolioOverview() {
       strategyNames: params.strategyNames ?? [],
       startDate: params.startDate,
       endDate: params.endDate,
-      referenceIndexConids: params.referenceIndexConids ?? []
+      referenceIndexConids: params.referenceIndexConids ?? [],
+      dateType: params.dateType ?? null,
     }));
   };
 

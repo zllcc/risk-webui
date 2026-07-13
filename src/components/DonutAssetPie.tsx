@@ -55,7 +55,7 @@ const DonutAssetPie: React.FC<Props> = ({ filter, chartType }) => {
           strategyNames: filter.strategyNames,
           startDate: filter.startDate || '',
           endDate: filter.endDate || '',
-          dailyDate: filter.dailyDate || '',
+          dateType: filter.dateType || null,
         };
         const res = await queryAssetRatio(reqParams);
         const chartData = res.map((item: AssetRatioItem) => ({

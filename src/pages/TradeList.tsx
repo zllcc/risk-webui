@@ -55,13 +55,14 @@ export default function TradeList() {
     accountCodes: [],
       tradeNames: [],
       strategyNames: [],
-      startDate: getQuickDateRange('当日')[0],
-      endDate: getQuickDateRange('当日')[1],
+      startDate: '',
+      endDate: '',
       conids: [],
       sectors: [],
       pageNum: 1,
       pageSize: 10,
       secType: 'STK',
+      dateType: 1,
   });
   const [activeTab, setActiveTab] = useState("STK");
   const [region, setRegion] = useState("US");

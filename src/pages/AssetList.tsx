@@ -70,7 +70,14 @@ export default function AssetList() {
   const [visibleCols, setVisibleCols] = useState(allColumns.map(item => item.key));
 
   // 缓存筛选条件
-  const [searchParams, setSearchParams] = useState<FilterParams | null>(null);
+  const [searchParams, setSearchParams] = useState<FilterParams>({
+    accountCodes: [],
+    tradeNames: [],
+    strategyNames: [],
+    startDate: '',
+    endDate: '',
+    dateType: 1, // 默认按日
+  });
 
   // 请求持仓接口
   const fetchPositionData = useCallback(async () => {
@@ -92,6 +99,7 @@ export default function AssetList() {
         startDate: searchParams?.startDate ?? "",
         endDate: searchParams?.endDate ?? "",
         sectors: searchParams?.sectorKeys ?? [],
+        dateType: searchParams?.dateType ?? null,
       };
       const res = await getPositionList(apiParams);
       // 转换后端数据

@@ -40,7 +40,7 @@ const PortfolioAnalysis: React.FC = () => {
     strategyNames: [],
     startDate: '',
     endDate: '',
-    dailyDate: ''
+    dateType: 1
   });
 
   // 卡片头部复用组件

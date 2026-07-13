@@ -7,6 +7,7 @@ export interface RiskQueryParams {
   strategyNames: string[];
   startDate: string;
   endDate: string;
+  dateType: number | null;
 }
 
 export interface RiskVarVo {
@@ -50,7 +51,7 @@ export interface RiskQueryParams {
   strategyNames: string[];
   startDate: string;
   endDate: string;
-  dailyDate: string;
+  dateType: number | null;
 }
 
 // 收益TOP10 单项出参（后端返回结构）
@@ -82,7 +83,7 @@ export interface RiskQueryParams {
   strategyNames: string[];
   startDate: string;
   endDate: string;
-  dailyDate: string;
+  dateType: number | null;
 }
 
 // 资产/风险占比单项出参

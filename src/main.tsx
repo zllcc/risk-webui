@@ -5,7 +5,7 @@ import App from './App.js'
 import './global.less';
 
 createRoot(document.getElementById('root')!).render(
-  <BrowserRouter basename="/tiange">
+  <BrowserRouter basename="/financial">
     <App />
   </BrowserRouter>,
 )

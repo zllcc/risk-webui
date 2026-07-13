@@ -19,10 +19,16 @@ export interface FilterParams {
   referenceIndexConids?: string[];
   conids?: string[];
   sectors?: string[];
-  dailyDate?: string | null;
+  dateType?: number | null;
 }
+export const timeShortOpts = [
+  { value: 1, label: "当日" },
+  { value: 7, label: "近7日" },
+  { value: 30, label: "30日" },
+  { value: 11, label: "YTD" },
+  { value: 365, label: "近1年" }
+];
 
-export const timeShortOpts = ["当日", "近7日", "30日", "YTD", "近1年"];
 
 interface FilterPanelProps {
   onSearch: (params: FilterParams) => void;
@@ -37,7 +43,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ onSearch, pageType }) => {
   const [selectedSubjectMatter, setSelectedSubjectMatter] = useState<string[]>([]); // 板块
   const [selectedSectors, setSelectedSectors] = useState<string[]>([]); // 标的
 
-  const [tempTimeQuick, setTempTimeQuick] = useState<string | null>(timeShortOpts[0]);
+  const [dateType, setDateType] = useState<number | null>(1);
   const [tempCustomDate, setTempCustomDate] = useState<[dayjs.Dayjs, dayjs.Dayjs] | null>(null);
   const [benchmarkType, setBenchmarkType] = useState<string[]>([]);
 
@@ -126,9 +132,8 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ onSearch, pageType }) => {
 
   // 查询按钮
   const handleQuery = () => {
-    const tempTimeQuickRange = tempTimeQuick ? getQuickDateRange(tempTimeQuick) : null;
-    const startDate = tempCustomDate ? tempCustomDate[0].format('YYYY-MM-DD HH:mm:ss') : (tempTimeQuickRange ? tempTimeQuickRange[0] : null);
-    const endDate = tempCustomDate ? tempCustomDate[1].format('YYYY-MM-DD HH:mm:ss') : (tempTimeQuickRange ? tempTimeQuickRange[1] : null);
+    const startDate = tempCustomDate ? tempCustomDate[0].format('YYYY-MM-DD HH:mm:ss') : null;
+    const endDate = tempCustomDate ? tempCustomDate[1].format('YYYY-MM-DD HH:mm:ss') : null;
     const typeParams: {
     referenceIndexConids?: string[];
     conids?: string[];
@@ -140,20 +145,21 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ onSearch, pageType }) => {
       strategyNames: selectedStrategies,
       startDate,
       endDate,
+      dateType,
       ...typeParams
     });
   };
 
   // 快捷时间切换
-  const handleQuickTimeChange = (val: string) => {
-    setTempTimeQuick(val);
+  const handleQuickTimeChange = (val: number) => {
+    setDateType(val);
     setTempCustomDate(null);
   };
 
   // 自定义日期切换
   const handleDateRangeChange = (vals: [dayjs.Dayjs, dayjs.Dayjs] | null) => {
     setTempCustomDate(vals);
-    setTempTimeQuick(null);
+    setDateType(null);
   };
 
   // 切换账号，清空下级选择
@@ -218,10 +224,11 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ onSearch, pageType }) => {
       isShow: true,
       content: (
         <Select
-          value={tempTimeQuick}
+          value={dateType}
+          placeholder="选择时间段"
           onChange={handleQuickTimeChange}
           style={{ width: 200 }}
-          options={timeShortOpts.map(item => ({ value: item, label: item }))}
+          options={timeShortOpts}
         />
       ),
     },

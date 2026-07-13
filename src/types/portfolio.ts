@@ -6,6 +6,7 @@ export interface PortfolioQueryParams {
   startDate: string;
   endDate: string;
   referenceIndexConids: number[];
+  dateType: number | null;
 }
 
 // 图表基准指标子项

@@ -6,8 +6,6 @@ import { queryRiskDashboard, RiskQueryParams, RiskDashboardRes, PressureTestItem
 
 const { Text } = Typography;
 
-type TimeRanges = '1D' | '7D' | 'MTD' | '1M' | 'QTD' | 'YTD' | '1Y';
-
 interface Props {
   filter: FilterParams;
 }
@@ -33,6 +31,7 @@ const RiskDashboard: React.FC<Props> = ({ filter }) => {
           strategyNames: filter.strategyNames,
           startDate: filter.startDate || '',
           endDate: filter.endDate || '',
+          dateType: filter.dateType || null,
         };
         const res = await queryRiskDashboard(reqParams);
         setRiskData(res);

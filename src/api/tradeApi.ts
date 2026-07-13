@@ -12,6 +12,7 @@ export interface TradePageParams {
   pageNum: number;
   pageSize: number;
   secType: string;
+  dateType: number;
 }
 
 // 后端单条交易记录
