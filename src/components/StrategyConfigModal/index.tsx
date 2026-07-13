@@ -1,5 +1,5 @@
 import { Modal, Input, Button, Space, message, Spin, Typography } from 'antd';
-import { CloseOutlined } from '@ant-design/icons';
+import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
 import { useCallback, useEffect, useState } from 'react';
 const { Text } = Typography;
 import {
@@ -105,7 +105,6 @@ const StrategyConfigModal: React.FC<StrategyModalProps> = ({
     <Modal
       title={<>
         <span style={{ paddingRight: '12px' }}>策略配置</span>
-        <Button type="link" onClick={onAddRow}>新增</Button>
       </>}
       open={open}
       footer={null}
@@ -114,7 +113,7 @@ const StrategyConfigModal: React.FC<StrategyModalProps> = ({
     >
       <Spin spinning={loading}>
         {list.map((item) => (
-          <Space key={item.id} style={{ marginBottom: 10, width: '100%' }}>
+          <Space key={item.id} style={{ marginTop: 10, width: '100%' }}>
             <Input
               value={item.strategyName}
               onChange={(e) => onUpdateText(item.id, e.target.value)}
@@ -124,8 +123,15 @@ const StrategyConfigModal: React.FC<StrategyModalProps> = ({
             <Button type="text" danger icon={<CloseOutlined />} onClick={() => onDeleteRow(item.id)} />
           </Space>
         ))}
+      <Button
+        type="dashed"
+        block
+        icon={<PlusOutlined />}
+        style={{ marginTop: 16, width: 100 }}
+        onClick={onAddRow}
+      >新增</Button>
       </Spin>
-      <Space style={{ marginTop: 16, justifyContent: 'flex-end', width: '100%' }}>
+      <Space style={{ marginTop: 20, justifyContent: 'flex-end', width: '100%' }}>
         <Button loading={saveLoading} type="primary" onClick={handleSave}>保存</Button>
         <Button onClick={onCancel}>取消</Button>
       </Space>
