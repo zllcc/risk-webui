@@ -16,4 +16,18 @@
       key: "WAR", label: "认股权证" 
     }];
 
-    export { secTypeArr };
+    const areaArr = [{
+      value: "CN",
+      label: "中国大陆"
+    }, {
+      value: "HK",
+      label: "中国香港"
+    }, {
+      value: "US",
+      label: "美国"
+    }, {
+      value: "EU",
+      label: "欧洲"
+    }];
+
+    export { secTypeArr, areaArr };

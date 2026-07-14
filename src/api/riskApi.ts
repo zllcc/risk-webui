@@ -1,6 +1,6 @@
 import request from './request';
 
-// ===================== 原有风控查询接口 =====================
+// 统一通用入参
 export interface RiskQueryParams {
   accountCodes: string[];
   tradeNames: string[];
@@ -10,6 +10,30 @@ export interface RiskQueryParams {
   dateType: number | null;
 }
 
+// 交易员风险指标单项出参
+export interface TraderRiskMetricItem {
+  traderName: string;
+  sharpeRatio: number;
+  sortinoRatio: number;
+  calmarRatio: number;
+  winLossRatio: number;
+  riskRatio: number;
+  volatilityPremium: number;
+}
+export type TraderRiskMetricRes = TraderRiskMetricItem[];
+
+/**
+ * 获取交易员风险指标 /risk-dashboard/pc/query-trader-risk-metrics
+ */
+export function queryTraderRiskMetrics(params: RiskQueryParams) {
+  return request<TraderRiskMetricRes>({
+    url: '/risk-dashboard/pc/query-trader-risk-metrics',
+    method: 'POST',
+    data: params
+  });
+}
+
+// ===================== 风控查询接口 =====================
 export interface RiskVarVo {
   day: number;
   confidence: number;

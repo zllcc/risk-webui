@@ -1,89 +1,97 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
   Card, Tabs, Select, Table, Checkbox,
-  Space, Typography, Row, Col, message
+  Space, Typography, Row, Col, message, Spin, Empty
 } from 'antd';
-// 引入封装好的筛选组件与类型
 import FilterPanel, { FilterParams } from '@/components/FilterPanel';
-import { secTypeArr } from '@/utils/common';
+import { secTypeArr, areaArr } from '@/utils/common';
 import { getPositionList, PositionRecord, PositionQueryParams } from '@/api/positionApi';
+import { getPageColumnDisplay, updateColumnDisplay, ColumnDisplayItem } from '@/api/columnDisplayApi';
 
 const { TabPane } = Tabs;
-const { Option } = Select;
 const { Title } = Typography;
 
-// ====================== 所有可配置列 ======================
-const allColumns = [
-  { key: "traderName", label: "操盘人" },
-  { key: "strategyName", label: "策略" },
-  { key: "account", label: "账号" },
-  { key: "contract", label: "合约" },
-  { key: "amount", label: "数量" },
-  { key: "avgCostPrice", label: "平均成本价" },
-  { key: "marketPrice", label: "市场价格" },
-  { key: "marketValue", label: "市场值" },
-  { key: "unrealizedProfit", label: "未实现盈亏" },
-  { key: "realizedProfit", label: "实现盈亏" },
-  { key: "dayUnrealizedProfit", label: "当日未实现盈亏" },
-  { key: "dayRealizedProfit", label: "当日实现盈亏" },
-  { key: "commissionAndFees", label: "佣金及各项费用" },
-  { key: "dailyDate", label: "日期" },
-  { key: "updateTime", label: "最后更新时间" },
-];
+const PAGE_NAME = '持仓列表';
 
-// 后端数据 → 前端表格行转换
-const transformPositionRecord = (item: PositionRecord) => {
-  return {
-    id: item.id,
-    account: item.accountCode,
-    traderName: item.traderName,
-    strategyName: item.strategyName,
-    contract: item.symbol,
-    amount: item.positionQty,
-    avgCostPrice: item.avgCost,
-    marketPrice: item.marketPrice,
-    marketValue: item.marketValue,
-    updateTime: new Date().toLocaleString(), // TODO：后端无更新时间，临时填充
-    unrealizedProfit:item.unrealizedPnl,
-    realizedProfit:item.realizedPnl,
-    dayRealizedProfit: item.dailyRealizedPnl,
-    dayUnrealizedProfit: item.dailyUnrealizedPnl,
-    commissionAndFees:item.commissionAndFees,
-    totalAmount: item.positionQty,
-    dailyDate:item.dailyDate
-  };
-};
-
-// ====================== 主页面 ======================
 export default function AssetList() {
-  // Tab证券类型
-  const [activeTab, setActiveTab] = useState("STK");
+  const [columnConfigList, setColumnConfigList] = useState<ColumnDisplayItem[]>([]);
+  const [visibleCols, setVisibleCols] = useState<string[]>([]);
+
+  const [activeTab, setActiveTab] = useState("股票");
   const [region, setRegion] = useState("CN");
-  // 表格数据、加载态、分页
-  const [tableData, setTableData] = useState<ReturnType<typeof transformPositionRecord>[]>([]);
+  const [tableData, setTableData] = useState<PositionRecord[]>([]);
   const [loading, setLoading] = useState(false);
+  const [colLoading, setColLoading] = useState(false);
   const [pageNum, setPageNum] = useState(1);
   const [pageTotal, setPageTotal] = useState(0);
   const pageSize = 10;
 
-  // 默认展示全部列
-  const [visibleCols, setVisibleCols] = useState(allColumns.map(item => item.key));
-
-  // 缓存筛选条件
   const [searchParams, setSearchParams] = useState<FilterParams>({
     accountCodes: [],
     tradeNames: [],
     strategyNames: [],
     startDate: '',
     endDate: '',
-    dateType: 1, // 默认按日
+    dateType: 1,
   });
 
-  // 请求持仓接口
+  // 加载表头配置
+  const loadColumnConfig = useCallback(async (type: string) => {
+    setColLoading(true);
+    try {
+      const res = await getPageColumnDisplay({ pageName: PAGE_NAME, type });
+      setColumnConfigList(res);
+      const displayKeys = res.filter(i => i.isDisplay).map(i => i.columnName);
+      setVisibleCols(displayKeys);
+    } catch (err) {
+      console.error('加载表头配置失败', err);
+      setColumnConfigList([]);
+      setVisibleCols([]);
+    } finally {
+      setColLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadColumnConfig(activeTab);
+  }, [activeTab, loadColumnConfig]);
+
+  // 勾选变更，仅更新变化字段
+  const handleColCheckChange = async (newKeys: string[]) => {
+    const oldKeys = [...visibleCols];
+    setVisibleCols(newKeys);
+    try {
+      const updateList: ColumnDisplayItem[] = [];
+      newKeys.forEach(key => {
+        if (!oldKeys.includes(key)) {
+          const target = columnConfigList.find(c => c.columnName === key);
+          if (target) updateList.push({ ...target, isDisplay: true });
+        }
+      });
+      oldKeys.forEach(key => {
+        if (!newKeys.includes(key)) {
+          const target = columnConfigList.find(c => c.columnName === key);
+          if (target) updateList.push({ ...target, isDisplay: false });
+        }
+      });
+      const promises = updateList.map(item => updateColumnDisplay({
+        pageName: PAGE_NAME,
+        type: activeTab,
+        columnName: item.columnName,
+        isDisplay: item.isDisplay
+      }));
+      await Promise.all(promises);
+    } catch (err) {
+      message.error('保存表头配置失败');
+      console.error(err);
+      setVisibleCols(oldKeys);
+    }
+  };
+
+  // 直接赋值原始数据，无转换
   const fetchPositionData = useCallback(async () => {
     setLoading(true);
     try {
-      // 组装完整接口入参，新增tradeNames/strategyNames/startDate/endDate/sectors
       const apiParams: PositionQueryParams = {
         pageNum,
         pageSize,
@@ -93,7 +101,6 @@ export default function AssetList() {
         accountCodes: searchParams?.accountCodes ?? [],
         conids: [],
         secType: activeTab,
-        // 新增筛选字段，无值时兜底空数组/空字符串
         tradeNames: searchParams?.tradeNames ?? [],
         strategyNames: searchParams?.strategyNames ?? [],
         startDate: searchParams?.startDate ?? "",
@@ -102,9 +109,7 @@ export default function AssetList() {
         dateType: searchParams?.dateType ?? null,
       };
       const res = await getPositionList(apiParams);
-      // 转换后端数据
-      const list = res.records.map(transformPositionRecord);
-      setTableData(list);
+      setTableData(res.records);
       setPageTotal(res.total);
     } catch (err) {
       console.error('加载持仓列表失败', err);
@@ -116,62 +121,57 @@ export default function AssetList() {
     }
   }, [pageNum, activeTab, searchParams]);
 
-  // 切换Tab/页码/筛选条件 重新请求
   useEffect(() => {
     fetchPositionData();
   }, [fetchPositionData]);
 
-  // 筛选查询回调
   const handleSearch = (params: FilterParams) => {
     setSearchParams(params);
-    setPageNum(1); // 查询重置到第一页
+    setPageNum(1);
   };
 
-  // 动态生成表格列
-  const tableColumns = allColumns
-    .filter(col => visibleCols.includes(col.key))
-    .map(col => {
-      const item = {
-        title: col.label,
-        dataIndex: col.key,
-        key: col.key,
+  // 动态列，dataIndex = 后端原生columnName
+  const tableColumns = columnConfigList
+    .filter(config => visibleCols.includes(config.columnName))
+    .map(config => {
+      const fieldKey = config.columnName;
+      const colItem = {
+        title: fieldKey,
+        dataIndex: fieldKey,
+        key: fieldKey,
       };
 
-      // 盈亏仅展示颜色，移除点击图表跳转逻辑
-      if (["realizedProfit", "unrealizedProfit"].includes(col.key)) {
-        item.render = (val: number) => (
+      // 盈亏颜色
+      if (["unrealizedPnl", "realizedPnl", "dailyUnrealizedPnl", "dailyRealizedPnl"].includes(fieldKey)) {
+        colItem.render = (val: number) => (
           <span style={{ color: val >= 0 ? "#f5222d" : "#52c41a" }}>
             {val >= 0 ? "+" : ""}{val?.toLocaleString() ?? 0}
           </span>
         );
       }
-
-      // 数值千分位格式化
-      else if (["amount", "avgCostPrice", "marketPrice", "marketValue", "unAllocateAmount"].includes(col.key)) {
-        item.render = (val: number) => val?.toLocaleString() ?? 0;
+      // 数值千分位
+      else if (["positionQty", "avgCost", "marketPrice", "marketValue", "commissionAndFees"].includes(fieldKey)) {
+        colItem.render = (val: number) => val?.toLocaleString() ?? 0;
       }
-
-      return item;
+      return colItem;
     });
 
   return (
     <Card title={<Title level={5}>持仓列表</Title>}>
-      {/* 1. 顶部筛选组件 */}
       <FilterPanel onSearch={handleSearch} pageType="asset" />
 
-      {/* 2. 资产分类Tab + 地区下拉 */}
       <Row justify="space-between" align="middle" style={{ marginBottom: 16, marginTop: 16 }}>
         <Col>
           <Tabs
             activeKey={activeTab}
             onChange={(key) => {
               setActiveTab(key);
-              setPageNum(1); // 切换Tab重置第一页
+              setPageNum(1);
             }}
             type="card"
           >
             {secTypeArr.map(item => (
-              <TabPane tab={item.label} key={item.key} />
+              <TabPane tab={item.label} key={item.label} />
             ))}
           </Tabs>
         </Col>
@@ -181,33 +181,26 @@ export default function AssetList() {
             onChange={setRegion}
             style={{ width: 160 }}
             placeholder="国家/地区"
-          >
-            <Option value="CN">中国大陆</Option>
-            <Option value="HK">中国香港</Option>
-            <Option value="US">美国</Option>
-            <Option value="EU">欧洲</Option>
-          </Select>
+            options={areaArr}
+          />
         </Col>
       </Row>
 
-      {/* 3. 表格列显隐配置 */}
       <div style={{ marginBottom: 16, padding: '8px 12px', borderRadius: 4 }}>
         <Space align="baseline" wrap>
           <span style={{ fontWeight: 500 }}>表格显示字段：</span>
-          <Checkbox.Group
-            value={visibleCols}
-            onChange={setVisibleCols}
-          >
+          <Checkbox.Group value={visibleCols} onChange={handleColCheckChange} disabled={colLoading}>
             <Space wrap size={[8, 6]}>
-              {allColumns.map(col => (
-                <Checkbox key={col.key} value={col.key}>{col.label}</Checkbox>
+              {columnConfigList.map(item => (
+                <Checkbox key={item.columnName} value={item.columnName}>
+                  {item.columnName}
+                </Checkbox>
               ))}
             </Space>
           </Checkbox.Group>
         </Space>
       </div>
 
-      {/* 4. 持仓表格 + 分页 */}
       <Table
         loading={loading}
         columns={tableColumns}

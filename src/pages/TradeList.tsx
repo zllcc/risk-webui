@@ -1,101 +1,114 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
   Card, Tabs, Select, Table, Button, Checkbox,
-  Space, Typography, Row, Col, Pagination, Spin, Empty
+  Space, Typography, Row, Col, Pagination, Spin, Empty, message
 } from 'antd';
 import FilterPanel from '@/components/FilterPanel';
 import TradeAllocateModal from '@/components/TradeAllocateModal';
 import { getTradePageList, TradePageParams, TradeRecordItem } from '@/api/tradeApi';
-import { getQuickDateRange } from '@/utils/dateRange';
-import { secTypeArr } from '@/utils/common';
+import { secTypeArr, areaArr } from '@/utils/common';
+import { getPageColumnDisplay, updateColumnDisplay, ColumnDisplayItem } from '@/api/columnDisplayApi';
 
 const { TabPane } = Tabs;
-const { Option } = Select;
 const { Title } = Typography;
 
-// 表格列配置
-const allTradeColumns = [
-  { key: "account", label: "账号" },
-  { key: "contract", label: "合约" },
-  { key: "buySell", label: "买卖" },
-  { key: "quantity", label: "数量" },
-  { key: "matchPrice", label: "成交单价" },
-  { key: "profitLoss", label: "未实现盈亏" },
-  { key: "calExecutionRealizedPnl", label: "已实现盈亏" },
-  { key: "fee", label: "佣金及各项费用" },
-  { key: "currency", label: "结算币种" },
-  { key: "tradeTime", label: "成交时间" },
-  { key: "unAllocateAmount", label: "未分配数量" },
-  { key: "action", label: "操作" },
-];
-
-// 后端原始记录 → 前端表格行转换
-const transformTradeRecord = (item: TradeRecordItem) => {
-  return {
-    id: item.id,
-    account: item.accountCode,
-    contract: item.symbol,
-    buySell: item.side === 'BOT' ? '买' : item.side === 'SLD' ? '卖' : '--',
-    quantity: item.shares,
-    matchPrice: Number(item.price) || 0,
-    profitLoss: item.calExecutionUnrealizedPnl,
-    calExecutionRealizedPnl:item.calExecutionRealizedPnl,
-    fee: Number(item.commissionAndFees) || 0,
-    currency: item.currency,
-    tradeTime: item.time,
-    unAllocateAmount: item.allocateRemainQty,
-    // 保存后端完整原始对象，传给分配弹窗
-    originRecord: item
-  };
-};
-type TradeTableItem = ReturnType<typeof transformTradeRecord>;
+const PAGE_NAME = '交易列表';
 
 export default function TradeList() {
+  const [columnConfigList, setColumnConfigList] = useState<ColumnDisplayItem[]>([]);
+  const [visibleCols, setVisibleCols] = useState<string[]>([]);
+
   const [activeFilter, setActiveFilter] = useState<TradePageParams>({
     accountCodes: [],
-      tradeNames: [],
-      strategyNames: [],
-      startDate: '',
-      endDate: '',
-      conids: [],
-      sectors: [],
-      pageNum: 1,
-      pageSize: 10,
-      secType: 'STK',
-      dateType: 1,
+    tradeNames: [],
+    strategyNames: [],
+    startDate: '',
+    endDate: '',
+    conids: [],
+    sectors: [],
+    pageNum: 1,
+    pageSize: 10,
+    secType: 'STK',
+    dateType: 1,
   });
-  const [activeTab, setActiveTab] = useState("STK");
+  const [activeTab, setActiveTab] = useState("股票");
   const [region, setRegion] = useState("US");
-  const [tableData, setTableData] = useState<TradeTableItem[]>([]);
+  const [tableData, setTableData] = useState<TradeRecordItem[]>([]);
   const [loading, setLoading] = useState(false);
-  const [visibleCols, setVisibleCols] = useState(allTradeColumns.map(item => item.key));
+  const [colLoading, setColLoading] = useState(false);
 
-  // 分页
   const [pageNum, setPageNum] = useState(1);
   const pageSize = 10;
   const [total, setTotal] = useState(0);
 
-  // 分配弹窗
   const [allocateModalOpen, setAllocateModalOpen] = useState(false);
-  const [currentTrade, setCurrentTrade] = useState<TradeTableItem | null>(null);
+  const [currentTrade, setCurrentTrade] = useState<TradeRecordItem | null>(null);
 
-  // 请求交易列表
+  // 加载表头配置
+  const loadColumnConfig = useCallback(async (type: string) => {
+    setColLoading(true);
+    try {
+      const res = await getPageColumnDisplay({ pageName: PAGE_NAME, type });
+      setColumnConfigList(res);
+      const displayKeys = res.filter(i => i.isDisplay).map(i => i.columnName);
+      setVisibleCols(displayKeys);
+    } catch (err) {
+      console.error('加载表头配置失败', err);
+      setColumnConfigList([]);
+      setVisibleCols([]);
+    } finally {
+      setColLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadColumnConfig(activeTab);
+  }, [activeTab, loadColumnConfig]);
+
+  // 仅更新变更字段
+  const handleColCheckChange = async (newKeys: string[]) => {
+    const oldKeys = [...visibleCols];
+    setVisibleCols(newKeys);
+    try {
+      const updateList: ColumnDisplayItem[] = [];
+      newKeys.forEach(key => {
+        if (!oldKeys.includes(key)) {
+          const target = columnConfigList.find(c => c.columnName === key);
+          if (target) updateList.push({ ...target, isDisplay: true });
+        }
+      });
+      oldKeys.forEach(key => {
+        if (!newKeys.includes(key)) {
+          const target = columnConfigList.find(c => c.columnName === key);
+          if (target) updateList.push({ ...target, isDisplay: false });
+        }
+      });
+      const allSave = updateList.map(item => updateColumnDisplay({
+        pageName: PAGE_NAME,
+        type: activeTab,
+        columnName: item.columnName,
+        isDisplay: item.isDisplay
+      }));
+      await Promise.all(allSave);
+    } catch (err) {
+      message.error('表头配置保存失败');
+      console.error(err);
+      setVisibleCols(oldKeys);
+    }
+  };
+
+  // 直接使用后端原始records，无转换
   const fetchTradeList = useCallback(async () => {
     setLoading(true);
     try {
-      // 时间转为后端要求 ISO 格式
-      // const timeStart = dayjs(activeFilter.startDate).toISOString();
-      // const timeEnd = dayjs(activeFilter.endDate).endOf('day').toISOString();
-      console.log('请求参数', activeFilter, pageNum, region);
       const reqParams: TradePageParams = {
         ...activeFilter,
         secType: activeTab,
-        pageSize:10,
+        pageSize: 10,
         pageNum
       };
       const res = await getTradePageList(reqParams);
-      const tableRows = res.records.map(transformTradeRecord);
-      setTableData(tableRows);
+      setTableData(res.records);
       setTotal(res.total);
     } catch (err) {
       console.error("交易列表请求失败", err);
@@ -106,53 +119,51 @@ export default function TradeList() {
     }
   }, [activeFilter, pageNum, activeTab, region]);
 
-  // 筛选/分页/Tab/地区变更重载数据
   useEffect(() => {
     fetchTradeList();
   }, [activeTab, region, pageNum, activeFilter]);
 
-  // 筛选查询
   const handleSearch = (params: TradePageParams) => {
     setActiveFilter(params);
-    
     setPageNum(1);
   };
 
-  // 打开分配弹窗
-  const openAllocateDialog = (record: TradeTableItem) => {
+  const openAllocateDialog = (record: TradeRecordItem) => {
     setCurrentTrade(record);
     setAllocateModalOpen(true);
   };
 
-  // 分配提交回调
-  const handleAllocateConfirm = (tradeInfo: TradeTableItem, allocateList: any[]) => {
+  const handleAllocateConfirm = () => {
     fetchTradeList();
     setAllocateModalOpen(false);
   };
 
-  // 动态表格列
-  const tableColumns = allTradeColumns
-    .filter(col => visibleCols.includes(col.key))
+  // 动态表格列，完全依赖后端columnName
+  const tableColumns = columnConfigList
+    .filter(col => visibleCols.includes(col.columnName))
     .map(col => {
+      const fieldKey = col.columnName;
       const colConfig = {
-        title: col.label,
-        dataIndex: col.key,
-        key: col.key,
-        render: undefined as any, // 占位，后续根据字段类型动态渲染
+        title: fieldKey,
+        dataIndex: fieldKey,
+        key: fieldKey,
+        render: undefined as any,
       };
 
-      if (col.key === "action") {
-        colConfig.render = (_val: any, record: TradeTableItem) => (
+      if (fieldKey === "action") {
+        colConfig.render = (_val: any, record: TradeRecordItem) => (
           <Button type="link" onClick={() => openAllocateDialog(record)}>分配</Button>
         );
-      } else if (col.key === "profitLoss") {
+      } else if (fieldKey === "calExecutionUnrealizedPnl") {
         colConfig.render = (val: number) => (
           <span style={{ color: val >= 0 ? "#f5222d" : "#52c41a" }}>
             {val > 0 ? "+" : ""}{val?.toLocaleString()}
           </span>
         );
-      } else if (["quantity", "matchPrice", "fee", "unAllocateAmount"].includes(col.key)) {
+      } else if (["shares", "price", "commissionAndFees", "allocateRemainQty"].includes(fieldKey)) {
         colConfig.render = (val: number) => val?.toLocaleString() ?? "--";
+      } else if (fieldKey === "side") {
+        colConfig.render = (val: string) => val === 'BOT' ? '买' : val === 'SLD' ? '卖' : '--';
       }
       return colConfig;
     });
@@ -165,7 +176,7 @@ export default function TradeList() {
         <Col>
           <Tabs activeKey={activeTab} onChange={(v) => { setActiveTab(v); setPageNum(1); }} type="card">
             {secTypeArr.map(item => (
-              <TabPane tab={item.label} key={item.key} />
+              <TabPane tab={item.label} key={item.label} />
             ))}
           </Tabs>
         </Col>
@@ -175,22 +186,20 @@ export default function TradeList() {
             onChange={(v) => { setRegion(v); setPageNum(1); }}
             style={{ width: 160 }}
             placeholder="国家/地区"
-          >
-            <Option value="CN">中国大陆</Option>
-            <Option value="HK">中国香港</Option>
-            <Option value="US">美国</Option>
-            <Option value="EU">欧洲</Option>
-          </Select>
+            options={areaArr}
+          />
         </Col>
       </Row>
 
       <div style={{ marginBottom: 16, padding: '8px 12px', borderRadius: 4 }}>
         <Space align="baseline" wrap>
           <span style={{ fontWeight: 500 }}>表格显示字段：</span>
-          <Checkbox.Group value={visibleCols} onChange={setVisibleCols}>
+          <Checkbox.Group value={visibleCols} onChange={handleColCheckChange} disabled={colLoading}>
             <Space wrap size={[8, 6]}>
-              {allTradeColumns.map(col => (
-                <Checkbox key={col.key} value={col.key}>{col.label}</Checkbox>
+              {columnConfigList.map(item => (
+                <Checkbox key={item.columnName} value={item.columnName}>
+                  {item.columnName}
+                </Checkbox>
               ))}
             </Space>
           </Checkbox.Group>

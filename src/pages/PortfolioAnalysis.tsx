@@ -99,13 +99,13 @@ const PortfolioAnalysis: React.FC = () => {
       key: 'greek',
       title: '衍生品希腊敞口总览',
       span: 24,
-      content: <RiskGreekDashboard />,
+      content: <RiskGreekDashboard filter={activeFilter} />,
     },
     {
       key: 'riskReward',
       title: '风险收益绩效比',
       span: 24,
-      content: <PerformanceRatioTable />,
+      content: <PerformanceRatioTable filter={activeFilter} />,
     }
   ];
 
