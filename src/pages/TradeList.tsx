@@ -142,15 +142,17 @@ export default function TradeList() {
   const tableColumns = columnConfigList
     .filter(col => visibleCols.includes(col.columnName))
     .map(col => {
-      const fieldKey = col.columnName;
+      const fieldName = col.columnName;
+      const fieldKey = col.columnKey;
+
       const colConfig = {
-        title: fieldKey,
+        title: fieldName,
         dataIndex: fieldKey,
         key: fieldKey,
         render: undefined as any,
       };
 
-      if (fieldKey === "action") {
+      if (fieldKey === "operation") {
         colConfig.render = (_val: any, record: TradeRecordItem) => (
           <Button type="link" onClick={() => openAllocateDialog(record)}>分配</Button>
         );

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Row, Col, Select, InputNumber, Button, Space, Typography, message, Spin } from 'antd';
 import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
-import { allocateTrade, AllocateApiParams } from '@/api/tradeApi';
+import { allocateTrade, AllocateApiParams, TradeRecordItem } from '@/api/tradeApi';
 import { getTraderSelectList } from '@/api/accountApi';
 import { queryInvestStrategy } from '@/api/investApi';
 import type { SelectProps } from 'antd/es/select';
@@ -10,42 +10,15 @@ const { Text } = Typography;
 const { Option } = Select;
 
 // 后端返回分配明细子项
-interface BackendAllocateItem {
+interface AllocateLine {
   traderName: string;
   strategyName: string;
   allocateQty: number;
 }
 
-// 表格单行交易数据类型
-export interface TradeRowItem {
-  id: number;
-  account: string;
-  contract: string;
-  buySell: string; // 买/卖
-  totalAmount: number; // 交易总数量
-  unAllocateAmount: number; // 未分配数量
-  quantity: number;
-  matchPrice: number;
-  profitLoss: number;
-  fee: number;
-  currency: string;
-  tradeTime: string;
-  shares: number;
-  originRecord: {
-    positionAllocateDetails?: BackendAllocateItem[];
-  };
-}
-
-// 分配单行结构（前端渲染用）
-interface AllocateLine {
-  trader: string;
-  strategy: string;
-  amount: number;
-}
-
 interface TradeAllocateModalProps {
   open: boolean;
-  tradeData: TradeRowItem | null;
+  tradeData: TradeRecordItem | null;
   onCancel: () => void;
   onConfirm: () => void; // 分配成功后父页面刷新表格
 }
@@ -59,25 +32,14 @@ const TradeAllocateModal: React.FC<TradeAllocateModalProps> = ({ open, tradeData
   const [traderOptions, setTraderOptions] = useState<SelectProps['options']>([]);
   const [strategyOptions, setStrategyOptions] = useState<SelectProps['options']>([]);
 
-  // 默认分配数据
+  // 默认分配数据，字段与后端对齐
   const [allocateRows, setAllocateRows] = useState<AllocateLine[]>([
-    { trader: '', strategy: '', amount: 0 },
+    { traderName: '', strategyName: '', allocateQty: 0 },
   ]);
 
-  // 转换后端分配数据 → 前端AllocateLine格式（回填核心方法）
-  const transformBackDataToFront = (list?: BackendAllocateItem[]): AllocateLine[] => {
-    if (!list || !Array.isArray(list) || list.length === 0) {
-      return [{ trader: '', strategy: '', amount: 0 }];
-    }
-    // 后端字段映射前端字段
-    return list.map(item => ({
-      trader: item.traderName,
-      strategy: item.strategyName,
-      amount: item.allocateQty
-    }));
-  };
+  console.log("TradeAllocateModal render", { tradeData });
 
-  // 弹窗打开时：1.拉取下拉 2.回填历史分配数据
+  // 弹窗打开时：1.拉取下拉 2.直接回填后端原始分配数据，无需转换函数
   useEffect(() => {
     if (!open || !tradeData) return;
     const initModalData = async () => {
@@ -85,7 +47,7 @@ const TradeAllocateModal: React.FC<TradeAllocateModalProps> = ({ open, tradeData
       try {
         // 1. 加载交易员下拉
         const traderRes = await getTraderSelectList({
-          accountCodes: [tradeData.account],
+          accountCodes: [tradeData.accountCode],
           traderName: ''
         });
         setTraderOptions(traderRes);
@@ -94,14 +56,16 @@ const TradeAllocateModal: React.FC<TradeAllocateModalProps> = ({ open, tradeData
         const strategyRes = await queryInvestStrategy('');
         setStrategyOptions(strategyRes);
 
-        // 3. 核心：回填历史分配数据
-        const backAllocateList = tradeData.originRecord.positionAllocateDetails;
-        const frontList = transformBackDataToFront(backAllocateList);
-        setAllocateRows(frontList);
+        // 3. 直接使用后端原始数组，不做任何字段转换
+        const backAllocateList: AllocateLine[] = tradeData.positionAllocateDetails || [];
+        if (backAllocateList && Array.isArray(backAllocateList) && backAllocateList.length > 0) {
+          setAllocateRows(backAllocateList);
+        } else {
+          setAllocateRows([{ traderName: '', strategyName: '', allocateQty: 0 }]);
+        }
 
       } catch (err) {
         console.error('弹窗初始化加载失败', err);
-        // message.error('加载数据失败');
       } finally {
         setOptionLoading(false);
       }
@@ -112,7 +76,7 @@ const TradeAllocateModal: React.FC<TradeAllocateModalProps> = ({ open, tradeData
   // 弹窗关闭重置所有状态
   useEffect(() => {
     if (!open) {
-      setAllocateRows([{ trader: '', strategy: '', amount: 0 }]);
+      setAllocateRows([{ traderName: '', strategyName: '', allocateQty: 0 }]);
       setTraderOptions([]);
       setStrategyOptions([]);
     }
@@ -120,7 +84,7 @@ const TradeAllocateModal: React.FC<TradeAllocateModalProps> = ({ open, tradeData
 
   if (!tradeData) return null;
 
-  // 修改单行字段
+  // 修改单行字段，key 改为后端原生字段名
   const changeRowField = (index: number, field: keyof AllocateLine, value: string | number) => {
     const list = [...allocateRows];
     list[index][field] = value as never;
@@ -129,7 +93,7 @@ const TradeAllocateModal: React.FC<TradeAllocateModalProps> = ({ open, tradeData
 
   // 新增分配行
   const addAllocateRow = () => {
-    setAllocateRows(prev => [...prev, { trader: '', strategy: '', amount: 0 }]);
+    setAllocateRows(prev => [...prev, { traderName: '', strategyName: '', allocateQty: 0 }]);
   };
 
   // 删除行，最少保留1行
@@ -145,20 +109,20 @@ const TradeAllocateModal: React.FC<TradeAllocateModalProps> = ({ open, tradeData
   // 提交分配
   const handleSubmit = async () => {
     // 空行校验
-    const emptyRow = allocateRows.find(item => !item.trader || !item.strategy);
+    const emptyRow = allocateRows.find(item => !item.traderName || !item.strategyName);
     if (emptyRow) {
       message.info('请完整填写每一行的交易员与策略');
       return;
     }
 
     // 总量校验
-    const totalAllocate = allocateRows.reduce((sum, item) => sum + item.amount, 0);
+    const totalAllocate = allocateRows.reduce((sum, item) => sum + item.allocateQty, 0);
     if (totalAllocate <= 0) {
       message.info('分配总数量不能为0');
       return;
     }
-    if (totalAllocate > tradeData.quantity) {
-      message.info(`分配总量不可超过交易数量 ${tradeData.quantity}`);
+    if (totalAllocate > tradeData.shares) {
+      message.info(`分配总量不可超过交易数量 ${tradeData.shares}`);
       return;
     }
 
@@ -167,13 +131,8 @@ const TradeAllocateModal: React.FC<TradeAllocateModalProps> = ({ open, tradeData
       const apiParams: AllocateApiParams = {
         id: tradeData.id,
         operateType: 2,
-        details: allocateRows.map(item => ({
-          accountCode: tradeData.account,
-          conid: tradeData?.originRecord?.conid,
-          strategyName: item.strategy,
-          traderName: item.trader,
-          allocateQty: item.amount
-        }))
+        // 直接传递前端AllocateLine数组（字段和后端要求完全一致，无需转换）
+        details: allocateRows
       };
       const res = await allocateTrade(apiParams);
       if (res === true) {
@@ -211,32 +170,32 @@ const TradeAllocateModal: React.FC<TradeAllocateModalProps> = ({ open, tradeData
           <Col>
             <Space>
               <Text strong>账号</Text>
-              <Select value={tradeData.account} style={{ width: 160 }} disabled>
-                <Option value={tradeData.account}>{tradeData.account}</Option>
+              <Select value={tradeData.accountCode} style={{ width: 160 }} disabled>
+                <Option value={tradeData.accountCode}>{tradeData.accountCode}</Option>
               </Select>
             </Space>
           </Col>
           <Col>
             <Space>
               <Text strong>合约</Text>
-              <Select value={tradeData.contract} style={{ width: 160 }} disabled>
-                <Option value={tradeData.contract}>{tradeData.contract}</Option>
+              <Select value={tradeData.symbol} style={{ width: 160 }} disabled>
+                <Option value={tradeData.symbol}>{tradeData.symbol}</Option>
               </Select>
             </Space>
           </Col>
           <Col>
             <Space>
               <Text strong>买卖</Text>
-              <Select value={tradeData.buySell} style={{ width: 100 }} disabled>
-                <Option value={tradeData.buySell}>{tradeData.buySell}</Option>
+              <Select value={tradeData.side} style={{ width: 100 }} disabled>
+                <Option value={tradeData.side}>{tradeData.side}</Option>
               </Select>
             </Space>
           </Col>
           <Col>
-            <Text strong>交易数量:{tradeData.quantity}</Text>
+            <Text strong>交易数量:{tradeData.shares}</Text>
           </Col>
           <Col>
-            <Text strong>未分配数量:{tradeData.unAllocateAmount}</Text>
+            <Text strong>未分配数量:{tradeData.allocateRemainQty}</Text>
           </Col>
         </Row>
 
@@ -253,20 +212,20 @@ const TradeAllocateModal: React.FC<TradeAllocateModalProps> = ({ open, tradeData
           <Row gutter={[20, 12]} key={idx} align="middle" style={{ marginBottom: 14 }}>
             <Col span={6}>
               <Select
-                value={row.trader || undefined}
+                value={row.traderName || undefined}
                 placeholder="请选择交易员"
                 style={{ width: '100%' }}
-                onChange={(val) => changeRowField(idx, 'trader', val)}
+                onChange={(val) => changeRowField(idx, 'traderName', val)}
                 options={traderOptions}
                 allowClear
               />
             </Col>
             <Col span={6}>
               <Select
-                value={row.strategy || undefined}
+                value={row.strategyName || undefined}
                 placeholder="请选择策略"
                 style={{ width: '100%' }}
-                onChange={(val) => changeRowField(idx, 'strategy', val)}
+                onChange={(val) => changeRowField(idx, 'strategyName', val)}
                 options={strategyOptions}
                 allowClear
               />
@@ -274,9 +233,9 @@ const TradeAllocateModal: React.FC<TradeAllocateModalProps> = ({ open, tradeData
             <Col span={2}>
               <InputNumber
                 min={0}
-                value={row.amount}
+                value={row.allocateQty}
                 style={{ width: '100%' }}
-                onChange={(val) => changeRowField(idx, 'amount', val ?? 0)}
+                onChange={(val) => changeRowField(idx, 'allocateQty', val ?? 0)}
               />
             </Col>
             <Col span={6} style={{ textAlign: 'center' }}>
@@ -289,7 +248,7 @@ const TradeAllocateModal: React.FC<TradeAllocateModalProps> = ({ open, tradeData
           type="dashed"
           block
           icon={<PlusOutlined />}
-          disabled={allocateRows.length >= tradeData.unAllocateAmount}
+          disabled={allocateRows.length >= tradeData.shares}
           onClick={addAllocateRow}
           style={{ marginTop: 16, width: 160 }}
         >新增分配行</Button>

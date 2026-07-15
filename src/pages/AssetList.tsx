@@ -134,11 +134,14 @@ export default function AssetList() {
   const tableColumns = columnConfigList
     .filter(config => visibleCols.includes(config.columnName))
     .map(config => {
-      const fieldKey = config.columnName;
+      const fieldName = config.columnName;
+      const fieldKey = config.columnKey;
+
       const colItem = {
-        title: fieldKey,
+        title: fieldName,
         dataIndex: fieldKey,
         key: fieldKey,
+        render: undefined as any,
       };
 
       // 盈亏颜色

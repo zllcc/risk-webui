@@ -30,6 +30,8 @@ export interface TradeRecordItem {
   currency: string;
   realizedPnl: number;
   remainQty: number;
+  allocateRemainQty: number;
+  positionAllocateDetails?: TradeRecordItem[];
 }
 
 // 分页data结构

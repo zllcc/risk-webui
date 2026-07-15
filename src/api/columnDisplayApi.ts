@@ -15,6 +15,7 @@ export interface ColumnDisplayItem {
   pageName: string;
   type: string;
   columnName: string;
+  columnKey: string;
   isDisplay: boolean;
 }
 
