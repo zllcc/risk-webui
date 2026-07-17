@@ -144,9 +144,10 @@ export default function PortfolioOverview() {
     return columnConfigList
       .filter(config => checkedFieldKeys.includes(config.columnName))
       .map(config => {
-        const fieldKey = config.columnName;
+        const fieldKey = config.columnKey;
+        const fieldName = config.columnName;
         const baseCol = {
-          title: fieldKey,
+          title: fieldName,
           dataIndex: fieldKey,
           key: fieldKey,
         };
@@ -166,7 +167,7 @@ export default function PortfolioOverview() {
               if (val === null) return '--';
               return (
                 <span style={{ color: val >= 0 ? "#f5222d" : "#52c41a" }}>
-                  {val >= 0 ? "+" : ""}{val.toLocaleString()}
+                  {val >= 0 ? "+" : ""}{val?.toLocaleString()}
                 </span>
               );
             },
@@ -175,7 +176,7 @@ export default function PortfolioOverview() {
         // 普通数值
         return {
           ...baseCol,
-          render: (val: number | null) => val === null ? '--' : val.toLocaleString(),
+          render: (val: number | null) => val === null ? '--' : val?.toLocaleString(),
         };
       });
   }, [columnConfigList, checkedFieldKeys]);
