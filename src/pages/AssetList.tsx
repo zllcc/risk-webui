@@ -4,7 +4,7 @@ import {
   Space, Typography, Row, Col, message, Spin, Empty
 } from 'antd';
 import FilterPanel, { FilterParams } from '@/components/FilterPanel';
-import { secTypeArr, areaArr } from '@/utils/common';
+import { secTypeArr } from '@/utils/common';
 import { getZoneOptions } from '@/api/investApi';
 import { getPositionList, PositionRecord, PositionQueryParams } from '@/api/positionApi';
 import { getPageColumnDisplay, updateColumnDisplay, ColumnDisplayItem } from '@/api/columnDisplayApi';
