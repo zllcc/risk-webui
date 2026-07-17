@@ -116,12 +116,12 @@ export interface TraderOperateParams {
 }
 
 /**
- * POST /contract-execution/pc/query-page
+ * POST /position-execution/pc/query-page
  * 分页查询交易执行明细
  */
 export function getTradePageList(params: TradePageParams) {
   return request<TradePageRes>({
-    url: '/contract-execution/pc/query-page',
+    url: '/position-execution/pc/query-page',
     method: 'POST',
     data: params
   });
@@ -129,7 +129,7 @@ export function getTradePageList(params: TradePageParams) {
 
 export function allocateTrade(params: AllocateApiParams) {
   return request<{ data: boolean }>({
-    url: '/contract-execution/pc/allocate',
+    url: '/position-execution/pc/allocate',
     method: 'POST',
     data: params
   });
