@@ -42,3 +42,11 @@ export function getContractList(symbol: string = '') {
     data: { symbol }
   })
 }
+
+export function getZoneOptions() {
+  return request<{value:string; label:string}[]>({
+    url: '/select/pc/zone',
+    method: 'POST',
+    data: {}
+  })
+}

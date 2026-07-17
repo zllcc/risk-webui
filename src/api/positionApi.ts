@@ -16,6 +16,7 @@ export interface PositionQueryParams {
   endDate: string;
   sectors: string[];
   dateType: number | null;
+  zoneType:string;
 }
 
 export interface PositionRecord {

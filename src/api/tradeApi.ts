@@ -1,6 +1,17 @@
 import request from './request';
 
 // 交易列表分页完整入参
+export interface TradefilterParams {
+  accountCodes: string[];
+  tradeNames: string[];
+  strategyNames: string[];
+  startDate: string;
+  endDate: string;
+  conids: string[];
+  sectors: string[];
+  dateType: number;
+}
+
 export interface TradePageParams {
   accountCodes: string[];
   tradeNames: string[];
@@ -13,6 +24,7 @@ export interface TradePageParams {
   pageSize: number;
   secType: string;
   dateType: number;
+  zoneType: string;
 }
 
 // 后端单条交易记录

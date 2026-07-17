@@ -3,10 +3,11 @@ import {
   Card, Tabs, Select, Table, Button, Checkbox,
   Space, Typography, Row, Col, Pagination, Spin, Empty, message
 } from 'antd';
-import FilterPanel from '@/components/FilterPanel';
+import FilterPanel, { FilterParams } from '@/components/FilterPanel';
 import TradeAllocateModal from '@/components/TradeAllocateModal';
 import { getTradePageList, TradePageParams, TradeRecordItem } from '@/api/tradeApi';
-import { secTypeArr, areaArr } from '@/utils/common';
+import { getZoneOptions } from '@/api/investApi';
+import { secTypeArr } from '@/utils/common';
 import { getPageColumnDisplay, updateColumnDisplay, ColumnDisplayItem } from '@/api/columnDisplayApi';
 
 const { TabPane } = Tabs;
@@ -18,7 +19,7 @@ export default function TradeList() {
   const [columnConfigList, setColumnConfigList] = useState<ColumnDisplayItem[]>([]);
   const [visibleCols, setVisibleCols] = useState<string[]>([]);
 
-  const [activeFilter, setActiveFilter] = useState<TradePageParams>({
+  const [activeFilter, setActiveFilter] = useState<FilterParams>({
     accountCodes: [],
     tradeNames: [],
     strategyNames: [],
@@ -26,13 +27,11 @@ export default function TradeList() {
     endDate: '',
     conids: [],
     sectors: [],
-    pageNum: 1,
-    pageSize: 10,
-    secType: 'STK',
     dateType: 1,
   });
   const [activeTab, setActiveTab] = useState("股票");
-  const [region, setRegion] = useState("US");
+  const [zoneOptions, setZoneOptions] = useState<{value: string; label: string}[]>([]);
+  const [zoneType, setZoneType] = useState('');
   const [tableData, setTableData] = useState<TradeRecordItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [colLoading, setColLoading] = useState(false);
@@ -43,6 +42,22 @@ export default function TradeList() {
 
   const [allocateModalOpen, setAllocateModalOpen] = useState(false);
   const [currentTrade, setCurrentTrade] = useState<TradeRecordItem | null>(null);
+
+
+  const queryZoneOptions = async () => {
+    try {
+      const res = await getZoneOptions() || [];
+      setZoneOptions(res);
+      setZoneType(res[0]?.value)
+      // 处理返回的区域选项
+    } catch (err) {
+      console.error('加载区域选项失败', err);
+    }
+  };
+
+  useEffect(() => {
+    queryZoneOptions();
+  }, []);
 
   // 加载表头配置
   const loadColumnConfig = useCallback(async (type: string) => {
@@ -103,6 +118,7 @@ export default function TradeList() {
     try {
       const reqParams: TradePageParams = {
         ...activeFilter,
+        zoneType: zoneType,
         secType: activeTab,
         pageSize: 10,
         pageNum
@@ -117,11 +133,11 @@ export default function TradeList() {
     } finally {
       setLoading(false);
     }
-  }, [activeFilter, pageNum, activeTab, region]);
+  }, [activeFilter, pageNum, activeTab, zoneType]);
 
   useEffect(() => {
     fetchTradeList();
-  }, [activeTab, region, pageNum, activeFilter]);
+  }, [activeTab, zoneType, pageNum, activeFilter]);
 
   const handleSearch = (params: TradePageParams) => {
     setActiveFilter(params);
@@ -184,11 +200,11 @@ export default function TradeList() {
         </Col>
         <Col>
           <Select
-            value={region}
-            onChange={(v) => { setRegion(v); setPageNum(1); }}
+            value={zoneType}
+            onChange={(v) => { setZoneType(v); setPageNum(1); }}
             style={{ width: 160 }}
             placeholder="国家/地区"
-            options={areaArr}
+            options={zoneOptions}
           />
         </Col>
       </Row>

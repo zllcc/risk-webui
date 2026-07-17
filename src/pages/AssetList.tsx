@@ -5,6 +5,7 @@ import {
 } from 'antd';
 import FilterPanel, { FilterParams } from '@/components/FilterPanel';
 import { secTypeArr, areaArr } from '@/utils/common';
+import { getZoneOptions } from '@/api/investApi';
 import { getPositionList, PositionRecord, PositionQueryParams } from '@/api/positionApi';
 import { getPageColumnDisplay, updateColumnDisplay, ColumnDisplayItem } from '@/api/columnDisplayApi';
 
@@ -18,7 +19,8 @@ export default function AssetList() {
   const [visibleCols, setVisibleCols] = useState<string[]>([]);
 
   const [activeTab, setActiveTab] = useState("股票");
-  const [region, setRegion] = useState("CN");
+  const [zoneOptions, setZoneOptions] = useState<{value: string; label: string}[]>([]);
+  const [zoneType, setZoneType] = useState('');
   const [tableData, setTableData] = useState<PositionRecord[]>([]);
   const [loading, setLoading] = useState(false);
   const [colLoading, setColLoading] = useState(false);
@@ -34,6 +36,21 @@ export default function AssetList() {
     endDate: '',
     dateType: 1,
   });
+
+  const queryZoneOptions = async () => {
+    try {
+      const res = await getZoneOptions() || [];
+      setZoneOptions(res);
+      setZoneType(res[0]?.value)
+      // 处理返回的区域选项
+    } catch (err) {
+      console.error('加载区域选项失败', err);
+    }
+  };
+
+  useEffect(() => {
+    queryZoneOptions();
+  }, []);
 
   // 加载表头配置
   const loadColumnConfig = useCallback(async (type: string) => {
@@ -107,8 +124,10 @@ export default function AssetList() {
         endDate: searchParams?.endDate ?? "",
         sectors: searchParams?.sectorKeys ?? [],
         dateType: searchParams?.dateType ?? null,
+        zoneType,
       };
-      const res = await getPositionList(apiParams);
+
+    const res = await getPositionList(apiParams);
       setTableData(res.records);
       setPageTotal(res.total);
     } catch (err) {
@@ -119,7 +138,7 @@ export default function AssetList() {
     } finally {
       setLoading(false);
     }
-  }, [pageNum, activeTab, searchParams]);
+  }, [pageNum, activeTab, searchParams, zoneType]);
 
   useEffect(() => {
     fetchPositionData();
@@ -147,8 +166,8 @@ export default function AssetList() {
       // 盈亏颜色
       if (["unrealizedPnl", "realizedPnl", "dailyUnrealizedPnl", "dailyRealizedPnl"].includes(fieldKey)) {
         colItem.render = (val: number) => (
-          <span style={{ color: val >= 0 ? "#f5222d" : "#52c41a" }}>
-            {val >= 0 ? "+" : ""}{val?.toLocaleString() ?? 0}
+          <span style={{ color: val > 0 ? "#f5222d" : "#52c41a" }}>
+            {val > 0 ? "+" : ""}{val?.toLocaleString() ?? 0}
           </span>
         );
       }
@@ -180,11 +199,11 @@ export default function AssetList() {
         </Col>
         <Col>
           <Select
-            value={region}
-            onChange={setRegion}
+            value={zoneType}
+            onChange={(v) => { setZoneType(v); setPageNum(1); }}
             style={{ width: 160 }}
             placeholder="国家/地区"
-            options={areaArr}
+            options={zoneOptions}
           />
         </Col>
       </Row>
