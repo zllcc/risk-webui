@@ -2,10 +2,11 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
 
-const NORMAL_TARGET = 'http://123.207.56.119:9666';
+const NORMAL_TARGET = 'http://localhost:9666';
 // const NORMAL_TARGET = 'http://192.168.0.109:9666';
 
 export default defineConfig({
+  base:"/risk/",
   plugins: [react()],
   resolve: {
     alias: {
@@ -33,7 +34,7 @@ export default defineConfig({
         rewrite: (path) => path, // 路径不删除/select，接口完整匹配
         logLevel: 'info' // 打印完整转发路径日志
       },
-      '/contract-execution': {
+      '/position-execution': {
         target: NORMAL_TARGET,
         changeOrigin: true,
         rewrite: path => path,
