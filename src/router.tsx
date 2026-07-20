@@ -1,5 +1,6 @@
 import { Navigate, useRoutes } from 'react-router-dom';
 import Login from './pages/Login.js';
+import TraderAssetList from './pages/TraderAssetList.tsx'
 import AssetList from './pages/AssetList.tsx';
 import OverviewList from './pages/OverviewList.tsx';
 import TradeList from './pages/TradeList.tsx';
@@ -24,12 +25,13 @@ export default function Router() {
         </PrivateRoute>
       ),
       children: [
-        { path: '', element: <Navigate to="asset-list" replace /> },
+        { path: '', element: <Navigate to="tarder-asset-list" replace /> },
         { path: 'overview', element: <OverviewList /> },
-        { path: 'asset-list', element: <AssetList /> },
+        { path: 'trader-asset-list', element: <TraderAssetList /> },
         { path: 'trade-list', element: <TradeList /> },
         { path: 'asset-analysis', element: <PortfolioAnalysis /> },
         { path: 'trader-manage', element: <TraderPrincipalPage /> },
+        { path: 'asset-list', element: <AssetList /> },
       ],
     },
   ]);

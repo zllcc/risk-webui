@@ -10,10 +10,11 @@ const { Title } = Typography;
 // 导航菜单配置，统一管理路由、名称、图标
 const navMenus = [
   { path: '/overview', label: '总览' },
-    { path: '/asset-list', label: '持仓列表' },
+  { path: '/trader-asset-list', label: '交易员持仓列表' },
   { path: '/trade-list', label: '交易列表' },
   { path: '/asset-analysis', label: '投资组合分析' },
   { path: '/trader-manage', label: '交易员管理' },
+  { path: '/asset-list', label: '持仓列表' },
 ];
 
 export default function BasicLayout() {

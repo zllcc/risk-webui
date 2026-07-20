@@ -46,6 +46,12 @@ export default defineConfig({
         rewrite: path => path,
         logLevel: 'info'
       },
+      '/position-history': {
+        target: NORMAL_TARGET,
+        changeOrigin: true,
+        rewrite: path => path,
+        logLevel: 'info'
+      },
       '/trader': {
         target: NORMAL_TARGET,
         changeOrigin: true,

@@ -6,7 +6,7 @@ import {
 import FilterPanel, { FilterParams } from '@/components/FilterPanel';
 import { secTypeArr } from '@/utils/common';
 import { getZoneOptions } from '@/api/investApi';
-import { getPositionList, PositionRecord, PositionQueryParams } from '@/api/positionApi';
+import { getPositionList, PositionRecord, AssetQueryParams } from '@/api/positionApi';
 import { getPageColumnDisplay, updateColumnDisplay, ColumnDisplayItem } from '@/api/columnDisplayApi';
 
 const { TabPane } = Tabs;
@@ -36,21 +36,6 @@ export default function AssetList() {
     endDate: '',
     dateType: 1,
   });
-
-  const queryZoneOptions = async () => {
-    try {
-      const res = await getZoneOptions() || [];
-      setZoneOptions(res);
-      setZoneType(res[0]?.value)
-      // 处理返回的区域选项
-    } catch (err) {
-      console.error('加载区域选项失败', err);
-    }
-  };
-
-  useEffect(() => {
-    queryZoneOptions();
-  }, []);
 
   // 加载表头配置
   const loadColumnConfig = useCallback(async (type: string) => {
@@ -109,22 +94,23 @@ export default function AssetList() {
   const fetchPositionData = useCallback(async () => {
     setLoading(true);
     try {
-      const apiParams: PositionQueryParams = {
+      let zoneState = zoneType;
+      if(!zoneOptions.length) {
+        const res = await getZoneOptions() || [];
+        zoneState = res[0]?.value;
+        setZoneOptions(res);
+        setZoneType(res[0]?.value);
+      }
+      const apiParams: AssetQueryParams = {
         pageNum,
         pageSize,
-        orderColumn: "id",
-        orderType: "desc",
-        idList: [],
-        accountCodes: searchParams?.accountCodes ?? [],
-        conids: [],
+        conids: searchParams?.accountCodes ?? [],
         secType: activeTab,
-        tradeNames: searchParams?.tradeNames ?? [],
-        strategyNames: searchParams?.strategyNames ?? [],
         startDate: searchParams?.startDate ?? "",
         endDate: searchParams?.endDate ?? "",
-        sectors: searchParams?.sectorKeys ?? [],
+        sectors: searchParams?.sectors ?? [],
         dateType: searchParams?.dateType ?? null,
-        zoneType,
+        zoneType: zoneState,
       };
 
     const res = await getPositionList(apiParams);
@@ -142,7 +128,7 @@ export default function AssetList() {
 
   useEffect(() => {
     fetchPositionData();
-  }, [fetchPositionData]);
+  }, []);
 
   const handleSearch = (params: FilterParams) => {
     setSearchParams(params);

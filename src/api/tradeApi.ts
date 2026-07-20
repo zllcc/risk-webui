@@ -13,9 +13,6 @@ export interface TradefilterParams {
 }
 
 export interface TradePageParams {
-  accountCodes: string[];
-  tradeNames: string[];
-  strategyNames: string[];
   startDate: string;
   endDate: string;
   conids: string[];
@@ -23,7 +20,7 @@ export interface TradePageParams {
   pageNum: number;
   pageSize: number;
   secType: string;
-  dateType: number;
+  dateType: number | null;
   zoneType: string;
 }
 

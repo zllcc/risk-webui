@@ -32,7 +32,7 @@ export const timeShortOpts = [
 
 interface FilterPanelProps {
   onSearch: (params: FilterParams) => void;
-  pageType: 'overview' | 'asset' | 'analysis';
+  pageType: 'overview' | 'asset' | 'analysis' | 'traderAsset';
 }
 
 const FilterPanel: React.FC<FilterPanelProps> = ({ onSearch, pageType }) => {
@@ -139,6 +139,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ onSearch, pageType }) => {
     conids?: string[];
     sectors?: string[];
     } = pageType === 'overview' ? { referenceIndexConids: benchmarkType } : { conids: selectedSectors, sectors: selectedSubjectMatter };
+    console.log(typeParams, '===typeParams')
     onSearch({
       accountCodes: selectedAccounts,
       tradeNames: selectedTraders,
@@ -176,7 +177,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ onSearch, pageType }) => {
   const formItemArr = [
     {
       label: '账号',
-      isShow: true,
+      isShow: pageType !== 'asset',
       content: (
         <Select
           mode="multiple"
@@ -191,7 +192,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ onSearch, pageType }) => {
     },
     {
       label: '操盘人',
-      isShow: true,
+      isShow: pageType !== 'asset',
       content: (
         <Select
           mode="multiple"
@@ -206,7 +207,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ onSearch, pageType }) => {
     },
     {
       label: '策略',
-      isShow: true,
+      isShow: pageType !== 'asset',
       content: (
         <Select
           mode="multiple"
@@ -244,7 +245,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ onSearch, pageType }) => {
     },
     {
       label: '标的',
-      isShow: pageType === 'asset',
+      isShow: pageType === 'asset' || pageType === 'traderAsset',
       content: (
         <Select
           mode="multiple"
@@ -259,7 +260,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ onSearch, pageType }) => {
     },
     {
       label: '板块',
-      isShow: pageType === 'asset',
+      isShow:  pageType === 'asset' || pageType === 'traderAsset',
       content: (
         <Select
           mode="multiple"

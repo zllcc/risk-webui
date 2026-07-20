@@ -3,15 +3,23 @@ import request from './request';
 export interface PositionQueryParams {
   pageNum: number;
   pageSize: number;
-  orderColumn: string;
-  orderType: 'asc' | 'desc';
-  idList: number[];
   accountCodes: string[];
-  conids: number[];
+  conids: string[];
   secType: string;
-  // 新增筛选字段
   tradeNames: string[];
   strategyNames: string[];
+  startDate: string;
+  endDate: string;
+  sectors: string[];
+  dateType: number | null;
+  zoneType:string;
+}
+
+export interface AssetQueryParams {
+  pageNum: number;
+  pageSize: number;
+  conids: string[];
+  secType: string;
   startDate: string;
   endDate: string;
   sectors: string[];
@@ -41,10 +49,19 @@ export interface PositionRes {
   total: number;
 }
 
-// 查询持仓列表
-export function getPositionList(params: PositionQueryParams) {
+// 查询交易员持仓列表
+export function getTraderPositionList(params: PositionQueryParams) {
   return request<PositionRes>({
     url: '/position-relation-history/pc/query-page',
+    method: 'POST',
+    data: params
+  });
+}
+
+// 查询持仓列表
+export function getPositionList(params: AssetQueryParams) {
+  return request<PositionRes>({
+    url: '/position-history/pc/query-page',
     method: 'POST',
     data: params
   });
