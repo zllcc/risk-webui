@@ -3,6 +3,7 @@ import {
   Card, Tabs, Select, Table, Button, Checkbox,
   Space, Typography, Row, Col, Pagination, Spin, Empty, message
 } from 'antd';
+import { DownloadOutlined, UploadOutlined } from '@ant-design/icons';
 import FilterPanel, { FilterParams } from '@/components/FilterPanel';
 import TradeAllocateModal from '@/components/TradeAllocateModal';
 import { getTradePageList, TradePageParams, TradeRecordItem } from '@/api/tradeApi';
@@ -183,7 +184,15 @@ export default function TradeList() {
     });
 
   return (
-    <Card title={<Title level={5}>交易列表</Title>}>
+    <Card
+      title={<Title level={5}>交易列表</Title>}
+      extra={
+        <Space>
+          <Button><UploadOutlined />导入</Button>
+          <Button><DownloadOutlined />下载</Button>
+        </Space>
+      }
+    >
       <FilterPanel onSearch={handleSearch} pageType='asset' />
 
       <Row justify="space-between" align="middle" style={{ marginBottom: 16, marginTop: 16 }}>

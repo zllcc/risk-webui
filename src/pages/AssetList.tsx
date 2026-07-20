@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
   Card, Tabs, Select, Table, Checkbox,
-  Space, Typography, Row, Col, message, Spin, Empty
+  Space, Typography, Row, Col, message, Button
 } from 'antd';
+import { DownloadOutlined, UploadOutlined } from '@ant-design/icons';
 import FilterPanel, { FilterParams } from '@/components/FilterPanel';
 import { secTypeArr } from '@/utils/common';
 import { getZoneOptions } from '@/api/investApi';
@@ -165,7 +166,15 @@ export default function AssetList() {
     });
 
   return (
-    <Card title={<Title level={5}>持仓列表</Title>}>
+    <Card
+      title={<Title level={5}>持仓列表</Title>}
+      extra={
+        <Space>
+          <Button><UploadOutlined />导入</Button>
+          <Button><DownloadOutlined />下载</Button>
+        </Space>
+      }
+    >
       <FilterPanel onSearch={handleSearch} pageType="asset" />
 
       <Row justify="space-between" align="middle" style={{ marginBottom: 16, marginTop: 16 }}>
