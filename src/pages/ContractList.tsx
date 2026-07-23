@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Card, Input, Select, Table, Pagination, Space, Button, message } from 'antd';
+import { Card, Input, Select, Table, Pagination, Space, Button, message, Typography } from 'antd';
 import type { TableProps } from 'antd';
 import ContractEditModal from '@/components/ContractEditModal';
 import ContractViewModal from '@/components/ContractViewModal';
 // import { getContractList, updateContractCode } from '@/api/contractApi';
+
+const { Title } = Typography;
 
 const { Option } = Select;
 
@@ -224,9 +226,9 @@ const ContractList = () => {
   ];
 
   return (
-    <Card>
+    <Card title={<Title level={5}>交易列表</Title>}>
       {/* 筛选区域 */}
-      <Space size="large" style={{ marginBottom: 16 }}>
+      <Space size="large" style={{ marginBottom: 36 }}>
         <Space>
           <span>合约:</span>
           <Input
@@ -238,7 +240,7 @@ const ContractList = () => {
           />
         </Space>
         <Space>
-          <span>类型</span>
+          <span>类型:</span>
           <Select
             value={secType}
             onChange={(val) => {
