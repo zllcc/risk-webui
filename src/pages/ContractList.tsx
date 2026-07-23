@@ -226,7 +226,7 @@ const ContractList = () => {
   ];
 
   return (
-    <Card title={<Title level={5}>交易列表</Title>}>
+    <Card title={<Title level={5}>合约列表</Title>}>
       {/* 筛选区域 */}
       <Space size="large" style={{ marginBottom: 36 }}>
         <Space>
