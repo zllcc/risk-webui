@@ -15,6 +15,7 @@ const navMenus = [
   { path: '/asset-analysis', label: '投资组合分析' },
   { path: '/trader-manage', label: '交易员管理' },
   { path: '/asset-list', label: '持仓列表' },
+  { path: '/contract-list', label: '合约列表' },
 ];
 
 export default function BasicLayout() {
