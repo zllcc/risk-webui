@@ -26,7 +26,7 @@ export default function Router() {
         </PrivateRoute>
       ),
       children: [
-        { path: '', element: <Navigate to="tarder-asset-list" replace /> },
+        { path: '', element: <Navigate to="trader-asset-list" replace /> },
         { path: 'overview', element: <OverviewList /> },
         { path: 'trader-asset-list', element: <TraderAssetList /> },
         { path: 'trade-list', element: <TradeList /> },
