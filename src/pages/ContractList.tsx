@@ -166,13 +166,13 @@ const ContractList = () => {
       />
 
       {/* 底部分页 */}
-      <Pagination
-        style={{ marginTop: 16, textAlign: 'right' }}
+      {!!tableData.length && <Pagination
+        style={{ marginTop: 16, textAlign: 'right', justifyContent: 'right' }}
         current={pageNum}
         pageSize={pageSize}
         total={total}
         onChange={(page) => setPageNum(page)}
-      />
+      />}
 
       {/* 编辑弹窗 */}
       <ContractEditModal

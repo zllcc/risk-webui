@@ -86,13 +86,13 @@ const ContractViewModal: React.FC<Props> = ({ open, detail, onCancel }) => {
         />
 
         {/* 表格分页 */}
-        <Pagination
-          style={{ marginTop: 16, justifyContent: 'flex-end', display: 'flex' }}
+        {!!priceData.length && <Pagination
+          style={{ marginTop: 16, justifyContent: 'right', display: 'flex' }}
           current={pageNum}
           pageSize={pageSize}
           total={total}
           onChange={setPageNum}
-        />
+        />}
       </Spin>
     </Modal>
   );
