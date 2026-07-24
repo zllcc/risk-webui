@@ -18,7 +18,7 @@ const ContractViewModal: React.FC<Props> = ({ open, detail, onCancel }) => {
   const [loading, setLoading] = useState(false);
   const [priceData, setPriceData] = useState<PriceItem[]>([]);
   const [pageNum, setPageNum] = useState(1);
-  const pageSize = 3;
+  const pageSize = 10;
   const [total, setTotal] = useState(0);
 
   // 查询历史行情表格
@@ -59,7 +59,6 @@ const ContractViewModal: React.FC<Props> = ({ open, detail, onCancel }) => {
       title="合约详情查看"
       width={700}
       open={open}
-      maskClosable={false}
       footer={null}
       onCancel={onCancel}
     >

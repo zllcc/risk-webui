@@ -66,3 +66,36 @@ export function getPositionList(params: AssetQueryParams) {
     data: params
   });
 }
+
+/**
+ * 导入交易数据
+ * POST /position-execution/pc/import
+ * @param file base64文件字符串
+ */
+export function importPositionExecution(params?: Record<string, any>) {
+  return request.post('/position-execution/pc/import', params);
+}
+
+
+/**
+ * 下载错误文件
+ * GET /position-execution/pc/download-error-file
+ * @param params 后端需要的查询参数（根据实际需求调整）
+ */
+export function downloadErrorFile(params?: Record<string, any>) {
+  return request.get('/position-execution/pc/download-error-file', {
+    params,
+    responseType: 'blob', // 文件下载必须 blob
+  });
+}
+
+/**
+ * 下载交易数据导入模板
+ * GET /position-execution/pc/download-template
+ */
+export function downloadTradeTemplate(params?: Record<string, any>) {
+  return request.get('/position-execution/pc/download-template', {
+    params,
+    responseType: 'blob',
+  });
+}

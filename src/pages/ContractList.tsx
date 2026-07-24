@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Card, Input, Select, Table, Pagination, Space, Button, message, Typography } from 'antd';
 import type { TableProps } from 'antd';
+const { Search } = Input;
 import ContractEditModal from '@/components/ContractEditModal';
 import ContractViewModal from '@/components/ContractViewModal';
-// import { getContractList, updateContractCode } from '@/api/contractApi';
+import { getContractData, updateContractCode } from '@/api/contractApi';
 
 const { Title } = Typography;
 
@@ -22,110 +23,8 @@ export interface ContractRow {
   code: string; // 代码
 }
 
-// ========== Mock 模拟数据 ==========
-const mockContractData: ContractRow[] = [
-  {
-    id: 1,
-    contractSymbol: 'AAPL',
-    secType: 'STK',
-    exchange: 'NASDAQ',
-    currency: 'USD',
-    strikePrice: null,
-    optionType: null,
-    expireDate: null,
-    code: 'AAPL US Equity',
-  },
-  {
-    id: 2,
-    contractSymbol: 'AAPL',
-    secType: 'OPT',
-    exchange: 'NASDAQ',
-    currency: 'USD',
-    strikePrice: 190,
-    optionType: 'CALL',
-    expireDate: '2026-09-18',
-    code: 'AAPL 260918C00190000',
-  },
-  {
-    id: 3,
-    contractSymbol: 'MSFT',
-    secType: 'STK',
-    exchange: 'NASDAQ',
-    currency: 'USD',
-    strikePrice: null,
-    optionType: null,
-    expireDate: null,
-    code: 'MSFT US Equity',
-  },
-  {
-    id: 4,
-    contractSymbol: 'TSLA',
-    secType: 'OPT',
-    exchange: 'NASDAQ',
-    currency: 'USD',
-    strikePrice: 235,
-    optionType: 'PUT',
-    expireDate: '2026-10-16',
-    code: 'TSLA 261016P00235000',
-  },
-  {
-    id: 5,
-    contractSymbol: 'NVDA',
-    secType: 'STK',
-    exchange: 'NASDAQ',
-    currency: 'USD',
-    strikePrice: null,
-    optionType: null,
-    expireDate: null,
-    code: 'NVDA US Equity',
-  },
-  {
-    id: 6,
-    contractSymbol: 'GOOG',
-    secType: 'OPT',
-    exchange: 'NASDAQ',
-    currency: 'USD',
-    strikePrice: 175,
-    optionType: 'CALL',
-    expireDate: '2026-08-21',
-    code: 'GOOG 260821C00175000',
-  },
-];
-
-/** mock接口模拟分页 + 筛选 */
-async function mockContractList(params: {
-  pageNum: number;
-  pageSize: number;
-  contractSymbol?: string;
-  secType?: string;
-}) {
-  const { pageNum, pageSize, contractSymbol, secType } = params;
-  let list = [...mockContractData];
-
-  // 合约名称筛选
-  if (contractSymbol) {
-    list = list.filter(item =>
-      item.contractSymbol.toLowerCase().includes(contractSymbol.toLowerCase())
-    );
-  }
-  // 类型筛选
-  if (secType) {
-    list = list.filter(item => item.secType === secType);
-  }
-
-  const total = list.length;
-  const start = (pageNum - 1) * pageSize;
-  const records = list.slice(start, start + pageSize);
-
-  // 模拟网络延迟
-  await new Promise(resolve => setTimeout(resolve, 400));
-  return { records, total };
-}
 
 const ContractList = () => {
-  // 开关：true 使用mock，false 使用真实接口
-  const useMock = true;
-
   // 筛选条件
   const [contractKeyword, setContractKeyword] = useState('');
   const [secType, setSecType] = useState<string>('');
@@ -134,7 +33,7 @@ const ContractList = () => {
   const [tableData, setTableData] = useState<ContractRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [pageNum, setPageNum] = useState(1);
-  const pageSize = 3;
+  const pageSize = 10;
   const [total, setTotal] = useState(0);
 
   // 弹窗控制
@@ -152,12 +51,7 @@ const ContractList = () => {
         contractSymbol: contractKeyword,
         secType,
       };
-      let res;
-      if (useMock) {
-        res = await mockContractList(params);
-      } else {
-        // res = await getContractList(params);
-      }
+      const res = await getContractData(params);
       setTableData(res.records);
       setTotal(res.total);
     } catch (e) {
@@ -165,11 +59,15 @@ const ContractList = () => {
     } finally {
       setLoading(false);
     }
-  }, [pageNum, contractKeyword, secType, useMock]);
+  }, [pageNum, contractKeyword, secType]);
 
   useEffect(() => {
     fetchList();
   }, [fetchList]);
+
+  const handleSearch = (value: any) => {
+    setContractKeyword(value);
+  }
 
   // 打开编辑弹窗
   const openEdit = (record: ContractRow) => {
@@ -231,10 +129,10 @@ const ContractList = () => {
       <Space size="large" style={{ marginBottom: 36 }}>
         <Space>
           <span>合约:</span>
-          <Input
+          <Search
             placeholder="请输入"
-            value={contractKeyword}
-            onChange={e => setContractKeyword(e.target.value)}
+            enterButton="查询"
+            onSearch={handleSearch}
             style={{ width: 240 }}
             allowClear
           />

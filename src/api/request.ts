@@ -19,6 +19,9 @@ request.interceptors.request.use((config) => {
 // 响应拦截器：统一处理报错、返回数据
 request.interceptors.response.use(
   (res) => {
+    if (res.config.responseType === 'blob' && res.status === 200) {
+      return res; 
+    }
     // 根据后端返回结构调整，示例：后端 { code:200, data: {}, msg:'' }
     const data = res.data
     if (data.code !== 0) {

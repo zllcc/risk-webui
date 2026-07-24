@@ -3,12 +3,12 @@ import {
   Card, Tabs, Select, Table, Checkbox,
   Space, Typography, Row, Col, message, Button
 } from 'antd';
-import { DownloadOutlined, UploadOutlined } from '@ant-design/icons';
 import FilterPanel, { FilterParams } from '@/components/FilterPanel';
 import { secTypeArr } from '@/utils/common';
 import { getZoneOptions } from '@/api/investApi';
 import { getPositionList, PositionRecord, AssetQueryParams } from '@/api/positionApi';
 import { getPageColumnDisplay, updateColumnDisplay, ColumnDisplayItem } from '@/api/columnDisplayApi';
+import ImportBtnGroup from '@/components/ImportBtnGroup';
 
 const { TabPane } = Tabs;
 const { Title } = Typography;
@@ -168,12 +168,7 @@ export default function AssetList() {
   return (
     <Card
       title={<Title level={5}>持仓列表</Title>}
-      extra={
-        <Space>
-          <Button><UploadOutlined />导入</Button>
-          <Button><DownloadOutlined />下载</Button>
-        </Space>
-      }
+      extra={<ImportBtnGroup pageType='asset' />}
     >
       <FilterPanel onSearch={handleSearch} pageType="asset" />
 

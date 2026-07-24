@@ -3,13 +3,13 @@ import {
   Card, Tabs, Select, Table, Button, Checkbox,
   Space, Typography, Row, Col, Pagination, Spin, Empty, message
 } from 'antd';
-import { DownloadOutlined, UploadOutlined } from '@ant-design/icons';
 import FilterPanel, { FilterParams } from '@/components/FilterPanel';
 import TradeAllocateModal from '@/components/TradeAllocateModal';
 import { getTradePageList, TradePageParams, TradeRecordItem } from '@/api/tradeApi';
 import { getZoneOptions } from '@/api/investApi';
 import { secTypeArr } from '@/utils/common';
 import { getPageColumnDisplay, updateColumnDisplay, ColumnDisplayItem } from '@/api/columnDisplayApi';
+import ImportBtnGroup from '@/components/ImportBtnGroup';
 
 const { TabPane } = Tabs;
 const { Title } = Typography;
@@ -186,12 +186,7 @@ export default function TradeList() {
   return (
     <Card
       title={<Title level={5}>交易列表</Title>}
-      extra={
-        <Space>
-          <Button><UploadOutlined />导入</Button>
-          <Button><DownloadOutlined />下载</Button>
-        </Space>
-      }
+      extra={<ImportBtnGroup pageType='trade' />}
     >
       <FilterPanel onSearch={handleSearch} pageType='asset' />
 
