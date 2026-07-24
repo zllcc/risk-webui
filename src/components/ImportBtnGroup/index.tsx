@@ -62,16 +62,15 @@ const ImportTradeData: React.FC<ImportTradeDataProps> = ({ type }) => {
           const fileName = url.searchParams.get('fileName') || '';
 
           // 弹窗提示，附带下载按钮
-          Modal.warning({
+          Modal.confirm({
             title: '导入失败',
             content: '存在错误数据，请下载错误文件核对修改',
-            okText: '关闭',
-            footer: (_, { OkBtn }) => (
-              <>
-                <Button onClick={() => handleDownloadErrorFile(fileName)}>下载错误文件</Button>
-                <OkBtn />
-              </>
-            ),
+            okText: '下载错误文件',
+            cancelText: '取消',
+            onOk: () => handleDownloadErrorFile(fileName),
+            onCancel() {
+              console.log('Cancel');
+            },
           });
         } else {
           message.error(res.errorMsg || '导入失败');

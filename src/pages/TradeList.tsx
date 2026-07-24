@@ -176,7 +176,7 @@ export default function TradeList() {
   const handleCalTrade = () => {
     Modal.confirm({
       title: '交易核算确认',
-      content: '确认执行交易核算？核算会重新计算所有交易盈亏数据，任务耗时较长，请确认。',
+      content: '核算会重新计算所有交易盈亏数据，任务耗时较长。确认执行交易核算？',
       okText: '确认核算',
       cancelText: '取消',
       okButtonProps: { danger: false },
