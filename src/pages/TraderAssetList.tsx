@@ -8,7 +8,6 @@ import { secTypeArr } from '@/utils/common';
 import { getZoneOptions } from '@/api/investApi';
 import { getTraderPositionList, PositionRecord, PositionQueryParams } from '@/api/positionApi';
 import { getPageColumnDisplay, updateColumnDisplay, ColumnDisplayItem } from '@/api/columnDisplayApi';
-import ImportBtnGroup from '@/components/ImportBtnGroup';
 
 const { TabPane } = Tabs;
 const { Title } = Typography;
@@ -170,7 +169,6 @@ export default function AssetList() {
   return (
     <Card
       title={<Title level={5}>交易员持仓列表</Title>}
-      extra={<ImportBtnGroup pageType="traderAsset" />}
     >
       <FilterPanel onSearch={handleSearch} pageType="traderAsset" />
 

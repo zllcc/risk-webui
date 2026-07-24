@@ -5,10 +5,10 @@ import { importPositionExecution, downloadErrorFile, downloadTradeTemplate } fro
 import { saveBlobFile } from '@/utils/file';
 
 interface ImportTradeDataProps {
-  pageType: 'asset' | 'trade' | 'traderAsset';
+  type: '1' | '2' | '3';
 }
 
-const ImportTradeData: React.FC<ImportTradeDataProps> = ({ pageType }) => {
+const ImportTradeData: React.FC<ImportTradeDataProps> = ({ type }) => {
   const [importLoading, setImportLoading] = useState(false);
   // 保存失败返回的错误文件url
   const [errorFileName, setErrorFileName] = useState('');
@@ -17,7 +17,7 @@ const ImportTradeData: React.FC<ImportTradeDataProps> = ({ pageType }) => {
   const handleDownloadTemplate = async () => {
     try {
       const blob = await downloadTradeTemplate({
-        type: pageType === 'asset' ? '1' : '2'
+        type,
       });
       saveBlobFile(blob.request.responseURL, '交易数据导入模板.xlsx');
     } catch {
@@ -30,7 +30,7 @@ const ImportTradeData: React.FC<ImportTradeDataProps> = ({ pageType }) => {
     if (!errorFileName) return;
     try {
       const blob = await downloadErrorFile({
-        type: pageType === 'asset' ? '1' : '2',
+        type,
         fileName: errorFileName,
       });
       saveBlobFile(blob, errorFileName);
@@ -52,7 +52,7 @@ const ImportTradeData: React.FC<ImportTradeDataProps> = ({ pageType }) => {
         const base64Str = (reader.result as string).split(',')[1];
         console.log(reader, base64Str, '===base64Str')
         const res = await importPositionExecution({
-          type: pageType === 'asset' ? '1' : '2',
+          type,
           file: base64Str,
         });
 

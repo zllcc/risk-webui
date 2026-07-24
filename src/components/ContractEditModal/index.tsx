@@ -17,7 +17,7 @@ const ContractEditModal: React.FC<Props> = ({ open, detail, onCancel, onSuccess 
   // 弹窗打开回填数据
   useEffect(() => {
     if (open && detail) {
-      setEditCode(detail.code);
+      setEditCode(detail.shortName);
     } else {
       setEditCode('');
     }
@@ -30,7 +30,7 @@ const ContractEditModal: React.FC<Props> = ({ open, detail, onCancel, onSuccess 
     }
     setSubmitLoading(true);
     try {
-      await updateContractCode({ id: detail.id, code: editCode.trim() });
+      await updateContractCode({ id: detail.id, shortName: editCode.trim() });
       message.success('修改成功');
       onSuccess();
     } catch (e) {
@@ -44,7 +44,6 @@ const ContractEditModal: React.FC<Props> = ({ open, detail, onCancel, onSuccess 
     <Modal
       title="编辑合约"
       open={open}
-      maskClosable={false}
       confirmLoading={submitLoading}
       footer={
         <Space>
@@ -57,7 +56,7 @@ const ContractEditModal: React.FC<Props> = ({ open, detail, onCancel, onSuccess 
         <Space direction="vertical" size="middle" style={{ width: '100%' }}>
           <Space>
             <span>合约：</span>
-            <Input value={detail?.contractSymbol} disabled style={{ width: 300 }} />
+            <Input value={detail?.symbol} disabled style={{ width: 300 }} />
           </Space>
           <Space>
             <span>类型：</span>

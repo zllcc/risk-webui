@@ -185,7 +185,7 @@ export default function TradeList() {
   return (
     <Card
       title={<Title level={5}>交易列表</Title>}
-      extra={<ImportBtnGroup pageType='trade' />}
+      extra={<ImportBtnGroup type='2' />}
     >
       <FilterPanel onSearch={handleSearch} pageType='asset' />
 

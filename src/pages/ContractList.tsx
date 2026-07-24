@@ -4,7 +4,8 @@ import type { TableProps } from 'antd';
 const { Search } = Input;
 import ContractEditModal from '@/components/ContractEditModal';
 import ContractViewModal from '@/components/ContractViewModal';
-import { getContractData, updateContractCode } from '@/api/contractApi';
+import { getContractData } from '@/api/contractApi';
+import ImportBtnGroup from '@/components/ImportBtnGroup';
 
 const { Title } = Typography;
 
@@ -13,21 +14,20 @@ const { Option } = Select;
 // ========== 类型定义 ==========
 export interface ContractRow {
   id: number;
-  contractSymbol: string; // 合约
+  symbol: string; // 合约
   secType: string; // 类型
   exchange: string; // 交易所
   currency: string; // 币种
-  strikePrice: number | null; // 行权价
-  optionType: string | null; // 期权类型
-  expireDate: string | null; // 到期日
-  code: string; // 代码
+  strike: number | null; // 行权价
+  optRiaht: string | null; // 期权类型
+  lastTradeDate: string | null; // 到期日
+  shortName: string; // 代码
 }
 
 
 const ContractList = () => {
   // 筛选条件
   const [contractKeyword, setContractKeyword] = useState('');
-  const [secType, setSecType] = useState<string>('');
 
   // 表格数据
   const [tableData, setTableData] = useState<ContractRow[]>([]);
@@ -48,8 +48,7 @@ const ContractList = () => {
       const params = {
         pageNum,
         pageSize,
-        contractSymbol: contractKeyword,
-        secType,
+        symbolOrType: contractKeyword,
       };
       const res = await getContractData(params);
       setTableData(res.records);
@@ -59,7 +58,7 @@ const ContractList = () => {
     } finally {
       setLoading(false);
     }
-  }, [pageNum, contractKeyword, secType]);
+  }, [pageNum, contractKeyword]);
 
   useEffect(() => {
     fetchList();
@@ -88,29 +87,29 @@ const ContractList = () => {
   };
 
   const columns: TableProps<ContractRow>['columns'] = [
-    { title: '合约', dataIndex: 'contractSymbol', key: 'contractSymbol' },
+    { title: '合约', dataIndex: 'symbol', key: 'symbol' },
     { title: '类型', dataIndex: 'secType', key: 'secType' },
     { title: '交易所', dataIndex: 'exchange', key: 'exchange' },
     { title: '币种', dataIndex: 'currency', key: 'currency' },
     {
       title: '行权价',
-      dataIndex: 'strikePrice',
-      key: 'strikePrice',
+      dataIndex: 'strike',
+      key: 'strike',
       render: (val) => val ?? '--',
     },
     {
       title: '期权类型',
-      dataIndex: 'optionType',
-      key: 'optionType',
+      dataIndex: 'optRiaht',
+      key: 'optRiaht',
       render: (val) => val ?? '--',
     },
     {
       title: '到期日',
-      dataIndex: 'expireDate',
-      key: 'expireDate',
+      dataIndex: 'lastTradeDate',
+      key: 'lastTradeDate',
       render: (val) => val ?? '--',
     },
-    { title: '代码', dataIndex: 'code', key: 'code' },
+    { title: '代码', dataIndex: 'shortName', key: 'shortName' },
     {
       title: '操作',
       key: 'action',
@@ -124,34 +123,21 @@ const ContractList = () => {
   ];
 
   return (
-    <Card title={<Title level={5}>合约列表</Title>}>
+    <Card
+      title={<Title level={5}>合约列表</Title>}
+      extra={<ImportBtnGroup type="3" />}
+    >
       {/* 筛选区域 */}
       <Space size="large" style={{ marginBottom: 36 }}>
         <Space>
-          <span>合约:</span>
+          <span>合约/类型:</span>
           <Search
-            placeholder="请输入"
+            placeholder="请输入合约或类型"
             enterButton="查询"
             onSearch={handleSearch}
             style={{ width: 240 }}
             allowClear
           />
-        </Space>
-        <Space>
-          <span>类型:</span>
-          <Select
-            value={secType}
-            onChange={(val) => {
-              setSecType(val);
-              setPageNum(1); // 筛选重置第一页
-            }}
-            placeholder="请选择类型"
-            style={{ width: 240 }}
-            allowClear
-          >
-            <Option value="STK">股票STK</Option>
-            <Option value="OPT">期权OPT</Option>
-          </Select>
         </Space>
       </Space>
 

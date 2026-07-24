@@ -167,7 +167,7 @@ export default function AssetList() {
   return (
     <Card
       title={<Title level={5}>持仓列表</Title>}
-      extra={<ImportBtnGroup pageType='asset' />}
+      extra={<ImportBtnGroup type='1' />}
     >
       <FilterPanel onSearch={handleSearch} pageType="asset" />
 
