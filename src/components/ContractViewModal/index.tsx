@@ -23,11 +23,11 @@ const ContractViewModal: React.FC<Props> = ({ open, detail, onCancel }) => {
 
   // 查询历史行情表格
   const fetchPriceData = useCallback(async () => {
-    if (!detail?.id) return;
+    if (!detail?.conid) return;
     setLoading(true);
     try {
       const res = await getContractPriceHistory({
-        contractId: detail.id,
+        conid: detail.conid,
         pageNum,
         pageSize
       });
@@ -50,8 +50,8 @@ const ContractViewModal: React.FC<Props> = ({ open, detail, onCancel }) => {
   }, [open]);
 
   const columns = [
-    { title: '日期', dataIndex: 'tradeDate', key: 'tradeDate' },
-    { title: '价格', dataIndex: 'price', key: 'price' }
+    { title: '日期', dataIndex: 'dailyDate', key: 'dailyDate' },
+    { title: '价格', dataIndex: 'positionMarketPrice', key: 'positionMarketPrice' }
   ];
 
   return (

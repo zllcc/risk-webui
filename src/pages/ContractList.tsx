@@ -14,6 +14,7 @@ const { Option } = Select;
 // ========== 类型定义 ==========
 export interface ContractRow {
   id: number;
+  conid: number;
   symbol: string; // 合约
   secType: string; // 类型
   exchange: string; // 交易所
