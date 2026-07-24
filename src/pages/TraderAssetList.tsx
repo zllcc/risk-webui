@@ -95,12 +95,11 @@ export default function AssetList() {
   const fetchPositionData = useCallback(async () => {
     setLoading(true);
     try {
-      let zoneState = zoneType;
       if(!zoneOptions.length) {
         const res = await getZoneOptions() || [];
-        zoneState = res[0]?.value;
         setZoneOptions(res);
         setZoneType(res[0]?.value);
+        return;
       }
       const apiParams: PositionQueryParams = {
         pageNum,
@@ -114,7 +113,7 @@ export default function AssetList() {
         endDate: searchParams?.endDate ?? "",
         sectors: searchParams?.sectors ?? [],
         dateType: searchParams?.dateType ?? null,
-        zoneType: zoneState,
+        zoneType,
       };
 
     const res = await getTraderPositionList(apiParams);
@@ -132,7 +131,7 @@ export default function AssetList() {
 
   useEffect(() => {
     fetchPositionData();
-  }, []);
+  }, [fetchPositionData]);
 
   const handleSearch = (params: FilterParams) => {
     setSearchParams(params);

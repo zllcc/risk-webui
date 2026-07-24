@@ -95,25 +95,24 @@ export default function AssetList() {
   const fetchPositionData = useCallback(async () => {
     setLoading(true);
     try {
-      let zoneState = zoneType;
       if(!zoneOptions.length) {
         const res = await getZoneOptions() || [];
-        zoneState = res[0]?.value;
         setZoneOptions(res);
         setZoneType(res[0]?.value);
+        return;
       }
       const apiParams: AssetQueryParams = {
         pageNum,
         pageSize,
-        conids: searchParams?.accountCodes ?? [],
+        conids: searchParams?.conids ?? [],
         secType: activeTab,
         startDate: searchParams?.startDate ?? "",
         endDate: searchParams?.endDate ?? "",
         sectors: searchParams?.sectors ?? [],
         dateType: searchParams?.dateType ?? null,
-        zoneType: zoneState,
+        zoneType,
       };
-
+      
     const res = await getPositionList(apiParams);
       setTableData(res.records);
       setPageTotal(res.total);
@@ -129,7 +128,7 @@ export default function AssetList() {
 
   useEffect(() => {
     fetchPositionData();
-  }, []);
+  }, [fetchPositionData]);
 
   const handleSearch = (params: FilterParams) => {
     setSearchParams(params);

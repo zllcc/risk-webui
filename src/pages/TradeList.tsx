@@ -102,12 +102,11 @@ export default function TradeList() {
   const fetchTradeList = useCallback(async () => {
     setLoading(true);
     try {
-      let zoneState = zoneType;
       if(!zoneOptions.length) {
         const res = await getZoneOptions() || [];
-        zoneState = res[0]?.value;
         setZoneOptions(res);
         setZoneType(res[0]?.value);
+        return;
       }
       const reqParams: TradePageParams = {
         conids: activeFilter?.accountCodes ?? [],
@@ -116,7 +115,7 @@ export default function TradeList() {
         endDate: activeFilter?.endDate ?? "",
         sectors: activeFilter?.sectors ?? [],
         dateType: activeFilter?.dateType || null,
-        zoneType: zoneState,
+        zoneType,
         pageSize: 10,
         pageNum
       };
@@ -134,7 +133,7 @@ export default function TradeList() {
 
   useEffect(() => {
     fetchTradeList();
-  }, []);
+  }, [fetchTradeList]);
 
   const handleSearch = (params: TradePageParams) => {
     setActiveFilter(params);
