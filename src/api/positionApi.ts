@@ -72,8 +72,8 @@ export function getPositionList(params: AssetQueryParams) {
  * POST /position-execution/pc/import
  * @param file base64文件字符串
  */
-export function importPositionExecution(params?: Record<string, any>) {
-  return request.post('/position-execution/pc/import', params);
+export function importPositionExecution(data?: Record<string, any>) {
+  return request.post('/position-execution/pc/import', data);
 }
 
 
@@ -98,4 +98,13 @@ export function downloadTradeTemplate(params?: Record<string, any>) {
     params,
     responseType: 'blob',
   });
+}
+
+
+/**
+ * 执行交易核算
+ * POST /position-execution/pc/cal
+ */
+export function executeTradeCal(data?: Record<string, any>) {
+  return request.post('/position-execution/pc/cal', data);
 }

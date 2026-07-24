@@ -10,8 +10,6 @@ interface ImportTradeDataProps {
 
 const ImportTradeData: React.FC<ImportTradeDataProps> = ({ type }) => {
   const [importLoading, setImportLoading] = useState(false);
-  // 保存失败返回的错误文件url
-  const [errorFileName, setErrorFileName] = useState('');
 
   // 下载模板
   const handleDownloadTemplate = async () => {
@@ -26,14 +24,13 @@ const ImportTradeData: React.FC<ImportTradeDataProps> = ({ type }) => {
   };
 
   // 下载错误文件
-  const handleDownloadErrorFile = async () => {
-    if (!errorFileName) return;
+  const handleDownloadErrorFile = async (fileName: any) => {
     try {
       const blob = await downloadErrorFile({
         type,
-        fileName: errorFileName,
+        fileName,
       });
-      saveBlobFile(blob, errorFileName);
+      saveBlobFile(blob.request.responseURL, fileName);
     } catch {
       message.error('错误文件下载失败');
     }
@@ -42,7 +39,6 @@ const ImportTradeData: React.FC<ImportTradeDataProps> = ({ type }) => {
   // 文件上传前处理：转base64
   const handleBeforeUpload = async (file: RcFile) => {
     setImportLoading(true);
-    setErrorFileName('');
     const reader = new FileReader();
 
     reader.readAsDataURL(file);
@@ -50,7 +46,6 @@ const ImportTradeData: React.FC<ImportTradeDataProps> = ({ type }) => {
       try {
         // 去掉base64前缀 data:xxx;base64,
         const base64Str = (reader.result as string).split(',')[1];
-        console.log(reader, base64Str, '===base64Str')
         const res = await importPositionExecution({
           type,
           file: base64Str,
@@ -65,7 +60,6 @@ const ImportTradeData: React.FC<ImportTradeDataProps> = ({ type }) => {
           // 提取fileName参数
           const url = new URL(urlStr, window.location.origin);
           const fileName = url.searchParams.get('fileName') || '';
-          setErrorFileName(fileName);
 
           // 弹窗提示，附带下载按钮
           Modal.warning({
@@ -74,7 +68,7 @@ const ImportTradeData: React.FC<ImportTradeDataProps> = ({ type }) => {
             okText: '关闭',
             footer: (_, { OkBtn }) => (
               <>
-                <Button danger onClick={handleDownloadErrorFile}>下载错误文件</Button>
+                <Button danger onClick={() => handleDownloadErrorFile(fileName)}>下载错误文件</Button>
                 <OkBtn />
               </>
             ),
@@ -101,7 +95,7 @@ const ImportTradeData: React.FC<ImportTradeDataProps> = ({ type }) => {
         showUploadList={false}
         accept=".xlsx,.xls"
       >
-        <Button loading={importLoading}>导入交易数据</Button>
+        <Button loading={importLoading}>导入数据</Button>
       </Upload>
     </Space>
   );

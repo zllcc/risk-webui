@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
-  Card, Tabs, Select, Table, Button, Checkbox,
+  Card, Tabs, Select, Table, Button, Checkbox, Modal,
   Space, Typography, Row, Col, Pagination, Spin, Empty, message
 } from 'antd';
 import FilterPanel, { FilterParams } from '@/components/FilterPanel';
@@ -10,6 +10,7 @@ import { getZoneOptions } from '@/api/investApi';
 import { secTypeArr } from '@/utils/common';
 import { getPageColumnDisplay, updateColumnDisplay, ColumnDisplayItem } from '@/api/columnDisplayApi';
 import ImportBtnGroup from '@/components/ImportBtnGroup';
+import { executeTradeCal } from '@/api/positionApi';
 
 const { TabPane } = Tabs;
 const { Title } = Typography;
@@ -36,6 +37,8 @@ export default function TradeList() {
   const [tableData, setTableData] = useState<TradeRecordItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [colLoading, setColLoading] = useState(false);
+  // 核算按钮loading
+  const [calLoading, setCalLoading] = useState(false);
 
   const [pageNum, setPageNum] = useState(1);
   const pageSize = 10;
@@ -125,11 +128,12 @@ export default function TradeList() {
     } catch (err) {
       console.error("交易列表请求失败", err);
       setTableData([]);
+      setTableData([]);
       setTotal(0);
     } finally {
       setLoading(false);
     }
-  }, [activeFilter, pageNum, activeTab, zoneType]);
+  }, [activeFilter, pageNum, activeTab, zoneType, zoneOptions]);
 
   useEffect(() => {
     fetchTradeList();
@@ -148,6 +152,30 @@ export default function TradeList() {
   const handleAllocateConfirm = () => {
     fetchTradeList();
     setAllocateModalOpen(false);
+  };
+
+  // ========== 新增：核算点击事件 ==========
+  const handleCalTrade = () => {
+    Modal.confirm({
+      title: '交易核算确认',
+      content: '确认执行交易核算？核算会重新计算所有交易盈亏数据，任务耗时较长，请确认。',
+      okText: '确认核算',
+      cancelText: '取消',
+      okButtonProps: { danger: false },
+      onOk: async () => {
+        setCalLoading(true);
+        try {
+          await executeTradeCal();
+          message.success('核算任务已提交成功');
+          // 核算完成刷新列表，按需保留/注释
+          fetchTradeList();
+        } catch (err) {
+          message.error('核算提交失败，请稍后重试');
+        } finally {
+          setCalLoading(false);
+        }
+      }
+    });
   };
 
   // 动态表格列，完全依赖后端columnName
@@ -185,7 +213,13 @@ export default function TradeList() {
   return (
     <Card
       title={<Title level={5}>交易列表</Title>}
-      extra={<ImportBtnGroup type='2' />}
+      extra={
+        <Space>
+          {/* 新增核算按钮 */}
+          <Button type="primary" loading={calLoading} onClick={handleCalTrade}>核算</Button>
+          <ImportBtnGroup type='2' />
+        </Space>
+      }
     >
       <FilterPanel onSearch={handleSearch} pageType='asset' />
 
