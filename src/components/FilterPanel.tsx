@@ -139,7 +139,6 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ onSearch, pageType }) => {
     conids?: string[];
     sectors?: string[];
     } = pageType === 'overview' ? { referenceIndexConids: benchmarkType } : { conids: selectedSectors, sectors: selectedSubjectMatter };
-    console.log(typeParams, '===typeParams')
     onSearch({
       accountCodes: selectedAccounts,
       tradeNames: selectedTraders,

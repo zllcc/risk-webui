@@ -22,6 +22,9 @@ export default function AssetList() {
   const [activeTab, setActiveTab] = useState("股票");
   const [zoneOptions, setZoneOptions] = useState<{value: string; label: string}[]>([]);
   const [zoneType, setZoneType] = useState('');
+  // 新增：区域是否初始化完成标记
+  const [zoneReady, setZoneReady] = useState(false);
+
   const [tableData, setTableData] = useState<PositionRecord[]>([]);
   const [loading, setLoading] = useState(false);
   const [colLoading, setColLoading] = useState(false);
@@ -91,16 +94,33 @@ export default function AssetList() {
     }
   };
 
+  // 加载区域下拉
+  const getZone = useCallback(async () => {
+    try {
+      const res = await getZoneOptions() || [];
+      setZoneOptions(res);
+      if (res.length > 0) {
+        setZoneType(res[0].value);
+      }
+    } catch (err) {
+      console.error('获取区域失败');
+    } finally {
+      // 无论成功失败，标记区域初始化完成
+      setZoneReady(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    getZone();
+  }, [getZone]);
+
   // 直接赋值原始数据，无转换
   const fetchPositionData = useCallback(async () => {
+    // 关键：区域还没加载完成，直接跳过请求
+    if (!zoneReady) return;
+
     setLoading(true);
     try {
-      if(!zoneOptions.length) {
-        const res = await getZoneOptions() || [];
-        setZoneOptions(res);
-        setZoneType(res[0]?.value);
-        return;
-      }
       const apiParams: AssetQueryParams = {
         pageNum,
         pageSize,
@@ -112,8 +132,8 @@ export default function AssetList() {
         dateType: searchParams?.dateType ?? null,
         zoneType,
       };
-      
-    const res = await getPositionList(apiParams);
+
+      const res = await getPositionList(apiParams);
       setTableData(res.records);
       setPageTotal(res.total);
     } catch (err) {
@@ -124,7 +144,7 @@ export default function AssetList() {
     } finally {
       setLoading(false);
     }
-  }, [pageNum, activeTab, searchParams, zoneType]);
+  }, [pageNum, activeTab, searchParams, zoneType, zoneReady]);
 
   useEffect(() => {
     fetchPositionData();

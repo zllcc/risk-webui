@@ -34,6 +34,8 @@ export default function TradeList() {
   const [activeTab, setActiveTab] = useState("股票");
   const [zoneOptions, setZoneOptions] = useState<{value: string; label: string}[]>([]);
   const [zoneType, setZoneType] = useState('');
+    // 新增：区域是否初始化完成标记
+  const [zoneReady, setZoneReady] = useState(false);
   const [tableData, setTableData] = useState<TradeRecordItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [colLoading, setColLoading] = useState(false);
@@ -101,16 +103,32 @@ export default function TradeList() {
     }
   };
 
+    // 加载区域下拉
+  const getZone = useCallback(async () => {
+    try {
+      const res = await getZoneOptions() || [];
+      setZoneOptions(res);
+      if (res.length > 0) {
+        setZoneType(res[0].value);
+      }
+    } catch (err) {
+      console.error('获取区域失败');
+    } finally {
+      // 无论成功失败，标记区域初始化完成
+      setZoneReady(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    getZone();
+  }, [getZone]);
+
   // 直接使用后端原始records，无转换
   const fetchTradeList = useCallback(async () => {
     setLoading(true);
     try {
-      if(!zoneOptions.length) {
-        const res = await getZoneOptions() || [];
-        setZoneOptions(res);
-        setZoneType(res[0]?.value);
-        return;
-      }
+      if (!zoneReady) return;
+
       const reqParams: TradePageParams = {
         conids: activeFilter?.accountCodes ?? [],
         secType: activeTab,
@@ -133,7 +151,7 @@ export default function TradeList() {
     } finally {
       setLoading(false);
     }
-  }, [activeFilter, pageNum, activeTab, zoneType, zoneOptions]);
+  }, [activeFilter, pageNum, activeTab, zoneType, zoneReady]);
 
   useEffect(() => {
     fetchTradeList();

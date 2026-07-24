@@ -68,7 +68,7 @@ const ImportTradeData: React.FC<ImportTradeDataProps> = ({ type }) => {
             okText: '关闭',
             footer: (_, { OkBtn }) => (
               <>
-                <Button danger onClick={() => handleDownloadErrorFile(fileName)}>下载错误文件</Button>
+                <Button onClick={() => handleDownloadErrorFile(fileName)}>下载错误文件</Button>
                 <OkBtn />
               </>
             ),
