@@ -13,6 +13,7 @@ export interface TradefilterParams {
 }
 
 export interface TradePageParams {
+  accountCodes: string[];
   startDate: string;
   endDate: string;
   conids: string[];

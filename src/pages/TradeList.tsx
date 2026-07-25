@@ -130,7 +130,8 @@ export default function TradeList() {
       if (!zoneReady) return;
 
       const reqParams: TradePageParams = {
-        conids: activeFilter?.accountCodes ?? [],
+        accountCodes: activeFilter?.accountCodes ?? [],
+        conids: activeFilter?.conids ?? [],
         secType: activeTab,
         startDate: activeFilter?.startDate ?? "",
         endDate: activeFilter?.endDate ?? "",

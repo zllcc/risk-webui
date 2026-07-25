@@ -18,6 +18,7 @@ export interface PositionQueryParams {
 export interface AssetQueryParams {
   pageNum: number;
   pageSize: number;
+  accountCodes: string[];
   conids: string[];
   secType: string;
   startDate: string;

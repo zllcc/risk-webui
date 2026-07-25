@@ -124,6 +124,7 @@ export default function AssetList() {
       const apiParams: AssetQueryParams = {
         pageNum,
         pageSize,
+        accountCodes: searchParams?.accountCodes ?? [],
         conids: searchParams?.conids ?? [],
         secType: activeTab,
         startDate: searchParams?.startDate ?? "",

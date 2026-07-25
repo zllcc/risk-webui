@@ -127,7 +127,9 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ onSearch, pageType }) => {
 
   // 选中账号变化，重新拉取操盘人
   useEffect(() => {
-    fetchTraderList(selectedAccounts);
+    if (pageType !== 'asset') {
+      fetchTraderList(selectedAccounts);
+    }
   }, [selectedAccounts])
 
   // 查询按钮
@@ -176,7 +178,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ onSearch, pageType }) => {
   const formItemArr = [
     {
       label: '账号',
-      isShow: pageType !== 'asset',
+      isShow: true,
       content: (
         <Select
           mode="multiple"
