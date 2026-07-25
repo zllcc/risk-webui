@@ -73,10 +73,10 @@ const ImportTradeData: React.FC<ImportTradeDataProps> = ({ type }) => {
             },
           });
         } else {
-          message.error(res.errorMsg || '导入失败');
+          message.error(res.msg || '接口请求失败')
         }
       } catch (err) {
-        message.error('导入请求异常，请稍后重试');
+        console.log('导入请求异常，请稍后重试');
       } finally {
         setImportLoading(false);
       }
