@@ -1,24 +1,21 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
-  Card, Tabs, Select, Table, Button, Checkbox, Modal,
-  Space, Typography, Row, Col, Pagination, Spin, Empty, message
+  Card, Tabs, Select, Table, Checkbox, Modal,
+  Space, Typography, Row, Col, Pagination, Spin, Empty, message, Button
 } from 'antd';
 import FilterPanel, { FilterParams } from '@/components/FilterPanel';
-import TradeAllocateModal from '@/components/TradeAllocateModal';
-import { getTradePageList, TradePageParams, TradeRecordItem } from '@/api/tradeApi';
+import ImportBtnGroup from '@/components/ImportBtnGroup';
+import { getTraderTradePageList, TradePageParams, TradeRecordItem, executeTraderTradeCal } from '@/api/tradeApi';
 import { getZoneOptions } from '@/api/investApi';
 import { secTypeArr } from '@/utils/common';
 import { getPageColumnDisplay, updateColumnDisplay, ColumnDisplayItem } from '@/api/columnDisplayApi';
-import ImportBtnGroup from '@/components/ImportBtnGroup';
-import { executeTradeCal, exportUncalibratedTrades } from '@/api/positionApi';
-import { saveBlobFile } from '@/utils/file';
 
 const { TabPane } = Tabs;
 const { Title } = Typography;
 
-const PAGE_NAME = '交易列表';
+const PAGE_NAME = '交易员交易列表';
 
-export default function TradeList() {
+export default function TraderTradeList() {
   const [columnConfigList, setColumnConfigList] = useState<ColumnDisplayItem[]>([]);
   const [visibleCols, setVisibleCols] = useState<string[]>([]);
 
@@ -35,23 +32,17 @@ export default function TradeList() {
   const [activeTab, setActiveTab] = useState("股票");
   const [zoneOptions, setZoneOptions] = useState<{value: string; label: string}[]>([]);
   const [zoneType, setZoneType] = useState('');
-    // 新增：区域是否初始化完成标记
+    // 区域是否初始化完成标记
   const [zoneReady, setZoneReady] = useState(false);
   const [tableData, setTableData] = useState<TradeRecordItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [colLoading, setColLoading] = useState(false);
-  // 核算按钮loading
-  const [calLoading, setCalLoading] = useState(false);
-  // 导出按钮loading
-  const [exportLoading, setExportLoading] = useState(false);
 
   const [pageNum, setPageNum] = useState(1);
   const pageSize = 10;
   const [total, setTotal] = useState(0);
-
-  const [allocateModalOpen, setAllocateModalOpen] = useState(false);
-  const [currentTrade, setCurrentTrade] = useState<TradeRecordItem | null>(null);
-
+  // 核算按钮loading
+  const [calLoading, setCalLoading] = useState(false);
 
   // 加载表头配置
   const loadColumnConfig = useCallback(async (type: string) => {
@@ -106,7 +97,7 @@ export default function TradeList() {
     }
   };
 
-    // 加载区域下拉
+  // 加载区域下拉
   const getZone = useCallback(async () => {
     try {
       const res = await getZoneOptions() || [];
@@ -117,7 +108,6 @@ export default function TradeList() {
     } catch (err) {
       console.error('获取区域失败');
     } finally {
-      // 无论成功失败，标记区域初始化完成
       setZoneReady(true);
     }
   }, []);
@@ -126,7 +116,7 @@ export default function TradeList() {
     getZone();
   }, [getZone]);
 
-  // 直接使用后端原始records，无转换
+  // 使用 /positionTraderExecution/pc/query-page 接口
   const fetchTradeList = useCallback(async () => {
     setLoading(true);
     try {
@@ -134,6 +124,8 @@ export default function TradeList() {
 
       const reqParams: TradePageParams = {
         accountCodes: activeFilter?.accountCodes ?? [],
+        tradeNames: activeFilter?.tradeNames ?? [],
+        strategyNames: activeFilter?.strategyNames ?? [],
         conids: activeFilter?.conids ?? [],
         secType: activeTab,
         startDate: activeFilter?.startDate ?? "",
@@ -144,12 +136,11 @@ export default function TradeList() {
         pageSize: 10,
         pageNum
       };
-      const res = await getTradePageList(reqParams);
+      const res = await getTraderTradePageList(reqParams);
       setTableData(res.records);
       setTotal(res.total);
     } catch (err) {
-      console.error("交易列表请求失败", err);
-      setTableData([]);
+      console.error("交易员交易列表请求失败", err);
       setTableData([]);
       setTotal(0);
     } finally {
@@ -161,22 +152,12 @@ export default function TradeList() {
     fetchTradeList();
   }, [fetchTradeList]);
 
-  const handleSearch = (params: TradePageParams) => {
+  const handleSearch = (params: FilterParams) => {
     setActiveFilter(params);
     setPageNum(1);
   };
 
-  const openAllocateDialog = (record: TradeRecordItem) => {
-    setCurrentTrade(record);
-    setAllocateModalOpen(true);
-  };
-
-  const handleAllocateConfirm = () => {
-    fetchTradeList();
-    setAllocateModalOpen(false);
-  };
-
-  // ========== 新增：核算点击事件 ==========
+  // 核算确认弹窗及接口调用
   const handleCalTrade = () => {
     Modal.confirm({
       title: '交易核算确认',
@@ -187,9 +168,8 @@ export default function TradeList() {
       onOk: async () => {
         setCalLoading(true);
         try {
-          await executeTradeCal();
+          await executeTraderTradeCal();
           message.success('核算任务已提交成功');
-          // 核算完成刷新列表，按需保留/注释
           fetchTradeList();
         } catch (err) {
           message.error('核算提交失败，请稍后重试');
@@ -200,36 +180,7 @@ export default function TradeList() {
     });
   };
 
-  // ========== 新增：导出未核算交易数据 ==========
-  const handleExportUncalibrated = async () => {
-    setExportLoading(true);
-    try {
-      const reqParams = {
-        accountCodes: activeFilter?.accountCodes ?? [],
-        conids: activeFilter?.conids ?? [],
-        secType: activeTab,
-        tradeNames: activeFilter?.tradeNames ?? [],
-        strategyNames: activeFilter?.strategyNames ?? [],
-        startDate: activeFilter?.startDate ?? "",
-        endDate: activeFilter?.endDate ?? "",
-        sectors: activeFilter?.sectors ?? [],
-        dateType: activeFilter?.dateType || null,
-        zoneType,
-      };
-      const res = await exportUncalibratedTrades(reqParams as any);
-      const blob = new Blob([res.data]);
-      const url = URL.createObjectURL(blob);
-      const fileName = `交易数据_${new Date().toISOString().slice(0, 10)}.xlsx`;
-      saveBlobFile(url as any, fileName);
-      message.success('导出成功');
-    } catch (err) {
-      message.error('导出失败，请稍后重试');
-    } finally {
-      setExportLoading(false);
-    }
-  };
-
-  // 动态表格列，完全依赖后端columnName
+  // 动态表格列，完全依赖后端 columnName
   const tableColumns = columnConfigList
     .filter(col => visibleCols.includes(col.columnName))
     .map(col => {
@@ -243,11 +194,7 @@ export default function TradeList() {
         render: undefined as any,
       };
 
-      if (fieldKey === "operation") {
-        colConfig.render = (_val: any, record: TradeRecordItem) => (
-          <Button type="link" onClick={() => openAllocateDialog(record)}>分配</Button>
-        );
-      } else if (fieldKey === "calExecutionUnrealizedPnl") {
+      if (fieldKey === "calExecutionUnrealizedPnl") {
         colConfig.render = (val: number) => (
           <span style={{ color: val >= 0 ? "#f5222d" : "#52c41a" }}>
             {val > 0 ? "+" : ""}{val?.toLocaleString()}
@@ -263,18 +210,15 @@ export default function TradeList() {
 
   return (
     <Card
-      title={<Title level={5}>交易列表</Title>}
+      title={<Title level={5}>交易员交易列表</Title>}
       extra={
         <Space>
-          {/* 新增核算按钮 */}
           <Button type="primary" loading={calLoading} onClick={handleCalTrade}>核算</Button>
-          {/* 导出按钮 */}
-          <Button loading={exportLoading} onClick={handleExportUncalibrated}>导出</Button>
-          <ImportBtnGroup type='2' />
+          <ImportBtnGroup type='6' />
         </Space>
       }
     >
-      <FilterPanel onSearch={handleSearch} pageType='asset' />
+      <FilterPanel onSearch={handleSearch} pageType='traderAsset' />
 
       <Row justify="space-between" align="middle" style={{ marginBottom: 16, marginTop: 16 }}>
         <Col>
@@ -331,15 +275,6 @@ export default function TradeList() {
           showSizeChanger={false}
         />
       </Row>
-
-      {allocateModalOpen && currentTrade &&
-        (<TradeAllocateModal
-          open={allocateModalOpen}
-          tradeData={currentTrade}
-          onCancel={() => setAllocateModalOpen(false)}
-          onConfirm={handleAllocateConfirm}
-        />)
-      }
     </Card>
   );
 }

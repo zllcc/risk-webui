@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Row, Col, Space, Select, DatePicker, Button } from 'antd';
+import { Row, Col, Space, Select, DatePicker, Button, Checkbox } from 'antd';
 import type { SelectProps } from 'antd/es/select';
 import { queryInvestStrategy, getContractSectorList, getContractList } from '@/api/investApi'
 import { getAccountSelectList, getTraderSelectList } from '@/api/accountApi'
@@ -20,6 +20,7 @@ export interface FilterParams {
   conids?: string[];
   sectors?: string[];
   dateType?: number | null;
+  aggregate?: number;
 }
 export const timeShortOpts = [
   { value: 1, label: "当日" },
@@ -46,6 +47,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ onSearch, pageType }) => {
   const [dateType, setDateType] = useState<number | null>(1);
   const [tempCustomDate, setTempCustomDate] = useState<[dayjs.Dayjs, dayjs.Dayjs] | null>(null);
   const [benchmarkType, setBenchmarkType] = useState<string[]>([]);
+  const [aggregate, setAggregate] = useState<boolean>(true);
 
   // 下拉选项数据源（后端接口）
   const [accountOptions, setAccountOptions] = useState<SelectProps['options']>([]);
@@ -148,6 +150,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ onSearch, pageType }) => {
       startDate,
       endDate,
       dateType,
+      aggregate: pageType === 'traderAsset' ? (aggregate ? 1 : 0) : undefined,
       ...typeParams
     });
   };
@@ -172,6 +175,30 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ onSearch, pageType }) => {
   // 切换操盘人，清空策略
   const handleTraderChange = (vals: string[]) => {
     setSelectedTraders(vals);
+  };
+
+  // 重置按钮
+  const handleReset = () => {
+    setSelectedAccounts([]);
+    setSelectedTraders([]);
+    setSelectedStrategies([]);
+    setSelectedSubjectMatter([]);
+    setSelectedSectors([]);
+    setDateType(1);
+    setTempCustomDate(null);
+    setBenchmarkType([]);
+    setAggregate(true);
+    onSearch({
+      accountCodes: [],
+      tradeNames: [],
+      strategyNames: [],
+      startDate: null,
+      endDate: null,
+      dateType: 1,
+      conids: [],
+      sectors: [],
+      aggregate: pageType === 'traderAsset' ? 1 : undefined,
+    });
   };
 
   // 筛选项配置
@@ -288,28 +315,35 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ onSearch, pageType }) => {
           placeholder="请选择业绩基准"
         />
       ),
+    },
+    {
+      label: '是否合计',
+      isShow: pageType === 'traderAsset',
+      content: (
+        <Checkbox
+          checked={aggregate}
+          onChange={(e) => setAggregate(e.target.checked)}
+        >
+          合计
+        </Checkbox>
+      ),
     }
   ]
 
   return (
     <>
-      <Row gutter={[16, 12]} style={{ marginBottom: 12 }} align="middle">
+      <Space size={12} style={{ marginBottom: 12, alignItems: 'center' }} wrap>
         {formItemArr.map((item, index) => (
           item.isShow && (
-            <Col key={index} span={6}>
-              <div>{item.label}：</div>
-              <Space size="small" align="baseline">
-                {item.content}
-              </Space>
-            </Col>
+            <Space key={index} size={4} align="center">
+              <span>{item.label}：</span>
+              {item.content}
+            </Space>
           )
         ))}
-      </Row>
-      <Row style={{ marginBottom: 24 }} align="middle" justify="end">
-        <Col>
-          <Button type="primary" onClick={handleQuery}>查询</Button>
-        </Col>
-      </Row>
+        <Button type="primary" onClick={handleQuery}>查询</Button>
+        <Button onClick={handleReset}>重置</Button>
+      </Space>
     </>
   );
 };

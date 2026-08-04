@@ -42,8 +42,9 @@ const ContractEditModal: React.FC<Props> = ({ open, detail, onCancel, onSuccess 
 
   return (
     <Modal
-      title="编辑合约"
+      title="编辑"
       open={open}
+      onCancel={onCancel}
       confirmLoading={submitLoading}
       footer={
         <Space>
@@ -55,7 +56,7 @@ const ContractEditModal: React.FC<Props> = ({ open, detail, onCancel, onSuccess 
       <Spin spinning={!detail}>
         <Space direction="vertical" size="middle" style={{ width: '100%' }}>
           <Space>
-            <span>合约：</span>
+            <span>标的：</span>
             <Input value={detail?.symbol} disabled style={{ width: 300 }} />
           </Space>
           <Space>

@@ -1,6 +1,7 @@
 import { Navigate, useRoutes } from 'react-router-dom';
 import Login from './pages/Login.js';
 import TraderAssetList from './pages/TraderAssetList.tsx'
+import TraderTradeList from './pages/TraderTradeList.tsx';
 import AssetList from './pages/AssetList.tsx';
 import ContractList from './pages/ContractList.js';
 import OverviewList from './pages/OverviewList.tsx';
@@ -29,6 +30,7 @@ export default function Router() {
         { path: '', element: <Navigate to="overview" replace /> },
         { path: 'overview', element: <OverviewList /> },
         { path: 'trader-asset-list', element: <TraderAssetList /> },
+        { path: 'trader-trade-list', element: <TraderTradeList /> },
         { path: 'trade-list', element: <TradeList /> },
         { path: 'asset-analysis', element: <PortfolioAnalysis /> },
         { path: 'trader-manage', element: <TraderPrincipalPage /> },

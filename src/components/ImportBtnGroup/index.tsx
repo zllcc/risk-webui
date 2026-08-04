@@ -5,10 +5,11 @@ import { importPositionExecution, downloadErrorFile, downloadTradeTemplate } fro
 import { saveBlobFile } from '@/utils/file';
 
 interface ImportTradeDataProps {
-  type: '1' | '2' | '3';
+  type: '1' | '2' | '3' | '4' | '5' | '6';
+  onSuccess?: () => void;
 }
 
-const ImportTradeData: React.FC<ImportTradeDataProps> = ({ type }) => {
+const ImportTradeData: React.FC<ImportTradeDataProps> = ({ type, onSuccess }) => {
   const [importLoading, setImportLoading] = useState(false);
 
   // 下载模板
@@ -54,6 +55,7 @@ const ImportTradeData: React.FC<ImportTradeDataProps> = ({ type }) => {
         // 业务code判断
         if (res.code === 0) {
           message.success('导入成功');
+          onSuccess?.();
         } else if (res.code === -66) {
           // 失败场景：msg 是完整接口路径 /position-history/pc/download-error-file?fileName=xxx.xlsx
           const urlStr: string = res.msg;

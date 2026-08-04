@@ -13,6 +13,7 @@ export interface PositionQueryParams {
   sectors: string[];
   dateType: number | null;
   zoneType:string;
+  aggregate?: number;
 }
 
 export interface AssetQueryParams {
@@ -108,4 +109,30 @@ export function downloadTradeTemplate(params?: Record<string, any>) {
  */
 export function executeTradeCal(data?: Record<string, any>) {
   return request.post('/position-execution/pc/cal', data);
+}
+
+/**
+ * 导出未核算交易数据
+ * POST /position-execution/pc/export-uncalibrated
+ */
+export function exportUncalibratedTrades(params?: PositionQueryParams) {
+  return request({
+    url: '/position-execution/pc/export',
+    method: 'POST',
+    data: params,
+    responseType: 'blob',
+  });
+}
+
+/**
+ * 导出持仓数据
+ * POST /position-history/pc/export
+ */
+export function exportPositionHistory(params?: Omit<AssetQueryParams, 'pageNum' | 'pageSize'>) {
+  return request({
+    url: '/position-history/pc/export',
+    method: 'POST',
+    data: params,
+    responseType: 'blob',
+  });
 }

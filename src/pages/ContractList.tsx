@@ -1,15 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Card, Input, Select, Table, Pagination, Space, Button, message, Typography } from 'antd';
 import type { TableProps } from 'antd';
-const { Search } = Input;
 import ContractEditModal from '@/components/ContractEditModal';
 import ContractViewModal from '@/components/ContractViewModal';
 import { getContractData } from '@/api/contractApi';
+import { getSecTypeOptions } from '@/api/investApi';
 import ImportBtnGroup from '@/components/ImportBtnGroup';
 
 const { Title } = Typography;
-
-const { Option } = Select;
 
 // ========== 类型定义 ==========
 export interface ContractRow {
@@ -28,7 +26,10 @@ export interface ContractRow {
 
 const ContractList = () => {
   // 筛选条件
-  const [contractKeyword, setContractKeyword] = useState('');
+  const [searchSymbol, setSearchSymbol] = useState('');
+  const [searchShortName, setSearchShortName] = useState('');
+  const [searchSecType, setSearchSecType] = useState<string | undefined>(undefined);
+  const [secTypeOptions, setSecTypeOptions] = useState<{value: string; label: string}[]>([]);
 
   // 表格数据
   const [tableData, setTableData] = useState<ContractRow[]>([]);
@@ -42,31 +43,52 @@ const ContractList = () => {
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [currentRow, setCurrentRow] = useState<ContractRow | null>(null);
 
+  // 加载标的类型下拉
+  useEffect(() => {
+    getSecTypeOptions().then(res => {
+      setSecTypeOptions(res || []);
+    }).catch(() => {
+      console.error('获取标的类型失败');
+    });
+  }, []);
+
   // 请求列表数据
-  const fetchList = useCallback(async () => {
+  const fetchList = useCallback(async (symbol: string, shortName: string, secType: string, page: number) => {
     setLoading(true);
     try {
       const params = {
-        pageNum,
+        pageNum: page,
         pageSize,
-        symbolOrType: contractKeyword,
+        symbol,
+        shortName,
+        secType,
       };
       const res = await getContractData(params);
       setTableData(res.records);
       setTotal(res.total);
     } catch (e) {
-      message.error('合约列表加载失败');
+      message.error('标的资产列表加载失败');
     } finally {
       setLoading(false);
     }
-  }, [pageNum, contractKeyword]);
+  }, []);
 
+  // 仅组件挂载时加载一次
   useEffect(() => {
-    fetchList();
+    fetchList('', '', '', 1);
   }, [fetchList]);
 
-  const handleSearch = (value: any) => {
-    setContractKeyword(value);
+  const handleSearch = () => {
+    setPageNum(1);
+    fetchList(searchSymbol, searchShortName, searchSecType ?? '', 1);
+  }
+
+  const handleReset = () => {
+    setSearchSymbol('');
+    setSearchShortName('');
+    setSearchSecType(undefined);
+    setPageNum(1);
+    fetchList('', '', '', 1);
   }
 
   // 打开编辑弹窗
@@ -84,14 +106,15 @@ const ContractList = () => {
   // 编辑提交成功回调，刷新列表
   const afterEditSuccess = () => {
     setEditModalOpen(false);
-    fetchList();
+    fetchList(searchSymbol, searchShortName, searchSecType ?? '', pageNum);
   };
 
   const columns: TableProps<ContractRow>['columns'] = [
-    { title: '合约', dataIndex: 'symbol', key: 'symbol' },
+    { title: '标的资产', dataIndex: 'symbol', key: 'symbol' },
     { title: '类型', dataIndex: 'secType', key: 'secType' },
     { title: '交易所', dataIndex: 'exchange', key: 'exchange' },
     { title: '币种', dataIndex: 'currency', key: 'currency' },
+    { title: '合约乘数', dataIndex: 'multiplier', key: 'multiplier',render: (val) => val ?? '--',},
     {
       title: '行权价',
       dataIndex: 'strike',
@@ -125,21 +148,38 @@ const ContractList = () => {
 
   return (
     <Card
-      title={<Title level={5}>合约列表</Title>}
+      title={<Title level={5}>标的资产</Title>}
       extra={<ImportBtnGroup type="3" />}
     >
       {/* 筛选区域 */}
-      <Space size="large" style={{ marginBottom: 36 }}>
-        <Space>
-          <span>合约/类型:</span>
-          <Search
-            placeholder="请输入合约或类型"
-            enterButton="查询"
-            onSearch={handleSearch}
-            style={{ width: 240 }}
-            allowClear
-          />
-        </Space>
+      <Space size={12} style={{ marginBottom: 18, alignItems: 'center' }} wrap>
+        <span>标的资产：</span>
+        <Input
+          placeholder="请输入标的资产"
+          value={searchSymbol}
+          onChange={(e) => setSearchSymbol(e.target.value)}
+          style={{ width: 180 }}
+          allowClear
+        />
+        <span>标的资产代码：</span>
+        <Input
+          placeholder="请输入标的资产代码"
+          value={searchShortName}
+          onChange={(e) => setSearchShortName(e.target.value)}
+          style={{ width: 180 }}
+          allowClear
+        />
+        <span>标的类型：</span>
+        <Select
+          placeholder="请选择标的类型"
+          value={searchSecType}
+          onChange={(v) => setSearchSecType(v)}
+          style={{ minWidth: 180 }}
+          allowClear
+          options={secTypeOptions}
+        />
+        <Button type="primary" onClick={handleSearch}>查询</Button>
+        <Button onClick={handleReset}>重置</Button>
       </Space>
 
       {/* 主表格 */}
@@ -158,7 +198,10 @@ const ContractList = () => {
         current={pageNum}
         pageSize={pageSize}
         total={total}
-        onChange={(page) => setPageNum(page)}
+        onChange={(page) => {
+          setPageNum(page);
+          fetchList(searchSymbol, searchShortName, searchSecType ?? '', page);
+        }}
       />}
 
       {/* 编辑弹窗 */}

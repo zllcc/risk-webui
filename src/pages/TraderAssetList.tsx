@@ -4,6 +4,7 @@ import {
   Space, Typography, Row, Col, message, Button
 } from 'antd';
 import FilterPanel, { FilterParams } from '@/components/FilterPanel';
+import ImportBtnGroup from '@/components/ImportBtnGroup';
 import { secTypeArr } from '@/utils/common';
 import { getZoneOptions } from '@/api/investApi';
 import { getTraderPositionList, PositionRecord, PositionQueryParams } from '@/api/positionApi';
@@ -37,6 +38,7 @@ export default function AssetList() {
     startDate: '',
     endDate: '',
     dateType: 1,
+    aggregate: 1,
   });
 
   // 加载表头配置
@@ -131,6 +133,7 @@ export default function AssetList() {
         sectors: searchParams?.sectors ?? [],
         dateType: searchParams?.dateType ?? null,
         zoneType,
+        aggregate: searchParams?.aggregate ?? 1,
       };
 
     const res = await getTraderPositionList(apiParams);
@@ -187,6 +190,7 @@ export default function AssetList() {
   return (
     <Card
       title={<Title level={5}>交易员持仓列表</Title>}
+      extra={<ImportBtnGroup type="4" />}
     >
       <FilterPanel onSearch={handleSearch} pageType="traderAsset" />
 
