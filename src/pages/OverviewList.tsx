@@ -167,7 +167,7 @@ export default function PortfolioOverview() {
               if (val === null) return '--';
               return (
                 <span style={{ color: val >= 0 ? "#f5222d" : "#52c41a" }}>
-                  {val >= 0 ? "+" : ""}{val?.toLocaleString()}
+                  {val >= 0 ? "+" : ""}{val}
                 </span>
               );
             },
@@ -176,7 +176,7 @@ export default function PortfolioOverview() {
         // 普通数值
         return {
           ...baseCol,
-          render: (val: number | null) => val === null ? '--' : val?.toLocaleString(),
+          render: (val: number | null) => val === null ? '--' : val,
         };
       });
   }, [columnConfigList, checkedFieldKeys]);

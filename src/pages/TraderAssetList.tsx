@@ -173,13 +173,13 @@ export default function AssetList() {
       if (["unrealizedPnl", "realizedPnl", "dailyUnrealizedPnl", "dailyRealizedPnl"].includes(fieldKey)) {
         colItem.render = (val: number) => (
           <span style={{ color: val > 0 ? "#f5222d" : "#52c41a" }}>
-            {val > 0 ? "+" : ""}{val?.toLocaleString() ?? 0}
+            {val > 0 ? "+" : ""}{val ?? 0}
           </span>
         );
       }
       // 数值千分位
       else if (["positionQty", "avgCost", "marketPrice", "marketValue", "commissionAndFees"].includes(fieldKey)) {
-        colItem.render = (val: number) => val?.toLocaleString() ?? 0;
+        colItem.render = (val: number) => val ?? 0;
       }
       return colItem;
     });

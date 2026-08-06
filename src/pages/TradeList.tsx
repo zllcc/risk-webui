@@ -218,11 +218,11 @@ export default function TradeList() {
       } else if (fieldKey === "calExecutionUnrealizedPnl") {
         colConfig.render = (val: number) => (
           <span style={{ color: val >= 0 ? "#f5222d" : "#52c41a" }}>
-            {val > 0 ? "+" : ""}{val?.toLocaleString()}
+            {val > 0 ? "+" : ""}{val}
           </span>
         );
       } else if (["shares", "price", "commissionAndFees", "allocateRemainQty"].includes(fieldKey)) {
-        colConfig.render = (val: number) => val?.toLocaleString() ?? "--";
+        colConfig.render = (val: number) => val ?? "--";
       } else if (fieldKey === "side") {
         colConfig.render = (val: string) => val === 'BOT' ? '买' : val === 'SLD' ? '卖' : '--';
       }

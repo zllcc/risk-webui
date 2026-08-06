@@ -12,7 +12,7 @@ interface Props {
 
 // 格式化美元金额
 const formatUSD = (num: number) => {
-  return `$${num.toLocaleString()}`;
+  return `$${num}`;
 };
 
 const RiskDashboard: React.FC<Props> = ({ filter }) => {
