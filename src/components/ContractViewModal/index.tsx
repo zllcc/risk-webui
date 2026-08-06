@@ -66,7 +66,7 @@ const ContractViewModal: React.FC<Props> = ({ open, detail, onCancel }) => {
         {/* 顶部只读信息 */}
         <Space size="large" style={{ marginBottom: 20 }}>
           <Space>
-            <span>合约：</span>
+            <span>标的资产：</span>
             <Input value={detail?.symbol} disabled style={{ width: 200 }} />
           </Space>
           <Space>

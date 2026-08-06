@@ -10,7 +10,8 @@ import { getZoneOptions } from '@/api/investApi';
 import { secTypeArr } from '@/utils/common';
 import { getPageColumnDisplay, updateColumnDisplay, ColumnDisplayItem } from '@/api/columnDisplayApi';
 import ImportBtnGroup from '@/components/ImportBtnGroup';
-import { executeTradeCal } from '@/api/positionApi';
+import { executeTradeCal, exportUncalibratedTrades } from '@/api/positionApi';
+import { saveBlobFile } from '@/utils/file';
 
 const { TabPane } = Tabs;
 const { Title } = Typography;
@@ -41,6 +42,8 @@ export default function TradeList() {
   const [colLoading, setColLoading] = useState(false);
   // 核算按钮loading
   const [calLoading, setCalLoading] = useState(false);
+  // 导出按钮loading
+  const [exportLoading, setExportLoading] = useState(false);
 
   const [pageNum, setPageNum] = useState(1);
   const pageSize = 10;
@@ -197,6 +200,35 @@ export default function TradeList() {
     });
   };
 
+  // ========== 新增：导出未核算交易数据 ==========
+  const handleExportUncalibrated = async () => {
+    setExportLoading(true);
+    try {
+      const reqParams = {
+        accountCodes: activeFilter?.accountCodes ?? [],
+        conids: activeFilter?.conids ?? [],
+        secType: activeTab,
+        tradeNames: activeFilter?.tradeNames ?? [],
+        strategyNames: activeFilter?.strategyNames ?? [],
+        startDate: activeFilter?.startDate ?? "",
+        endDate: activeFilter?.endDate ?? "",
+        sectors: activeFilter?.sectors ?? [],
+        dateType: activeFilter?.dateType || null,
+        zoneType,
+      };
+      const res = await exportUncalibratedTrades(reqParams as any);
+      const blob = new Blob([res.data]);
+      const url = URL.createObjectURL(blob);
+      const fileName = `交易数据_${new Date().toISOString().slice(0, 10)}.xlsx`;
+      saveBlobFile(url as any, fileName);
+      message.success('导出成功');
+    } catch (err) {
+      message.error('导出失败，请稍后重试');
+    } finally {
+      setExportLoading(false);
+    }
+  };
+
   // 动态表格列，完全依赖后端columnName
   const tableColumns = columnConfigList
     .filter(col => visibleCols.includes(col.columnName))
@@ -236,6 +268,8 @@ export default function TradeList() {
         <Space>
           {/* 新增核算按钮 */}
           <Button type="primary" loading={calLoading} onClick={handleCalTrade}>核算</Button>
+          {/* 导出按钮 */}
+          <Button loading={exportLoading} onClick={handleExportUncalibrated}>导出</Button>
           <ImportBtnGroup type='2' />
         </Space>
       }

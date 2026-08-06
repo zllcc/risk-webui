@@ -50,3 +50,12 @@ export function getZoneOptions() {
     data: {}
   })
 }
+
+// 获取标的类型下拉
+export function getSecTypeOptions() {
+  return request<{value:string; label:string}[]>({
+    url: '/select/pc/sec-type',
+    method: 'POST',
+    data: {}
+  })
+}

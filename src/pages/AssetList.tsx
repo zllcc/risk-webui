@@ -6,9 +6,10 @@ import {
 import FilterPanel, { FilterParams } from '@/components/FilterPanel';
 import { secTypeArr } from '@/utils/common';
 import { getZoneOptions } from '@/api/investApi';
-import { getPositionList, PositionRecord, AssetQueryParams } from '@/api/positionApi';
+import { getPositionList, PositionRecord, AssetQueryParams, exportPositionHistory } from '@/api/positionApi';
 import { getPageColumnDisplay, updateColumnDisplay, ColumnDisplayItem } from '@/api/columnDisplayApi';
 import ImportBtnGroup from '@/components/ImportBtnGroup';
+import { saveBlobFile } from '@/utils/file';
 
 const { TabPane } = Tabs;
 const { Title } = Typography;
@@ -31,6 +32,7 @@ export default function AssetList() {
   const [pageNum, setPageNum] = useState(1);
   const [pageTotal, setPageTotal] = useState(0);
   const pageSize = 10;
+  const [exportLoading, setExportLoading] = useState(false);
 
   const [searchParams, setSearchParams] = useState<FilterParams>({
     accountCodes: [],
@@ -156,6 +158,33 @@ export default function AssetList() {
     setPageNum(1);
   };
 
+  // 导出持仓数据
+  const handleExport = async () => {
+    setExportLoading(true);
+    try {
+      const params = {
+        accountCodes: searchParams?.accountCodes ?? [],
+        conids: searchParams?.conids ?? [],
+        secType: activeTab,
+        startDate: searchParams?.startDate ?? "",
+        endDate: searchParams?.endDate ?? "",
+        sectors: searchParams?.sectors ?? [],
+        dateType: searchParams?.dateType ?? null,
+        zoneType,
+      };
+      const res = await exportPositionHistory(params);
+      const blob = new Blob([res.data]);
+      const url = URL.createObjectURL(blob);
+      const fileName = `持仓数据_${new Date().toISOString().slice(0, 10)}.xlsx`;
+      saveBlobFile(url as any, fileName);
+      message.success('导出成功');
+    } catch (err) {
+      message.error('导出失败，请稍后重试');
+    } finally {
+      setExportLoading(false);
+    }
+  };
+
   // 动态列，dataIndex = 后端原生columnName
   const tableColumns = columnConfigList
     .filter(config => visibleCols.includes(config.columnName))
@@ -188,7 +217,12 @@ export default function AssetList() {
   return (
     <Card
       title={<Title level={5}>持仓列表</Title>}
-      extra={<ImportBtnGroup type='1' />}
+      extra={
+        <Space>
+          <Button loading={exportLoading} onClick={handleExport}>导出</Button>
+          <ImportBtnGroup type='1' />
+        </Space>
+      }
     >
       <FilterPanel onSearch={handleSearch} pageType="asset" />
 

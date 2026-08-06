@@ -23,6 +23,8 @@ export interface TradePageParams {
   secType: string;
   dateType: number | null;
   zoneType: string;
+  tradeNames?: string[];
+  strategyNames?: string[];
 }
 
 // 后端单条交易记录
@@ -80,6 +82,10 @@ export interface TraderItem {
   id: number;
   traderName: string;
   capital: number;
+  strategyName: string;
+  loan: number;
+  interest: number;
+  fee: number;
   modifiedTime: string;
 }
 
@@ -107,7 +113,11 @@ export interface TraderPageParams {
   orderColumn: string;
   orderType: 'asc' | 'desc';
   idList: number[];
-  traderName: string;
+  traderName?: string;
+  strategyName?: string;
+  traderNames?: string[];
+  strategyNames?: string[];
+  accountCodes?: string[];
 }
 
 // 分页返回结构
@@ -118,11 +128,25 @@ export interface TraderPageRes {
   total: number;
 }
 
-// 新增/编辑/删除共用入参
+// 新增入参
+export interface TraderAddParams {
+  traderName: string;
+  strategyName?: string;
+  capital: number;
+  loan?: number;
+  interest?: number;
+  fee?: number;
+}
+
+// 编辑/删除入参
 export interface TraderOperateParams {
   id: number;
   traderName: string;
   capital: number;
+  strategyName?: string;
+  loan?: number;
+  interest?: number;
+  fee?: number;
 }
 
 /**
@@ -146,22 +170,22 @@ export function allocateTrade(params: AllocateApiParams) {
 }
 
 /**
- * 新增交易员 /trader/pc/create
+ * 新增交易员 /trader-capital/pc/add
  */
-export function createTrader(params: TraderOperateParams) {
+export function createTrader(params: TraderAddParams) {
   return request<number>({
-    url: '/trader/pc/create',
+    url: '/trader-capital/pc/add',
     method: 'POST',
     data: params
   });
 }
 
 /**
- * 删除交易员 /trader/pc/delete
+ * 删除交易员 /trader-capital/pc/delete
  */
-export function deleteTrader(params: TraderOperateParams) {
+export function deleteTrader(params: { id: number }) {
   return request<number>({
-    url: '/trader/pc/delete',
+    url: '/trader-capital/pc/delete',
     method: 'POST',
     data: params
   });
@@ -179,23 +203,83 @@ export function getTraderDetail(params: TraderOperateParams) {
 }
 
 /**
- * 分页查询交易员列表 /trader/pc/query-page
+ * 分页查询交易员列表 /trader-capital/pc/query-page
  */
 export function queryTraderPage(params: TraderPageParams) {
   return request<TraderPageRes>({
-    url: '/trader/pc/query-page',
+    url: '/trader-capital/pc/query-page',
     method: 'POST',
     data: params
   });
 }
 
 /**
- * 更新交易员 /trader/pc/update
+ * 更新交易员 /trader-capital/pc/update
  */
 export function updateTrader(params: TraderOperateParams) {
   return request<number>({
-    url: '/trader/pc/update',
+    url: '/trader-capital/pc/update',
     method: 'POST',
     data: params
   });
 }
+
+// 交易员历史记录项
+export interface TraderHistoryItem {
+  id: number;
+  traderName: string;
+  capital: number;
+  strategyName?: string;
+  loan?: number;
+  interest?: number;
+  fee?: number;
+  modifiedTime: string;
+  createTime: string;
+}
+
+// 历史记录分页参数
+export interface TraderHistoryParams {
+  traderId: number;
+  pageNum: number;
+  pageSize: number;
+}
+
+// 历史记录分页返回
+export interface TraderHistoryPageRes {
+  size: number;
+  records: TraderHistoryItem[];
+  current: number;
+  total: number;
+}
+
+/**
+ * 查询交易员历史记录 /trader-capital/pc/history-page
+ */
+export function queryTraderHistory(params: TraderHistoryParams) {
+  return request<TraderHistoryPageRes>({
+    url: '/trader-capital/pc/history-page',
+    method: 'POST',
+    data: params
+  });
+}
+
+/**
+ * POST /position-trader-execution/pc/query-page
+ * 交易员交易执行明细分页查询
+ */
+export function getTraderTradePageList(params: TradePageParams) {
+  return request<TradePageRes>({
+    url: '/position-trader-execution/pc/query-page',
+    method: 'POST',
+    data: params
+  });
+}
+
+/**
+ * 交易员交易核算
+ * POST /position-trader-execution/pc/trader-cal
+ */
+export function executeTraderTradeCal(data?: Record<string, any>) {
+  return request.post('/position-trader-execution/pc/trader-cal', data);
+}
+

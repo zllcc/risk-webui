@@ -1,45 +1,48 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
-  Card, Tabs, Select, Table, Checkbox,
-  Space, Typography, Row, Col, message, Button
+  Card, Tabs, Select, Table, Checkbox, Modal,
+  Space, Typography, Row, Col, Pagination, Spin, Empty, message, Button
 } from 'antd';
 import FilterPanel, { FilterParams } from '@/components/FilterPanel';
 import ImportBtnGroup from '@/components/ImportBtnGroup';
-import { secTypeArr } from '@/utils/common';
+import { getTraderTradePageList, TradePageParams, TradeRecordItem, executeTraderTradeCal } from '@/api/tradeApi';
 import { getZoneOptions } from '@/api/investApi';
-import { getTraderPositionList, PositionRecord, PositionQueryParams } from '@/api/positionApi';
+import { secTypeArr } from '@/utils/common';
 import { getPageColumnDisplay, updateColumnDisplay, ColumnDisplayItem } from '@/api/columnDisplayApi';
 
 const { TabPane } = Tabs;
 const { Title } = Typography;
 
-const PAGE_NAME = '交易员持仓列表';
+const PAGE_NAME = '交易员交易列表';
 
-export default function AssetList() {
+export default function TraderTradeList() {
   const [columnConfigList, setColumnConfigList] = useState<ColumnDisplayItem[]>([]);
   const [visibleCols, setVisibleCols] = useState<string[]>([]);
 
-  const [activeTab, setActiveTab] = useState("股票");
-  const [zoneOptions, setZoneOptions] = useState<{value: string; label: string}[]>([]);
-  const [zoneType, setZoneType] = useState('');
-    // 新增：区域是否初始化完成标记
-  const [zoneReady, setZoneReady] = useState(false);
-  const [tableData, setTableData] = useState<PositionRecord[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [colLoading, setColLoading] = useState(false);
-  const [pageNum, setPageNum] = useState(1);
-  const [pageTotal, setPageTotal] = useState(0);
-  const pageSize = 10;
-
-  const [searchParams, setSearchParams] = useState<FilterParams>({
+  const [activeFilter, setActiveFilter] = useState<FilterParams>({
     accountCodes: [],
     tradeNames: [],
     strategyNames: [],
     startDate: '',
     endDate: '',
+    conids: [],
+    sectors: [],
     dateType: 1,
-    aggregate: 1,
   });
+  const [activeTab, setActiveTab] = useState("股票");
+  const [zoneOptions, setZoneOptions] = useState<{value: string; label: string}[]>([]);
+  const [zoneType, setZoneType] = useState('');
+    // 区域是否初始化完成标记
+  const [zoneReady, setZoneReady] = useState(false);
+  const [tableData, setTableData] = useState<TradeRecordItem[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [colLoading, setColLoading] = useState(false);
+
+  const [pageNum, setPageNum] = useState(1);
+  const pageSize = 10;
+  const [total, setTotal] = useState(0);
+  // 核算按钮loading
+  const [calLoading, setCalLoading] = useState(false);
 
   // 加载表头配置
   const loadColumnConfig = useCallback(async (type: string) => {
@@ -62,7 +65,7 @@ export default function AssetList() {
     loadColumnConfig(activeTab);
   }, [activeTab, loadColumnConfig]);
 
-  // 勾选变更，仅更新变化字段
+  // 仅更新变更字段
   const handleColCheckChange = async (newKeys: string[]) => {
     const oldKeys = [...visibleCols];
     setVisibleCols(newKeys);
@@ -80,21 +83,21 @@ export default function AssetList() {
           if (target) updateList.push({ ...target, isDisplay: false });
         }
       });
-      const promises = updateList.map(item => updateColumnDisplay({
+      const allSave = updateList.map(item => updateColumnDisplay({
         pageName: PAGE_NAME,
         type: activeTab,
         columnName: item.columnName,
         isDisplay: item.isDisplay
       }));
-      await Promise.all(promises);
+      await Promise.all(allSave);
     } catch (err) {
-      message.error('保存表头配置失败');
+      message.error('表头配置保存失败');
       console.error(err);
       setVisibleCols(oldKeys);
     }
   };
 
-    // 加载区域下拉
+  // 加载区域下拉
   const getZone = useCallback(async () => {
     try {
       const res = await getZoneOptions() || [];
@@ -105,7 +108,6 @@ export default function AssetList() {
     } catch (err) {
       console.error('获取区域失败');
     } finally {
-      // 无论成功失败，标记区域初始化完成
       setZoneReady(true);
     }
   }, []);
@@ -114,96 +116,113 @@ export default function AssetList() {
     getZone();
   }, [getZone]);
 
-  // 直接赋值原始数据，无转换
-  const fetchPositionData = useCallback(async () => {
+  // 使用 /positionTraderExecution/pc/query-page 接口
+  const fetchTradeList = useCallback(async () => {
     setLoading(true);
     try {
       if (!zoneReady) return;
 
-      const apiParams: PositionQueryParams = {
-        pageNum,
-        pageSize,
-        accountCodes: searchParams?.accountCodes ?? [],
-        conids: searchParams?.conids ?? [],
+      const reqParams: TradePageParams = {
+        accountCodes: activeFilter?.accountCodes ?? [],
+        tradeNames: activeFilter?.tradeNames ?? [],
+        strategyNames: activeFilter?.strategyNames ?? [],
+        conids: activeFilter?.conids ?? [],
         secType: activeTab,
-        tradeNames: searchParams?.tradeNames ?? [],
-        strategyNames: searchParams?.strategyNames ?? [],
-        startDate: searchParams?.startDate ?? "",
-        endDate: searchParams?.endDate ?? "",
-        sectors: searchParams?.sectors ?? [],
-        dateType: searchParams?.dateType ?? null,
+        startDate: activeFilter?.startDate ?? "",
+        endDate: activeFilter?.endDate ?? "",
+        sectors: activeFilter?.sectors ?? [],
+        dateType: activeFilter?.dateType || null,
         zoneType,
-        aggregate: searchParams?.aggregate ?? 1,
+        pageSize: 10,
+        pageNum
       };
-
-    const res = await getTraderPositionList(apiParams);
+      const res = await getTraderTradePageList(reqParams);
       setTableData(res.records);
-      setPageTotal(res.total);
+      setTotal(res.total);
     } catch (err) {
-      console.error('加载持仓列表失败', err);
-      message.error('数据加载失败，请稍后重试');
+      console.error("交易员交易列表请求失败", err);
       setTableData([]);
-      setPageTotal(0);
+      setTotal(0);
     } finally {
       setLoading(false);
     }
-  }, [pageNum, activeTab, searchParams, zoneType, zoneReady]);
+  }, [activeFilter, pageNum, activeTab, zoneType, zoneReady]);
 
   useEffect(() => {
-    fetchPositionData();
-  }, [fetchPositionData]);
+    fetchTradeList();
+  }, [fetchTradeList]);
 
   const handleSearch = (params: FilterParams) => {
-    setSearchParams(params);
+    setActiveFilter(params);
     setPageNum(1);
   };
 
-  // 动态列，dataIndex = 后端原生columnName
-  const tableColumns = columnConfigList
-    .filter(config => visibleCols.includes(config.columnName))
-    .map(config => {
-      const fieldName = config.columnName;
-      const fieldKey = config.columnKey;
+  // 核算确认弹窗及接口调用
+  const handleCalTrade = () => {
+    Modal.confirm({
+      title: '交易核算确认',
+      content: '核算会重新计算所有交易盈亏数据，任务耗时较长。确认执行交易核算？',
+      okText: '确认核算',
+      cancelText: '取消',
+      okButtonProps: { danger: false },
+      onOk: async () => {
+        setCalLoading(true);
+        try {
+          await executeTraderTradeCal();
+          message.success('核算任务已提交成功');
+          fetchTradeList();
+        } catch (err) {
+          message.error('核算提交失败，请稍后重试');
+        } finally {
+          setCalLoading(false);
+        }
+      }
+    });
+  };
 
-      const colItem = {
+  // 动态表格列，完全依赖后端 columnName
+  const tableColumns = columnConfigList
+    .filter(col => visibleCols.includes(col.columnName))
+    .map(col => {
+      const fieldName = col.columnName;
+      const fieldKey = col.columnKey;
+
+      const colConfig = {
         title: fieldName,
         dataIndex: fieldKey,
         key: fieldKey,
         render: undefined as any,
       };
 
-      // 盈亏颜色
-      if (["unrealizedPnl", "realizedPnl", "dailyUnrealizedPnl", "dailyRealizedPnl"].includes(fieldKey)) {
-        colItem.render = (val: number) => (
-          <span style={{ color: val > 0 ? "#f5222d" : "#52c41a" }}>
-            {val > 0 ? "+" : ""}{val ?? 0}
+      if (fieldKey === "calExecutionUnrealizedPnl") {
+        colConfig.render = (val: number) => (
+          <span style={{ color: val >= 0 ? "#f5222d" : "#52c41a" }}>
+            {val > 0 ? "+" : ""}{val?.toLocaleString()}
           </span>
         );
+      } else if (["shares", "price", "commissionAndFees", "allocateRemainQty"].includes(fieldKey)) {
+        colConfig.render = (val: number) => val?.toLocaleString() ?? "--";
+      } else if (fieldKey === "side") {
+        colConfig.render = (val: string) => val === 'BOT' ? '买' : val === 'SLD' ? '卖' : '--';
       }
-      // 数值千分位
-      else if (["positionQty", "avgCost", "marketPrice", "marketValue", "commissionAndFees"].includes(fieldKey)) {
-        colItem.render = (val: number) => val ?? 0;
-      }
-      return colItem;
+      return colConfig;
     });
 
   return (
     <Card
-      title={<Title level={5}>交易员持仓列表</Title>}
-      extra={<ImportBtnGroup type="4" />}
+      title={<Title level={5}>交易员交易列表</Title>}
+      extra={
+        <Space>
+          <Button type="primary" loading={calLoading} onClick={handleCalTrade}>核算</Button>
+          <ImportBtnGroup type='6' />
+        </Space>
+      }
     >
-      <FilterPanel onSearch={handleSearch} pageType="traderAsset" />
+      <FilterPanel onSearch={handleSearch} pageType='traderAsset' />
 
       <Row justify="space-between" align="middle" style={{ marginBottom: 16, marginTop: 16 }}>
         <Col>
-          <Tabs
-            activeKey={activeTab}
-            onChange={(key) => {
-              setActiveTab(key);
-              setPageNum(1);
-            }}
-            type="card"
-          >
+          <Tabs activeKey={activeTab} onChange={(v) => { setActiveTab(v); setPageNum(1); }} type="card">
             {secTypeArr.map(item => (
               <TabPane tab={item.label} key={item.label} />
             ))}
@@ -235,22 +254,27 @@ export default function AssetList() {
         </Space>
       </div>
 
-      <Table
-        loading={loading}
-        columns={tableColumns}
-        dataSource={tableData}
-        rowKey="id"
-        bordered
-        scroll={{ x: "max-content" }}
-        pagination={{
-          current: pageNum,
-          pageSize,
-          total: pageTotal,
-          onChange: (page) => setPageNum(page),
-          showSizeChanger: false,
-          showTotal: (total) => `共 ${total} 条持仓`
-        }}
-      />
+      <Spin spinning={loading}>
+        <Table
+          columns={tableColumns}
+          dataSource={tableData}
+          rowKey="id"
+          bordered
+          pagination={false}
+          scroll={{ x: "max-content" }}
+          locale={{ emptyText: <Empty description="暂无交易数据，请调整筛选条件" /> }}
+        />
+      </Spin>
+
+      <Row justify="end" style={{ marginTop: 16 }}>
+        <Pagination
+          current={pageNum}
+          total={total}
+          pageSize={pageSize}
+          onChange={(page) => setPageNum(page)}
+          showSizeChanger={false}
+        />
+      </Row>
     </Card>
   );
 }

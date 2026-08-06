@@ -177,7 +177,7 @@ const TradeAllocateModal: React.FC<TradeAllocateModalProps> = ({ open, tradeData
           </Col>
           <Col>
             <Space>
-              <Text strong>合约</Text>
+              <Text strong>标的资产</Text>
               <Select value={tradeData.symbol} style={{ width: 160 }} disabled>
                 <Option value={tradeData.symbol}>{tradeData.symbol}</Option>
               </Select>
