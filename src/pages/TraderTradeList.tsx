@@ -197,11 +197,11 @@ export default function TraderTradeList() {
       if (fieldKey === "calExecutionUnrealizedPnl") {
         colConfig.render = (val: number) => (
           <span style={{ color: val >= 0 ? "#f5222d" : "#52c41a" }}>
-            {val > 0 ? "+" : ""}{val?.toLocaleString()}
+            {val > 0 ? "+" : ""}{val}
           </span>
         );
       } else if (["shares", "price", "commissionAndFees", "allocateRemainQty"].includes(fieldKey)) {
-        colConfig.render = (val: number) => val?.toLocaleString() ?? "--";
+        colConfig.render = (val: number) => val ?? "--";
       } else if (fieldKey === "side") {
         colConfig.render = (val: string) => val === 'BOT' ? '买' : val === 'SLD' ? '卖' : '--';
       }
@@ -214,7 +214,7 @@ export default function TraderTradeList() {
       extra={
         <Space>
           <Button type="primary" loading={calLoading} onClick={handleCalTrade}>核算</Button>
-          <ImportBtnGroup type='6' />
+          <ImportBtnGroup type='6' onSuccess={fetchTradeList} />
         </Space>
       }
     >

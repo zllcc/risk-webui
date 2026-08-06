@@ -220,7 +220,7 @@ export default function AssetList() {
       extra={
         <Space>
           <Button loading={exportLoading} onClick={handleExport}>导出</Button>
-          <ImportBtnGroup type='1' />
+          <ImportBtnGroup type='1' onSuccess={fetchPositionData} />
         </Space>
       }
     >

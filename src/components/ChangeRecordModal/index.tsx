@@ -46,11 +46,11 @@ const ChangeRecordModal: React.FC<ChangeRecordModalProps> = ({
   // 表格列配置
   const columns: TableProps<ChangeRecordRow>['columns'] = [
     { title: '交易员', dataIndex: 'traderName' },
-    { title: '本金', dataIndex: 'capital', render: (val: number) => val?.toLocaleString() ?? 0 },
+    { title: '本金', dataIndex: 'capital', render: (val: number) => val ?? 0 },
     { title: '策略', dataIndex: 'strategyName' },
-    { title: '贷款', dataIndex: 'loan', render: (val: number) => val?.toLocaleString() ?? 0 },
-    { title: '利息', dataIndex: 'interest', render: (val: number) => val?.toLocaleString() ?? 0 },
-    { title: '费用', dataIndex: 'fee', render: (val: number) => val?.toLocaleString() ?? 0 },
+    { title: '贷款', dataIndex: 'loan', render: (val: number) => val ?? 0 },
+    { title: '利息', dataIndex: 'interest', render: (val: number) => val ?? 0 },
+    { title: '费用', dataIndex: 'fee', render: (val: number) => val ?? 0 },
     { title: '创建时间', dataIndex: 'createTime' },
   ];
 
@@ -115,19 +115,19 @@ const ChangeRecordModal: React.FC<ChangeRecordModalProps> = ({
         </Space>
         <Space style={{ alignItems: 'center' }}>
           <span style={{ fontWeight: 500, width: 70 }}>贷款：</span>
-          <span>{loan?.toLocaleString() ?? 0}</span>
+          <span>{loan ?? 0}</span>
         </Space>
         <Space style={{ alignItems: 'center' }}>
           <span style={{ fontWeight: 500, width: 70 }}>利息：</span>
-          <span>{interest?.toLocaleString() ?? 0}</span>
+          <span>{interest ?? 0}</span>
         </Space>
         <Space style={{ alignItems: 'center' }}>
           <span style={{ fontWeight: 500, width: 70 }}>费用：</span>
-          <span>{fee?.toLocaleString() ?? 0}</span>
+          <span>{fee ?? 0}</span>
         </Space>
         <Space style={{ alignItems: 'center' }}>
           <span style={{ fontWeight: 500, width: 70 }}>本金：</span>
-          <span>{capital?.toLocaleString() ?? 0}</span>
+          <span>{capital ?? 0}</span>
         </Space>
       </Space>
 

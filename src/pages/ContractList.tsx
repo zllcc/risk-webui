@@ -149,7 +149,7 @@ const ContractList = () => {
   return (
     <Card
       title={<Title level={5}>标的资产</Title>}
-      extra={<ImportBtnGroup type="3" />}
+      extra={<ImportBtnGroup type="3" onSuccess={() => fetchList(searchSymbol, searchShortName, searchSecType ?? '', 1)} />}
     >
       {/* 筛选区域 */}
       <Space size={12} style={{ marginBottom: 18, alignItems: 'center' }} wrap>

@@ -270,7 +270,7 @@ export default function TradeList() {
           <Button type="primary" loading={calLoading} onClick={handleCalTrade}>核算</Button>
           {/* 导出按钮 */}
           <Button loading={exportLoading} onClick={handleExportUncalibrated}>导出</Button>
-          <ImportBtnGroup type='2' />
+          <ImportBtnGroup type='2' onSuccess={fetchTradeList} />
         </Space>
       }
     >
