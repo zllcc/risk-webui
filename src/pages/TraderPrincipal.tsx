@@ -209,10 +209,11 @@ export default function TraderPrincipalPage() {
   // ========== 表格列配置 ==========
   const mainTableCols: TableProps<MainTableRow>['columns'] = [
     { title: '交易员', dataIndex: 'traderName' },
-    { title: '本金', dataIndex: 'principal', render: (val: number) => val ?? 0 },
     { title: '策略', dataIndex: 'strategyName' },
+    { title: '本金', dataIndex: 'principal', render: (val: number) => val ?? 0 },
+    { title: '本金利息', dataIndex: 'capitalInterest', render: (val: number) => val ?? 0 },
     { title: '贷款', dataIndex: 'loan', render: (val: number) => val ?? 0 },
-    { title: '利息', dataIndex: 'interest', render: (val: number) => val ?? 0 },
+    { title: '贷款利息', dataIndex: 'loanInterest', render: (val: number) => val ?? 0 },
     { title: '费用', dataIndex: 'fee', render: (val: number) => val ?? 0 },
     { title: '更新时间', dataIndex: 'updateTime' },
     {
