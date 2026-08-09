@@ -9,7 +9,8 @@ export interface TraderFormModalProps {
   principal: number;
   strategyName: string;
   loan: number;
-  interest: number;
+  capitalInterest: number;
+  loanInterest:number;
   fee: number;
   strategyOptions: Array<{ value: string; label: string }>;
   onCancel: () => void;
@@ -29,7 +30,8 @@ const TraderFormModal: React.FC<TraderFormModalProps> = ({
   principal,
   strategyName,
   loan,
-  interest,
+  capitalInterest,
+  loanInterest,
   fee,
   strategyOptions,
   onCancel,
@@ -74,6 +76,23 @@ const TraderFormModal: React.FC<TraderFormModalProps> = ({
         <Col span={24}>
           <Row align="middle" style={{ width: '100%' }}>
             <Col span={4} style={{ textAlign: 'right', paddingRight: 12 }}>
+              <label>策略：</label>
+            </Col>
+            <Col span={20}>
+              <Select
+                style={{ width: '100%' }}
+                value={strategyName || undefined}
+                onChange={onChangeStrategy}
+                placeholder="请选择策略"
+                options={strategyOptions}
+                allowClear
+              />
+            </Col>
+          </Row>
+        </Col>
+        <Col span={24}>
+          <Row align="middle" style={{ width: '100%' }}>
+            <Col span={4} style={{ textAlign: 'right', paddingRight: 12 }}>
               <label>本金：</label>
             </Col>
             <Col span={20}>
@@ -90,16 +109,15 @@ const TraderFormModal: React.FC<TraderFormModalProps> = ({
         <Col span={24}>
           <Row align="middle" style={{ width: '100%' }}>
             <Col span={4} style={{ textAlign: 'right', paddingRight: 12 }}>
-              <label>策略：</label>
+              <label>本金利息：</label>
             </Col>
             <Col span={20}>
-              <Select
+              <InputNumber
                 style={{ width: '100%' }}
-                value={strategyName || undefined}
-                onChange={onChangeStrategy}
-                placeholder="请选择策略"
-                options={strategyOptions}
-                allowClear
+                min={0}
+                value={capitalInterest}
+                onChange={onChangeInterest}
+                placeholder="填写本金利息金额"
               />
             </Col>
           </Row>
@@ -123,15 +141,15 @@ const TraderFormModal: React.FC<TraderFormModalProps> = ({
         <Col span={24}>
           <Row align="middle" style={{ width: '100%' }}>
             <Col span={4} style={{ textAlign: 'right', paddingRight: 12 }}>
-              <label>利息：</label>
+              <label>贷款利息：</label>
             </Col>
             <Col span={20}>
               <InputNumber
                 style={{ width: '100%' }}
                 min={0}
-                value={interest}
+                value={loanInterest}
                 onChange={onChangeInterest}
-                placeholder="填写利息金额"
+                placeholder="填写贷款利息金额"
               />
             </Col>
           </Row>
