@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
   Card, Tabs, Select, Table, Button, Checkbox, Modal,
-  Space, Typography, Row, Col, Pagination, Spin, Empty, message
+  Space, Typography, Row, Col, Pagination, Spin, Empty, message, DatePicker
 } from 'antd';
-import FilterPanel, { FilterParams } from '@/components/FilterPanel';
+import FilterPanel, { FilterParams, timeShortOpts } from '@/components/FilterPanel';
 import TradeAllocateModal from '@/components/TradeAllocateModal';
 import { getTradePageList, TradePageParams, TradeRecordItem } from '@/api/tradeApi';
 import { getZoneOptions } from '@/api/investApi';
@@ -12,6 +12,9 @@ import { getPageColumnDisplay, updateColumnDisplay, ColumnDisplayItem } from '@/
 import ImportBtnGroup from '@/components/ImportBtnGroup';
 import { executeTradeCal, exportUncalibratedTrades } from '@/api/positionApi';
 import { saveBlobFile } from '@/utils/file';
+import dayjs from 'dayjs';
+
+const { RangePicker } = DatePicker;
 
 const { TabPane } = Tabs;
 const { Title } = Typography;
@@ -44,6 +47,8 @@ export default function TradeList() {
   const [calLoading, setCalLoading] = useState(false);
   // 导出按钮loading
   const [exportLoading, setExportLoading] = useState(false);
+  const [dateType, setDateType] = useState<number | null>(1);
+  const [dateRange, setDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs] | null>(null);
 
   const [pageNum, setPageNum] = useState(1);
   const pageSize = 10;
@@ -132,14 +137,16 @@ export default function TradeList() {
     try {
       if (!zoneReady) return;
 
+      const startDate = dateRange ? dateRange[0].format('YYYY-MM-DD HH:mm:ss') : "";
+      const endDate = dateRange ? dateRange[1].format('YYYY-MM-DD HH:mm:ss') : "";
       const reqParams: TradePageParams = {
         accountCodes: activeFilter?.accountCodes ?? [],
         conids: activeFilter?.conids ?? [],
         secType: activeTab,
-        startDate: activeFilter?.startDate ?? "",
-        endDate: activeFilter?.endDate ?? "",
+        startDate,
+        endDate,
         sectors: activeFilter?.sectors ?? [],
-        dateType: activeFilter?.dateType || null,
+        dateType: dateType || null,
         zoneType,
         pageSize: 10,
         pageNum
@@ -155,7 +162,7 @@ export default function TradeList() {
     } finally {
       setLoading(false);
     }
-  }, [activeFilter, pageNum, activeTab, zoneType, zoneReady]);
+  }, [activeFilter, pageNum, activeTab, zoneType, zoneReady, dateType, dateRange]);
 
   useEffect(() => {
     fetchTradeList();
