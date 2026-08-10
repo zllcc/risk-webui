@@ -25,7 +25,8 @@ interface MainTableRow {
   principal: number;
   strategyName: string;
   loan: number;
-  interest: number;
+  capitalInterest: number;
+  loanInterest: number;
   fee: number;
   dailyDate: string;
   updateTime: string;
@@ -62,7 +63,8 @@ export default function TraderPrincipalPage() {
   const [modalPrincipal, setModalPrincipal] = useState(0);
   const [modalStrategy, setModalStrategy] = useState('');
   const [modalLoan, setModalLoan] = useState(0);
-  const [modalInterest, setModalInterest] = useState(0);
+  const [modalCapitalInterest, setModalCapitalInterest] = useState(0);
+  const [modalLoanInterest, setModalLoanInterest] = useState(0);
   const [modalFee, setModalFee] = useState(0);
   const [modalDate, setModalDate] = useState('');
   const [currentEditRow, setCurrentEditRow] = useState<MainTableRow | null>(null);
@@ -120,7 +122,8 @@ export default function TraderPrincipalPage() {
         principal: item.capital,
         strategyName: item.strategyName,
         loan: item.loan,
-        interest: item.interest,
+        capitalInterest: item.capitalInterest ?? item.interest ?? 0,
+        loanInterest: item.loanInterest ?? 0,
         fee: item.fee,
         dailyDate: item.dailyDate ?? '',
         updateTime: item.modifiedTime,
@@ -178,7 +181,7 @@ export default function TraderPrincipalPage() {
   };
 
   // 新增/编辑弹窗提交
-  const submitFormModal = async (trader: string, capital: number, strategy: string, loan: number, interest: number, fee: number, dailyDate: string) => {
+  const submitFormModal = async (trader: string, capital: number, strategy: string, loan: number, capitalInterest: number, loanInterest: number, fee: number, dailyDate: string) => {
     if (!trader) {
       message.warning('请输入交易员名称');
       return;
@@ -198,7 +201,8 @@ export default function TraderPrincipalPage() {
           capital: capital,
           strategyName: strategy,
           loan: loan,
-          interest: interest,
+          capitalInterest: capitalInterest,
+          loanInterest: loanInterest,
           fee: fee,
           dailyDate: dailyDate
         });
@@ -210,7 +214,8 @@ export default function TraderPrincipalPage() {
           capital: capital,
           strategyName: strategy,
           loan: loan,
-          interest: interest,
+          capitalInterest: capitalInterest,
+          loanInterest: loanInterest,
           fee: fee,
           dailyDate: dailyDate
         });
@@ -273,7 +278,8 @@ export default function TraderPrincipalPage() {
     setModalPrincipal(row.principal);
     setModalStrategy(row.strategyName);
     setModalLoan(row.loan);
-    setModalInterest(row.interest);
+    setModalCapitalInterest(row.capitalInterest);
+    setModalLoanInterest(row.loanInterest);
     setModalFee(row.fee);
     setModalDate(row.dailyDate);
     setFormModalOpen(true);
@@ -288,9 +294,10 @@ export default function TraderPrincipalPage() {
     setModalPrincipal(0);
     setModalStrategy('');
     setModalLoan(0);
-    setModalInterest(0);
+    setModalCapitalInterest(0);
+    setModalLoanInterest(0);
     setModalFee(0);
-    setModalDate(dayjs().format('YYYY-MM-DD'));
+    setModalDate('');
     setFormModalOpen(true);
   };
 
@@ -380,7 +387,8 @@ export default function TraderPrincipalPage() {
         principal={modalPrincipal}
         strategyName={modalStrategy}
         loan={modalLoan}
-        interest={modalInterest}
+        capitalInterest={modalCapitalInterest}
+        loanInterest={modalLoanInterest}
         fee={modalFee}
         dailyDate={modalDate}
         traderOptions={traderOptions}
@@ -391,7 +399,8 @@ export default function TraderPrincipalPage() {
         onChangePrincipal={setModalPrincipal}
         onChangeStrategy={setModalStrategy}
         onChangeLoan={setModalLoan}
-        onChangeInterest={setModalInterest}
+        onChangeCapitalInterest={setModalCapitalInterest}
+        onChangeLoanInterest={setModalLoanInterest}
         onChangeFee={setModalFee}
         onChangeDate={setModalDate}
       />
@@ -405,7 +414,7 @@ export default function TraderPrincipalPage() {
           capital={currentEditRow.principal}
           strategyName={currentEditRow.strategyName}
           loan={currentEditRow.loan}
-          interest={currentEditRow.interest}
+          interest={currentEditRow.capitalInterest}
           fee={currentEditRow.fee}
           onCancel={() => setRecordModalOpen(false)}
           fetchTraderList={() => fetchTraderList()}

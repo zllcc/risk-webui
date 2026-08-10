@@ -11,18 +11,19 @@ export interface TraderFormModalProps {
   strategyName: string;
   loan: number;
   capitalInterest: number;
-  loanInterest:number;
+  loanInterest: number;
   fee: number;
   dailyDate: string;
   traderOptions: Array<{ value: string; label: string }>;
   strategyOptions: Array<{ value: string; label: string }>;
   onCancel: () => void;
-  onConfirm: (trader: string, principal: number, strategy: string, loan: number, interest: number, fee: number, dailyDate: string) => void;
+  onConfirm: (trader: string, principal: number, strategy: string, loan: number, capitalInterest: number, loanInterest: number, fee: number, dailyDate: string) => void;
   onChangeTrader: (val: string) => void;
   onChangePrincipal: (val: number | null) => void;
   onChangeStrategy: (val: string) => void;
   onChangeLoan: (val: number | null) => void;
-  onChangeInterest: (val: number | null) => void;
+  onChangeCapitalInterest: (val: number | null) => void;
+  onChangeLoanInterest: (val: number | null) => void;
   onChangeFee: (val: number | null) => void;
   onChangeDate: (val: string) => void;
 }
@@ -46,7 +47,8 @@ const TraderFormModal: React.FC<TraderFormModalProps> = ({
   onChangePrincipal,
   onChangeStrategy,
   onChangeLoan,
-  onChangeInterest,
+  onChangeCapitalInterest,
+  onChangeLoanInterest,
   onChangeFee,
   onChangeDate,
 }) => {
@@ -61,7 +63,7 @@ const TraderFormModal: React.FC<TraderFormModalProps> = ({
       footer={
         <Space>
           <Button onClick={onCancel}>取消</Button>
-          <Button type="primary" onClick={() => onConfirm(traderName, principal, strategyName, loan, capitalInterest, loanInterest , fee, dailyDate)}>确认</Button>
+          <Button type="primary" onClick={() => onConfirm(traderName, principal, strategyName, loan, capitalInterest, loanInterest, fee, dailyDate)}>确认</Button>
         </Space>
       }
     >
@@ -145,7 +147,7 @@ const TraderFormModal: React.FC<TraderFormModalProps> = ({
                 style={{ width: '100%' }}
                 min={0}
                 value={capitalInterest}
-                onChange={onChangeInterest}
+                onChange={onChangeCapitalInterest}
                 placeholder="填写本金利息金额"
               />
             </Col>
@@ -177,7 +179,7 @@ const TraderFormModal: React.FC<TraderFormModalProps> = ({
                 style={{ width: '100%' }}
                 min={0}
                 value={loanInterest}
-                onChange={onChangeInterest}
+                onChange={onChangeLoanInterest}
                 placeholder="填写贷款利息金额"
               />
             </Col>

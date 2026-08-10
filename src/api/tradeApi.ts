@@ -84,7 +84,9 @@ export interface TraderItem {
   capital: number;
   strategyName: string;
   loan: number;
-  interest: number;
+  capitalInterest?: number;
+  loanInterest?: number;
+  interest?: number;
   fee: number;
   dailyDate?: string;
   modifiedTime: string;
@@ -135,6 +137,8 @@ export interface TraderAddParams {
   strategyName?: string;
   capital: number;
   loan?: number;
+  capitalInterest?: number;
+  loanInterest?: number;
   interest?: number;
   fee?: number;
   dailyDate?: string;
@@ -147,6 +151,8 @@ export interface TraderOperateParams {
   capital: number;
   strategyName?: string;
   loan?: number;
+  capitalInterest?: number;
+  loanInterest?: number;
   interest?: number;
   fee?: number;
   dailyDate?: string;
@@ -234,6 +240,8 @@ export interface TraderHistoryItem {
   capital: number;
   strategyName?: string;
   loan?: number;
+  capitalInterest?: number;
+  loanInterest?: number;
   interest?: number;
   fee?: number;
   modifiedTime: string;
