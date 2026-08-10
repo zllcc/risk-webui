@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Card, Select, Table, Button, Space, message } from 'antd';
+import dayjs from 'dayjs';
 import type { TableProps } from 'antd';
 // 导入抽离弹窗组件
 import TraderFormModal from '@/components/TraderFormModal';
@@ -26,6 +27,7 @@ interface MainTableRow {
   loan: number;
   interest: number;
   fee: number;
+  dailyDate: string;
   updateTime: string;
 }
 
@@ -62,6 +64,7 @@ export default function TraderPrincipalPage() {
   const [modalLoan, setModalLoan] = useState(0);
   const [modalInterest, setModalInterest] = useState(0);
   const [modalFee, setModalFee] = useState(0);
+  const [modalDate, setModalDate] = useState('');
   const [currentEditRow, setCurrentEditRow] = useState<MainTableRow | null>(null);
   const [editTraderId, setEditTraderId] = useState<number>(0);
 
@@ -73,6 +76,7 @@ export default function TraderPrincipalPage() {
   const pageSize = 10;
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [searchTrigger, setSearchTrigger] = useState(0);
 
   // 加载交易员下拉选项
   const fetchTraderOptions = async () => {
@@ -118,6 +122,7 @@ export default function TraderPrincipalPage() {
         loan: item.loan,
         interest: item.interest,
         fee: item.fee,
+        dailyDate: item.dailyDate ?? '',
         updateTime: item.modifiedTime,
       }));
       setMainTableData(tableData);
@@ -139,23 +144,28 @@ export default function TraderPrincipalPage() {
     }
   };
 
-  // 分页、搜索条件变更自动刷新
+  // 首次挂载加载一次下拉选项
   useEffect(() => {
-    fetchTraderList();
     fetchStrategyOptions();
     fetchTraderOptions();
     fetchAccountOptions();
-  }, [pageNum, pageSize, traderNames, strategyNames, accountCodes]);
+  }, []);
 
-  // 查询按钮：重置到第一页，触发接口请求
+  // 搜索条件或分页变化时刷新列表；searchTrigger 保证查询/重置按钮总能触发请求
+  useEffect(() => {
+    fetchTraderList();
+  }, [pageNum, pageSize, traderNames, strategyNames, accountCodes, searchTrigger]);
+
+  // 查询按钮：同步搜索条件、回到第一页、强制触发请求
   const handleSearch = () => {
     setPageNum(1);
     setTraderNames(searchTraderNames);
     setStrategyNames(searchStrategyNames);
     setAccountCodes(searchAccountCodes);
+    setSearchTrigger(t => t + 1);
   };
 
-  // 重置按钮：清空搜索框，回到第一页
+  // 重置按钮：清空搜索框、回到第一页、强制触发请求
   const handleReset = () => {
     setSearchTraderNames([]);
     setSearchStrategyNames([]);
@@ -164,18 +174,23 @@ export default function TraderPrincipalPage() {
     setStrategyNames([]);
     setAccountCodes([]);
     setPageNum(1);
+    setSearchTrigger(t => t + 1);
   };
 
   // 新增/编辑弹窗提交
-  const submitFormModal = async (trader: string, capital: number, strategy: string, loan: number, interest: number, fee: number) => {
+  const submitFormModal = async (trader: string, capital: number, strategy: string, loan: number, interest: number, fee: number, dailyDate: string) => {
     if (!trader) {
       message.warning('请输入交易员名称');
       return;
     }
-    if (capital <= 0) {
-      message.warning('本金必须大于0');
+    if (!strategy) {
+      message.warning('请输入策略名称');
       return;
     }
+    // if (capital <= 0) {
+    //   message.warning('本金必须大于0');
+    //   return;
+    // }
     try {
       if (formModalMode === 'add') {
         await createTrader({
@@ -184,7 +199,8 @@ export default function TraderPrincipalPage() {
           strategyName: strategy,
           loan: loan,
           interest: interest,
-          fee: fee
+          fee: fee,
+          dailyDate: dailyDate
         });
         message.success('新增成功');
       } else {
@@ -195,7 +211,8 @@ export default function TraderPrincipalPage() {
           strategyName: strategy,
           loan: loan,
           interest: interest,
-          fee: fee
+          fee: fee,
+          dailyDate: dailyDate
         });
         message.success('编辑成功');
       }
@@ -208,6 +225,7 @@ export default function TraderPrincipalPage() {
 
   // ========== 表格列配置 ==========
   const mainTableCols: TableProps<MainTableRow>['columns'] = [
+    { title: '日期', dataIndex: 'dailyDate' },
     { title: '交易员', dataIndex: 'traderName' },
     { title: '策略', dataIndex: 'strategyName' },
     { title: '本金', dataIndex: 'principal', render: (val: number) => val ?? 0 },
@@ -257,6 +275,7 @@ export default function TraderPrincipalPage() {
     setModalLoan(row.loan);
     setModalInterest(row.interest);
     setModalFee(row.fee);
+    setModalDate(row.dailyDate);
     setFormModalOpen(true);
   };
 
@@ -271,6 +290,7 @@ export default function TraderPrincipalPage() {
     setModalLoan(0);
     setModalInterest(0);
     setModalFee(0);
+    setModalDate(dayjs().format('YYYY-MM-DD'));
     setFormModalOpen(true);
   };
 
@@ -362,6 +382,8 @@ export default function TraderPrincipalPage() {
         loan={modalLoan}
         interest={modalInterest}
         fee={modalFee}
+        dailyDate={modalDate}
+        traderOptions={traderOptions}
         strategyOptions={strategyOptions}
         onCancel={() => setFormModalOpen(false)}
         onConfirm={submitFormModal}
@@ -371,6 +393,7 @@ export default function TraderPrincipalPage() {
         onChangeLoan={setModalLoan}
         onChangeInterest={setModalInterest}
         onChangeFee={setModalFee}
+        onChangeDate={setModalDate}
       />
 
       {/* 查看变更记录弹窗 */}

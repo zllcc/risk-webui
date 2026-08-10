@@ -8,7 +8,7 @@ export default function Login() {
   const navigate = useNavigate();
 
   const onFinish = (values: any) => {
-    localStorage.setItem('token', 'demo-token');
+    localStorage.setItem('token', 'eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiYWRtaW4iLCJ0aW1lc3RhbXAiOjM3OTEyMzg3ODgwODAwfQ.Jw7LRovaXcmjSqjdFfP4gv6uu4IuClgXh0SLyaVqoQg');
     message.success('登录成功');
     navigate('/asset-list');
   };

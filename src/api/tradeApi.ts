@@ -86,6 +86,7 @@ export interface TraderItem {
   loan: number;
   interest: number;
   fee: number;
+  dailyDate?: string;
   modifiedTime: string;
 }
 
@@ -136,6 +137,7 @@ export interface TraderAddParams {
   loan?: number;
   interest?: number;
   fee?: number;
+  dailyDate?: string;
 }
 
 // 编辑/删除入参
@@ -147,6 +149,7 @@ export interface TraderOperateParams {
   loan?: number;
   interest?: number;
   fee?: number;
+  dailyDate?: string;
 }
 
 /**

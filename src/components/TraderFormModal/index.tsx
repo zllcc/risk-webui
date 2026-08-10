@@ -1,4 +1,5 @@
-import { Modal, Input, InputNumber, Select, Row, Col, Button, Space } from 'antd';
+import { Modal, InputNumber, AutoComplete, DatePicker, Row, Col, Button, Space } from 'antd';
+import dayjs from 'dayjs';
 
 export type ModalOperateType = 'add' | 'edit';
 
@@ -12,15 +13,18 @@ export interface TraderFormModalProps {
   capitalInterest: number;
   loanInterest:number;
   fee: number;
+  dailyDate: string;
+  traderOptions: Array<{ value: string; label: string }>;
   strategyOptions: Array<{ value: string; label: string }>;
   onCancel: () => void;
-  onConfirm: (trader: string, principal: number, strategy: string, loan: number, interest: number, fee: number) => void;
+  onConfirm: (trader: string, principal: number, strategy: string, loan: number, interest: number, fee: number, dailyDate: string) => void;
   onChangeTrader: (val: string) => void;
   onChangePrincipal: (val: number | null) => void;
   onChangeStrategy: (val: string) => void;
   onChangeLoan: (val: number | null) => void;
   onChangeInterest: (val: number | null) => void;
   onChangeFee: (val: number | null) => void;
+  onChangeDate: (val: string) => void;
 }
 
 const TraderFormModal: React.FC<TraderFormModalProps> = ({
@@ -33,6 +37,8 @@ const TraderFormModal: React.FC<TraderFormModalProps> = ({
   capitalInterest,
   loanInterest,
   fee,
+  dailyDate,
+  traderOptions,
   strategyOptions,
   onCancel,
   onConfirm,
@@ -42,7 +48,10 @@ const TraderFormModal: React.FC<TraderFormModalProps> = ({
   onChangeLoan,
   onChangeInterest,
   onChangeFee,
+  onChangeDate,
 }) => {
+  const filterOption = (inputValue: string, option?: { value: string; label: string }) =>
+    (option?.label ?? '').toString().toLowerCase().includes(inputValue.toLowerCase());
 
   return (
     <Modal
@@ -52,7 +61,7 @@ const TraderFormModal: React.FC<TraderFormModalProps> = ({
       footer={
         <Space>
           <Button onClick={onCancel}>取消</Button>
-          <Button type="primary" onClick={() => onConfirm(traderName, principal, strategyName, loan, interest, fee)}>确认</Button>
+          <Button type="primary" onClick={() => onConfirm(traderName, principal, strategyName, loan, capitalInterest, loanInterest , fee, dailyDate)}>确认</Button>
         </Space>
       }
     >
@@ -61,14 +70,33 @@ const TraderFormModal: React.FC<TraderFormModalProps> = ({
         <Col span={24}>
           <Row align="middle" style={{ width: '100%' }}>
             <Col span={4} style={{ textAlign: 'right', paddingRight: 12 }}>
+              <label>日期：</label>
+            </Col>
+            <Col span={20}>
+              <DatePicker
+                value={dailyDate ? dayjs(dailyDate) : null}
+                onChange={(_, dateStr) => onChangeDate(dateStr as string)}
+                disabled={mode === 'edit'}
+                placeholder="请选择日期"
+                style={{ width: '100%' }}
+              />
+            </Col>
+          </Row>
+        </Col>
+        <Col span={24}>
+          <Row align="middle" style={{ width: '100%' }}>
+            <Col span={4} style={{ textAlign: 'right', paddingRight: 12 }}>
               <label>交易员：</label>
             </Col>
             <Col span={20}>
-              <Input
+              <AutoComplete
                 value={traderName}
-                onChange={(e) => onChangeTrader(e.target.value)}
-                placeholder="填写交易员名称"
+                options={traderOptions}
+                onChange={onChangeTrader}
+                placeholder="填写或选择交易员"
                 style={{ width: '100%' }}
+                filterOption={filterOption}
+                allowClear
               />
             </Col>
           </Row>
@@ -79,12 +107,13 @@ const TraderFormModal: React.FC<TraderFormModalProps> = ({
               <label>策略：</label>
             </Col>
             <Col span={20}>
-              <Select
-                style={{ width: '100%' }}
+              <AutoComplete
                 value={strategyName || undefined}
-                onChange={onChangeStrategy}
-                placeholder="请选择策略"
                 options={strategyOptions}
+                onChange={onChangeStrategy}
+                placeholder="填写或选择策略"
+                style={{ width: '100%' }}
+                filterOption={filterOption}
                 allowClear
               />
             </Col>
