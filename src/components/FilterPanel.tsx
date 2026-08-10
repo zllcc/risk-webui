@@ -21,6 +21,7 @@ export interface FilterParams {
   sectors?: string[];
   dateType?: number | null;
   aggregate?: number;
+  dailyDate?: string | null;
 }
 export const timeShortOpts = [
   { value: 1, label: "当日" },
@@ -48,6 +49,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ onSearch, pageType }) => {
   const [tempCustomDate, setTempCustomDate] = useState<[dayjs.Dayjs, dayjs.Dayjs] | null>(null);
   const [benchmarkType, setBenchmarkType] = useState<string[]>([]);
   const [aggregate, setAggregate] = useState<boolean>(true);
+  const [dailyDate, setDailyDate] = useState<dayjs.Dayjs | null>(null);
 
   // 下拉选项数据源（后端接口）
   const [accountOptions, setAccountOptions] = useState<SelectProps['options']>([]);
@@ -138,6 +140,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ onSearch, pageType }) => {
   const handleQuery = () => {
     const startDate = tempCustomDate ? tempCustomDate[0].format('YYYY-MM-DD HH:mm:ss') : null;
     const endDate = tempCustomDate ? tempCustomDate[1].format('YYYY-MM-DD HH:mm:ss') : null;
+    const dailyDateStr = dailyDate ? dailyDate.format('YYYY-MM-DD') : null;
     const typeParams: {
     referenceIndexConids?: string[];
     conids?: string[];
@@ -151,6 +154,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ onSearch, pageType }) => {
       endDate,
       dateType,
       aggregate: pageType === 'traderAsset' ? (aggregate ? 1 : 0) : undefined,
+      dailyDate: dailyDateStr,
       ...typeParams
     });
   };
@@ -188,6 +192,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ onSearch, pageType }) => {
     setTempCustomDate(null);
     setBenchmarkType([]);
     setAggregate(true);
+    setDailyDate(null);
     onSearch({
       accountCodes: [],
       tradeNames: [],
@@ -198,6 +203,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ onSearch, pageType }) => {
       conids: [],
       sectors: [],
       aggregate: pageType === 'traderAsset' ? 1 : undefined,
+      dailyDate: null,
     });
   };
 
@@ -250,7 +256,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ onSearch, pageType }) => {
     },
     {
       label: '快捷时间段',
-      isShow: true,
+      isShow: pageType !== 'traderAsset',
       content: (
         <Select
           value={dateType}
@@ -263,11 +269,23 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ onSearch, pageType }) => {
     },
     {
       label: '自定义区间',
-      isShow: true,
+      isShow: pageType !== 'traderAsset',
       content: (
         <RangePicker
           value={tempCustomDate}
           onChange={handleDateRangeChange}
+        />
+      ),
+    },
+    {
+      label: '日期',
+      isShow: pageType === 'traderAsset',
+      content: (
+        <DatePicker
+          value={dailyDate}
+          onChange={(val) => setDailyDate(val)}
+          placeholder="请选择日期"
+          style={{ width: 200 }}
         />
       ),
     },

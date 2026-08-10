@@ -14,6 +14,7 @@ export interface PositionQueryParams {
   dateType: number | null;
   zoneType:string;
   aggregate?: number;
+  dailyDate?: string;
 }
 
 export interface AssetQueryParams {

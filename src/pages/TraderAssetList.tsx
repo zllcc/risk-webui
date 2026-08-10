@@ -39,6 +39,7 @@ export default function AssetList() {
     endDate: '',
     dateType: 1,
     aggregate: 1,
+    dailyDate: null,
   });
 
   // 加载表头配置
@@ -134,6 +135,7 @@ export default function AssetList() {
         dateType: searchParams?.dateType ?? null,
         zoneType,
         aggregate: searchParams?.aggregate ?? 1,
+        dailyDate: searchParams?.dailyDate ?? undefined,
       };
 
     const res = await getTraderPositionList(apiParams);
