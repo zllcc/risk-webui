@@ -136,17 +136,14 @@ export default function TradeList() {
     setLoading(true);
     try {
       if (!zoneReady) return;
-
-      const startDate = dateRange ? dateRange[0].format('YYYY-MM-DD HH:mm:ss') : "";
-      const endDate = dateRange ? dateRange[1].format('YYYY-MM-DD HH:mm:ss') : "";
       const reqParams: TradePageParams = {
         accountCodes: activeFilter?.accountCodes ?? [],
         conids: activeFilter?.conids ?? [],
         secType: activeTab,
-        startDate,
-        endDate,
+        startDate: activeFilter?.startDate ?? '',
+        endDate: activeFilter?.endDate ?? '',
         sectors: activeFilter?.sectors ?? [],
-        dateType: dateType || null,
+        dateType: activeFilter?.dateType || null,
         zoneType,
         pageSize: 10,
         pageNum
