@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Row, Col, Space, Select, DatePicker, Button, Checkbox } from 'antd';
+import { Space, Select, DatePicker, Button, Checkbox } from 'antd';
 import type { SelectProps } from 'antd/es/select';
 import { queryInvestStrategy, getContractSectorList, getContractList } from '@/api/investApi'
 import { getAccountSelectList, getTraderSelectList } from '@/api/accountApi'
 import { getReferenceIndexList } from '@/api/overviewApi';
 import { ReferenceIndexItem } from '@/types/common';
-import { getQuickDateRange } from '@/utils/dateRange';
 import dayjs from 'dayjs';
 
 const { RangePicker } = DatePicker;

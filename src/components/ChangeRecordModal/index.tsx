@@ -1,4 +1,4 @@
-import { Modal, Table, Spin, message } from 'antd';
+import { Modal, Table, Spin, message, Space } from 'antd';
 import type { TableProps } from 'antd';
 import { useEffect, useState, useCallback } from 'react';
 import { queryTraderHistory } from '@/api/tradeApi';
