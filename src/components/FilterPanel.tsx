@@ -138,8 +138,8 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ onSearch, pageType }) => {
 
   // 查询按钮
   const handleQuery = () => {
-    const startDate = tempCustomDate ? tempCustomDate[0].format('YYYY-MM-DD HH:mm:ss') : null;
-    const endDate = tempCustomDate ? tempCustomDate[1].format('YYYY-MM-DD HH:mm:ss') : null;
+    const startDate = tempCustomDate ? tempCustomDate[0].format('YYYY-MM-DD') : null;
+    const endDate = tempCustomDate ? tempCustomDate[1].format('YYYY-MM-DD') : null;
     const dailyDateStr = dailyDate ? dailyDate.format('YYYY-MM-DD') : null;
     const typeParams: {
     referenceIndexConids?: string[];
@@ -273,6 +273,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ onSearch, pageType }) => {
       content: (
         <RangePicker
           value={tempCustomDate}
+          format={'YYYY-MM-DD'}
           onChange={handleDateRangeChange}
         />
       ),
