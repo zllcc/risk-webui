@@ -34,7 +34,7 @@ export const timeShortOpts = [
 
 interface FilterPanelProps {
   onSearch: (params: FilterParams) => void;
-  pageType: 'overview' | 'asset' | 'analysis' | 'traderAsset';
+  pageType: 'overview' | 'asset' | 'analysis' | 'traderAsset' | 'traderTrade' | 'trade';
 }
 
 const FilterPanel: React.FC<FilterPanelProps> = ({ onSearch, pageType }) => {
@@ -226,7 +226,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ onSearch, pageType }) => {
     },
     {
       label: '操盘人',
-      isShow: pageType !== 'asset',
+      isShow: pageType !== 'asset' && pageType !== 'trade',
       content: (
         <Select
           mode="multiple"
@@ -241,7 +241,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ onSearch, pageType }) => {
     },
     {
       label: '策略',
-      isShow: pageType !== 'asset',
+      isShow: pageType !== 'asset' && pageType !== 'trade',
       content: (
         <Select
           mode="multiple"
@@ -256,7 +256,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ onSearch, pageType }) => {
     },
     {
       label: '快捷时间段',
-      isShow: pageType !== 'traderAsset',
+      isShow: pageType !== 'traderAsset' && pageType !== 'asset',
       content: (
         <Select
           value={dateType}
@@ -269,7 +269,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ onSearch, pageType }) => {
     },
     {
       label: '自定义区间',
-      isShow: pageType !== 'traderAsset',
+      isShow: pageType !== 'traderAsset' && pageType !== 'asset',
       content: (
         <RangePicker
           value={tempCustomDate}
@@ -279,7 +279,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ onSearch, pageType }) => {
     },
     {
       label: '日期',
-      isShow: pageType === 'traderAsset',
+      isShow: pageType === 'traderAsset' || pageType === 'asset',
       content: (
         <DatePicker
           value={dailyDate}
@@ -291,7 +291,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ onSearch, pageType }) => {
     },
     {
       label: '标的',
-      isShow: pageType === 'asset' || pageType === 'traderAsset',
+      isShow: pageType === 'asset' || pageType === 'traderAsset' || pageType === 'trade',
       content: (
         <Select
           mode="multiple"

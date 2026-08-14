@@ -218,7 +218,7 @@ export default function TraderTradeList() {
         </Space>
       }
     >
-      <FilterPanel onSearch={handleSearch} pageType='traderAsset' />
+      <FilterPanel onSearch={handleSearch} pageType='traderTrade' />
 
       <Row justify="space-between" align="middle" style={{ marginBottom: 16, marginTop: 16 }}>
         <Col>
