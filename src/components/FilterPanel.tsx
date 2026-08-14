@@ -131,7 +131,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ onSearch, pageType }) => {
 
   // 选中账号变化，重新拉取操盘人
   useEffect(() => {
-    if (pageType !== 'asset') {
+    if (pageType !== 'asset' && pageType !== 'trade') {
       fetchTraderList(selectedAccounts);
     }
   }, [selectedAccounts])
