@@ -43,10 +43,10 @@ export default function AssetList() {
   });
 
   // 加载表头配置
-  const loadColumnConfig = useCallback(async (type: string) => {
+  const loadColumnConfig = useCallback(async (type: string, aggregate?: number) => {
     setColLoading(true);
     try {
-      const res = await getPageColumnDisplay({ pageName: PAGE_NAME, type });
+      const res = await getPageColumnDisplay({ pageName: PAGE_NAME, type, aggregate });
       setColumnConfigList(res);
       const displayKeys = res.filter(i => i.isDisplay).map(i => i.columnName);
       setVisibleCols(displayKeys);
@@ -58,10 +58,6 @@ export default function AssetList() {
       setColLoading(false);
     }
   }, []);
-
-  useEffect(() => {
-    loadColumnConfig(activeTab);
-  }, [activeTab, loadColumnConfig]);
 
   // 勾选变更，仅更新变化字段
   const handleColCheckChange = async (newKeys: string[]) => {
@@ -121,6 +117,9 @@ export default function AssetList() {
     try {
       if (!zoneReady) return;
 
+      // 每次查询时加载表头配置，传入合计参数
+      loadColumnConfig(activeTab, searchParams?.aggregate);
+
       const apiParams: PositionQueryParams = {
         pageNum,
         pageSize,
@@ -149,7 +148,7 @@ export default function AssetList() {
     } finally {
       setLoading(false);
     }
-  }, [pageNum, activeTab, searchParams, zoneType, zoneReady]);
+  }, [pageNum, activeTab, searchParams, zoneType, zoneReady, loadColumnConfig]);
 
   useEffect(() => {
     fetchPositionData();
