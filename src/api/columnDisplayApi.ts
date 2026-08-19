@@ -6,6 +6,7 @@ export interface GetColumnDisplayParams {
   type: string;
   columnName: string;
   isDisplay: boolean;
+  aggregate?: number;
 }
 
 // 单列表头配置项
