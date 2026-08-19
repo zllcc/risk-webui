@@ -300,6 +300,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ onSearch, pageType }) => {
           options={contractOptions}
           value={selectedSectors}
           onChange={(val) => setSelectedSectors(val)}
+          optionFilterProp="label"
           allowClear
         />
       ),
