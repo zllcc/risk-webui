@@ -78,7 +78,7 @@ export default function Login() {
           fontSize: 30,
           
         }}>
-          家办财务风控系统
+          财务中台
         </div>
         <Card title="系统登录" style={{ width: 400 }}>
           <Form onFinish={onFinish} layout="vertical">

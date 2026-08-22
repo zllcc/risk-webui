@@ -54,7 +54,7 @@ export default function BasicLayout() {
           size="middle"
         >
           <Title level={4} style={{ color: '#fff', marginRight: 24, marginBottom: 0 }}>
-            家办财务风控系统
+            财务中台
           </Title>
           {navMenus.map((item) => {
             // 判断是否为当前选中路由
