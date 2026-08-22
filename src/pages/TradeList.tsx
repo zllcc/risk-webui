@@ -38,20 +38,18 @@ export default function TradeList() {
   const [activeTab, setActiveTab] = useState("股票");
   const [zoneOptions, setZoneOptions] = useState<{value: string; label: string}[]>([]);
   const [zoneType, setZoneType] = useState('');
-    // 新增：区域是否初始化完成标记
   const [zoneReady, setZoneReady] = useState(false);
   const [tableData, setTableData] = useState<TradeRecordItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [colLoading, setColLoading] = useState(false);
-  // 核算按钮loading
   const [calLoading, setCalLoading] = useState(false);
-  // 导出按钮loading
   const [exportLoading, setExportLoading] = useState(false);
   const [dateType, setDateType] = useState<number | null>(1);
   const [dateRange, setDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs] | null>(null);
 
   const [pageNum, setPageNum] = useState(1);
-  const pageSize = 10;
+  // pageSize改为state，支持手动输入
+  const [pageSize, setPageSize] = useState(10);
   const [total, setTotal] = useState(0);
 
   const [allocateModalOpen, setAllocateModalOpen] = useState(false);
@@ -111,7 +109,7 @@ export default function TradeList() {
     }
   };
 
-    // 加载区域下拉
+  // 加载区域下拉
   const getZone = useCallback(async () => {
     try {
       const res = await getZoneOptions() || [];
@@ -122,7 +120,6 @@ export default function TradeList() {
     } catch (err) {
       console.error('获取区域失败');
     } finally {
-      // 无论成功失败，标记区域初始化完成
       setZoneReady(true);
     }
   }, []);
@@ -145,7 +142,7 @@ export default function TradeList() {
         sectors: activeFilter?.sectors ?? [],
         dateType: activeFilter?.dateType || null,
         zoneType,
-        pageSize: 10,
+        pageSize,
         pageNum
       };
       const res = await getTradePageList(reqParams);
@@ -154,12 +151,11 @@ export default function TradeList() {
     } catch (err) {
       console.error("交易列表请求失败", err);
       setTableData([]);
-      setTableData([]);
       setTotal(0);
     } finally {
       setLoading(false);
     }
-  }, [activeFilter, pageNum, activeTab, zoneType, zoneReady, dateType, dateRange]);
+  }, [activeFilter, pageNum, pageSize, activeTab, zoneType, zoneReady, dateType, dateRange]);
 
   useEffect(() => {
     fetchTradeList();
@@ -193,7 +189,6 @@ export default function TradeList() {
         try {
           await executeTradeCal();
           message.success('核算任务已提交成功');
-          // 核算完成刷新列表，按需保留/注释
           fetchTradeList();
         } catch (err) {
           message.error('核算提交失败，请稍后重试');
@@ -270,9 +265,7 @@ export default function TradeList() {
       title={<Title level={5}>交易列表</Title>}
       extra={
         <Space>
-          {/* 新增核算按钮 */}
           <Button type="primary" loading={calLoading} onClick={handleCalTrade}>核算</Button>
-          {/* 导出按钮 */}
           <Button loading={exportLoading} onClick={handleExportUncalibrated}>导出</Button>
           <ImportBtnGroup type='2' onSuccess={fetchTradeList} />
         </Space>
@@ -331,8 +324,12 @@ export default function TradeList() {
           current={pageNum}
           total={total}
           pageSize={pageSize}
-          onChange={(page) => setPageNum(page)}
-          showSizeChanger={false}
+          showSizeChanger
+          pageSizeOptions={['10','20','50','100','200']}
+          onChange={(page,size) => {
+            setPageNum(page);
+            setPageSize(size);
+          }}
         />
       </Row>
 

@@ -22,14 +22,14 @@ export default function AssetList() {
   const [activeTab, setActiveTab] = useState("股票");
   const [zoneOptions, setZoneOptions] = useState<{value: string; label: string}[]>([]);
   const [zoneType, setZoneType] = useState('');
-    // 新增：区域是否初始化完成标记
   const [zoneReady, setZoneReady] = useState(false);
   const [tableData, setTableData] = useState<PositionRecord[]>([]);
   const [loading, setLoading] = useState(false);
   const [colLoading, setColLoading] = useState(false);
   const [pageNum, setPageNum] = useState(1);
+  // pageSize改为state，支持手动输入修改每页条数
+  const [pageSize, setPageSize] = useState(10);
   const [pageTotal, setPageTotal] = useState(0);
-  const pageSize = 10;
 
   const [searchParams, setSearchParams] = useState<FilterParams>({
     accountCodes: [],
@@ -91,7 +91,7 @@ export default function AssetList() {
     }
   };
 
-    // 加载区域下拉
+  // 加载区域下拉
   const getZone = useCallback(async () => {
     try {
       const res = await getZoneOptions() || [];
@@ -102,7 +102,6 @@ export default function AssetList() {
     } catch (err) {
       console.error('获取区域失败');
     } finally {
-      // 无论成功失败，标记区域初始化完成
       setZoneReady(true);
     }
   }, []);
@@ -117,7 +116,6 @@ export default function AssetList() {
     try {
       if (!zoneReady) return;
 
-      // 每次查询时加载表头配置，传入合计参数
       loadColumnConfig(activeTab, searchParams?.aggregate);
 
       const apiParams: PositionQueryParams = {
@@ -137,7 +135,7 @@ export default function AssetList() {
         dailyDate: searchParams?.dailyDate ?? undefined,
       };
 
-    const res = await getTraderPositionList(apiParams);
+      const res = await getTraderPositionList(apiParams);
       setTableData(res.records);
       setPageTotal(res.total);
     } catch (err) {
@@ -148,7 +146,7 @@ export default function AssetList() {
     } finally {
       setLoading(false);
     }
-  }, [pageNum, activeTab, searchParams, zoneType, zoneReady, loadColumnConfig]);
+  }, [pageNum, pageSize, activeTab, searchParams, zoneType, zoneReady, loadColumnConfig]);
 
   useEffect(() => {
     fetchPositionData();
@@ -247,8 +245,12 @@ export default function AssetList() {
           current: pageNum,
           pageSize,
           total: pageTotal,
-          onChange: (page) => setPageNum(page),
-          showSizeChanger: false,
+          showSizeChanger: true,
+          pageSizeOptions: ['10','20','50','100','200'],
+          onChange: (page, size) => {
+            setPageNum(page);
+            setPageSize(size);
+          },
           showTotal: (total) => `共 ${total} 条持仓`
         }}
       />

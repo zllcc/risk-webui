@@ -23,7 +23,6 @@ export default function AssetList() {
   const [activeTab, setActiveTab] = useState("股票");
   const [zoneOptions, setZoneOptions] = useState<{value: string; label: string}[]>([]);
   const [zoneType, setZoneType] = useState('');
-  // 新增：区域是否初始化完成标记
   const [zoneReady, setZoneReady] = useState(false);
 
   const [tableData, setTableData] = useState<PositionRecord[]>([]);
@@ -31,7 +30,8 @@ export default function AssetList() {
   const [colLoading, setColLoading] = useState(false);
   const [pageNum, setPageNum] = useState(1);
   const [pageTotal, setPageTotal] = useState(0);
-  const pageSize = 10;
+  // pageSize改为state，初始10
+  const [pageSize, setPageSize] = useState(10);
   const [exportLoading, setExportLoading] = useState(false);
 
   const [searchParams, setSearchParams] = useState<FilterParams>({
@@ -107,7 +107,6 @@ export default function AssetList() {
     } catch (err) {
       console.error('获取区域失败');
     } finally {
-      // 无论成功失败，标记区域初始化完成
       setZoneReady(true);
     }
   }, []);
@@ -116,9 +115,7 @@ export default function AssetList() {
     getZone();
   }, [getZone]);
 
-  // 直接赋值原始数据，无转换
   const fetchPositionData = useCallback(async () => {
-    // 关键：区域还没加载完成，直接跳过请求
     if (!zoneReady) return;
 
     setLoading(true);
@@ -148,7 +145,7 @@ export default function AssetList() {
     } finally {
       setLoading(false);
     }
-  }, [pageNum, activeTab, searchParams, zoneType, zoneReady]);
+  }, [pageNum, pageSize, activeTab, searchParams, zoneType, zoneReady]);
 
   useEffect(() => {
     fetchPositionData();
@@ -280,8 +277,13 @@ export default function AssetList() {
           current: pageNum,
           pageSize,
           total: pageTotal,
-          onChange: (page) => setPageNum(page),
-          showSizeChanger: false,
+          onChange: (page, size) => {
+            setPageNum(page);
+            setPageSize(size);
+          },
+          showSizeChanger: true,
+          // 可选：自定义下拉可选的每页条数，用户也可以手动输入数字
+          pageSizeOptions: ['10','20','50','100','200'],
           showTotal: (total) => `共 ${total} 条持仓`
         }}
       />

@@ -73,9 +73,9 @@ export default function TraderPrincipalPage() {
   // 变更记录弹窗状态
   const [recordModalOpen, setRecordModalOpen] = useState(false);
 
-  // 分页状态
+  // 分页状态 pageSize改为state，支持手动输入
   const [pageNum, setPageNum] = useState(1);
-  const pageSize = 10;
+  const [pageSize, setPageSize] = useState(10);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
   const [searchTrigger, setSearchTrigger] = useState(0);
@@ -374,7 +374,12 @@ export default function TraderPrincipalPage() {
           current: pageNum,
           pageSize,
           total,
-          onChange: (page) => setPageNum(page),
+          showSizeChanger: true,
+          pageSizeOptions: ['10','20','50','100','200'],
+          onChange: (page, size) => {
+            setPageNum(page);
+            setPageSize(size);
+          },
           showTotal: (totalNum) => `共 ${totalNum} 条`
         }}
       />

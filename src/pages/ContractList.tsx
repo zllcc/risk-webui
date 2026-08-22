@@ -21,6 +21,7 @@ export interface ContractRow {
   optRiaht: string | null; // 期权类型
   lastTradeDate: string | null; // 到期日
   shortName: string; // 代码
+  multiplier?: number | null;
 }
 
 
@@ -35,7 +36,7 @@ const ContractList = () => {
   const [tableData, setTableData] = useState<ContractRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [pageNum, setPageNum] = useState(1);
-  const pageSize = 10;
+  const [pageSize, setPageSize] = useState(10);
   const [total, setTotal] = useState(0);
 
   // 弹窗控制
@@ -53,12 +54,12 @@ const ContractList = () => {
   }, []);
 
   // 请求列表数据
-  const fetchList = useCallback(async (symbol: string, shortName: string, secType: string, page: number) => {
+  const fetchList = useCallback(async (symbol: string, shortName: string, secType: string, page: number, size: number) => {
     setLoading(true);
     try {
       const params = {
         pageNum: page,
-        pageSize,
+        pageSize: size,
         symbol,
         shortName,
         secType,
@@ -75,12 +76,12 @@ const ContractList = () => {
 
   // 仅组件挂载时加载一次
   useEffect(() => {
-    fetchList('', '', '', 1);
-  }, [fetchList]);
+    fetchList('', '', '', 1, pageSize);
+  }, [fetchList, pageSize]);
 
   const handleSearch = () => {
     setPageNum(1);
-    fetchList(searchSymbol, searchShortName, searchSecType ?? '', 1);
+    fetchList(searchSymbol, searchShortName, searchSecType ?? '', 1, pageSize);
   }
 
   const handleReset = () => {
@@ -88,7 +89,7 @@ const ContractList = () => {
     setSearchShortName('');
     setSearchSecType(undefined);
     setPageNum(1);
-    fetchList('', '', '', 1);
+    fetchList('', '', '', 1, pageSize);
   }
 
   // 打开编辑弹窗
@@ -106,7 +107,7 @@ const ContractList = () => {
   // 编辑提交成功回调，刷新列表
   const afterEditSuccess = () => {
     setEditModalOpen(false);
-    fetchList(searchSymbol, searchShortName, searchSecType ?? '', pageNum);
+    fetchList(searchSymbol, searchShortName, searchSecType ?? '', pageNum, pageSize);
   };
 
   const columns: TableProps<ContractRow>['columns'] = [
@@ -149,7 +150,7 @@ const ContractList = () => {
   return (
     <Card
       title={<Title level={5}>标的资产</Title>}
-      extra={<ImportBtnGroup type="3" onSuccess={() => fetchList(searchSymbol, searchShortName, searchSecType ?? '', 1)} />}
+      extra={<ImportBtnGroup type="3" onSuccess={() => fetchList(searchSymbol, searchShortName, searchSecType ?? '', 1, pageSize)} />}
     >
       {/* 筛选区域 */}
       <Space size={12} style={{ marginBottom: 18, alignItems: 'center' }} wrap>
@@ -198,9 +199,12 @@ const ContractList = () => {
         current={pageNum}
         pageSize={pageSize}
         total={total}
-        onChange={(page) => {
+        showSizeChanger
+        pageSizeOptions={['10','20','50','100','200']}
+        onChange={(page, size) => {
           setPageNum(page);
-          fetchList(searchSymbol, searchShortName, searchSecType ?? '', page);
+          setPageSize(size);
+          fetchList(searchSymbol, searchShortName, searchSecType ?? '', page, size);
         }}
       />}
 

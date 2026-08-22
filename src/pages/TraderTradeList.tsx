@@ -32,14 +32,15 @@ export default function TraderTradeList() {
   const [activeTab, setActiveTab] = useState("股票");
   const [zoneOptions, setZoneOptions] = useState<{value: string; label: string}[]>([]);
   const [zoneType, setZoneType] = useState('');
-    // 区域是否初始化完成标记
+  // 区域是否初始化完成标记
   const [zoneReady, setZoneReady] = useState(false);
   const [tableData, setTableData] = useState<TradeRecordItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [colLoading, setColLoading] = useState(false);
 
   const [pageNum, setPageNum] = useState(1);
-  const pageSize = 10;
+  // pageSize改为state，支持修改每页条数
+  const [pageSize, setPageSize] = useState(10);
   const [total, setTotal] = useState(0);
   // 核算按钮loading
   const [calLoading, setCalLoading] = useState(false);
@@ -133,7 +134,7 @@ export default function TraderTradeList() {
         sectors: activeFilter?.sectors ?? [],
         dateType: activeFilter?.dateType || null,
         zoneType,
-        pageSize: 10,
+        pageSize,
         pageNum
       };
       const res = await getTraderTradePageList(reqParams);
@@ -146,7 +147,7 @@ export default function TraderTradeList() {
     } finally {
       setLoading(false);
     }
-  }, [activeFilter, pageNum, activeTab, zoneType, zoneReady]);
+  }, [activeFilter, pageNum, pageSize, activeTab, zoneType, zoneReady]);
 
   useEffect(() => {
     fetchTradeList();
@@ -271,8 +272,12 @@ export default function TraderTradeList() {
           current={pageNum}
           total={total}
           pageSize={pageSize}
-          onChange={(page) => setPageNum(page)}
-          showSizeChanger={false}
+          onChange={(page, size) => {
+            setPageNum(page);
+            setPageSize(size);
+          }}
+          showSizeChanger={true}
+          pageSizeOptions={['10','20','50','100','200']}
         />
       </Row>
     </Card>
