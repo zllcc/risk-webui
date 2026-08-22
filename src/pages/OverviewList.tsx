@@ -15,14 +15,17 @@ const { Title } = Typography;
 // 指标卡片
 const MetricCard: React.FC<{ title: string; value: string | number }> = ({ title, value }) => (
   <div style={{
-    background: 'rgba(204, 235, 255, 0.4)',
-    padding: '16px 12px',
-    borderRadius: 4,
+    backgroundColor: 'rgba(94,156,255,0.35)',
+    border: '1px solid rgba(86, 144, 255, 0.45)',
+    boxShadow: '0 0 20px rgba(72,132,255,0.32), inset 0 0 10px rgba(72,132,255,0.35)',
+    borderRadius: '6px',
+    padding: '12px 8px',
+    transition: 'all 0.25s ease',
     textAlign: 'center',
     height: '100%',
     display: 'flex',
     flexDirection: 'column',
-    justifyContent: 'center'
+    justifyContent: 'center',
   }}>
     <div style={{ fontSize: 14, marginBottom: 8 }}>{title}</div>
     <div style={{ fontSize: 18, fontWeight: 500 }}>{value}</div>
@@ -198,7 +201,7 @@ export default function PortfolioOverview() {
     <Card title={<Title level={5}>组合总览</Title>}>
       <FilterPanel onSearch={handleSearch} pageType="overview" />
 
-      <Row gutter={16} style={{ marginBottom: 20 }}>
+      <Row gutter={16} style={{ margin: '12px 0 24px' }}>
         <Col span={6}>
           <MetricCard title="收益额" value={summary.profitAmount} />
         </Col>
