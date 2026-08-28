@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Space, Select, DatePicker, Button, Checkbox } from 'antd';
 import type { SelectProps } from 'antd/es/select';
 import { queryInvestStrategy, getContractSectorList, getContractList } from '@/api/investApi'
-import { getAccountSelectList, getTraderSelectList } from '@/api/accountApi'
+import { getAccountSelectList, getTraderSelectList, getCurrencySelectList } from '@/api/accountApi'
 import { getReferenceIndexList } from '@/api/overviewApi';
 import { ReferenceIndexItem } from '@/types/common';
 import dayjs from 'dayjs';
@@ -21,6 +21,7 @@ export interface FilterParams {
   dateType?: number | null;
   aggregate?: number;
   dailyDate?: string | null;
+  currency?: string;
 }
 export const timeShortOpts = [
   { value: 1, label: "当日" },
@@ -49,6 +50,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ onSearch, pageType }) => {
   const [benchmarkType, setBenchmarkType] = useState<string[]>([]);
   const [aggregate, setAggregate] = useState<boolean>(true);
   const [dailyDate, setDailyDate] = useState<dayjs.Dayjs | null>(null);
+  const [selectedCurrency, setSelectedCurrency] = useState<string | undefined>(undefined);
 
   // 下拉选项数据源（后端接口）
   const [accountOptions, setAccountOptions] = useState<SelectProps['options']>([]);
@@ -57,6 +59,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ onSearch, pageType }) => {
   const [indexOptions, setIndexOptions] = useState<ReferenceIndexItem[]>([]);
   const [sectorOptions, setSectorOptions] = useState<SelectProps['options']>([]); // 板块下拉
   const [contractOptions, setContractOptions] = useState<SelectProps['options']>([]); // 标的下拉
+  const [currencyOptions, setCurrencyOptions] = useState<SelectProps['options']>([]); // 币种下拉
 
   // 1. 获取账号下拉
   const fetchAccountList = async () => {
@@ -119,6 +122,16 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ onSearch, pageType }) => {
     }
   };
 
+  // 7. 获取币种下拉
+  const fetchCurrencyOptions = async () => {
+    try {
+      const res = await getCurrencySelectList('');
+      setCurrencyOptions(res);
+    } catch (err) {
+      console.error('获取币种列表失败', err);
+    }
+  };
+
   // 初始化加载所有基础下拉
   useEffect(() => {
     fetchAccountList();
@@ -126,6 +139,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ onSearch, pageType }) => {
     fetchStrategyList();
     fetchSectorOptions();
     fetchContractOptions();
+    fetchCurrencyOptions();
   }, [])
 
   // 选中账号变化，重新拉取操盘人
@@ -154,6 +168,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ onSearch, pageType }) => {
       dateType,
       aggregate: pageType === 'traderAsset' ? (aggregate ? 1 : 0) : undefined,
       dailyDate: dailyDateStr,
+      currency: selectedCurrency,
       ...typeParams
     });
   };
@@ -192,6 +207,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ onSearch, pageType }) => {
     setBenchmarkType([]);
     setAggregate(true);
     setDailyDate(null);
+    setSelectedCurrency(undefined);
     onSearch({
       accountCodes: [],
       tradeNames: [],
@@ -203,6 +219,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ onSearch, pageType }) => {
       sectors: [],
       aggregate: pageType === 'traderAsset' ? 1 : undefined,
       dailyDate: null,
+      currency: undefined,
     });
   };
 
@@ -316,6 +333,22 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ onSearch, pageType }) => {
           options={sectorOptions}
           value={selectedSubjectMatter}
           onChange={setSelectedSubjectMatter}
+          allowClear
+        />
+      ),
+    },
+    {
+      label: '币种',
+      isShow: pageType === 'asset' || pageType === 'traderAsset',
+      content: (
+        <Select
+          placeholder="选择币种"
+          style={{ minWidth: 200 }}
+          options={currencyOptions}
+          value={selectedCurrency}
+          onChange={setSelectedCurrency}
+          showSearch
+          optionFilterProp="label"
           allowClear
         />
       ),

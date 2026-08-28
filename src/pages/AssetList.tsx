@@ -132,6 +132,7 @@ export default function AssetList() {
         dateType: searchParams?.dateType ?? null,
         zoneType,
         positionDate: searchParams?.dailyDate ?? undefined,
+        currency: searchParams?.currency ?? undefined,
       };
 
       const res = await getPositionList(apiParams);
@@ -170,6 +171,7 @@ export default function AssetList() {
         dateType: searchParams?.dateType ?? null,
         zoneType,
         positionDate: searchParams?.dailyDate ?? undefined,
+        currency: searchParams?.currency ?? undefined,
       };
       const res = await exportPositionHistory(params);
       const blob = new Blob([res.data]);

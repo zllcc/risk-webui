@@ -23,3 +23,15 @@ export function getTraderSelectList(params: {accountCodes: string[], traderName:
     data: params
   })
 }
+
+/**
+ * 获取币种下拉选项
+ * POST /select/pc/currency
+ */
+export function getCurrencySelectList(currency: string = '') {
+  return request<{value: string; label: string}[]>({
+    url: '/select/pc/currency',
+    method: 'POST',
+    data: { currency }
+  })
+}

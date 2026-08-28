@@ -133,6 +133,7 @@ export default function AssetList() {
         zoneType,
         aggregate: searchParams?.aggregate ?? 1,
         dailyDate: searchParams?.dailyDate ?? undefined,
+        currency: searchParams?.currency ?? undefined,
       };
 
       const res = await getTraderPositionList(apiParams);

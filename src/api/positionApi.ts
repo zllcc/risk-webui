@@ -15,6 +15,7 @@ export interface PositionQueryParams {
   zoneType:string;
   aggregate?: number;
   positionDate?: string;
+  currency?: string;
 }
 
 export interface AssetQueryParams {
@@ -29,6 +30,7 @@ export interface AssetQueryParams {
   dateType: number | null;
   zoneType:string;
   positionDate?: string;
+  currency?: string;
 }
 
 export interface PositionRecord {
