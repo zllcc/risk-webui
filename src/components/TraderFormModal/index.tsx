@@ -7,6 +7,7 @@ export interface TraderFormModalProps {
   open: boolean;
   mode: ModalOperateType;
   traderName: string;
+  accountCode: string;
   principal: number;
   strategyName: string;
   loan: number;
@@ -15,10 +16,12 @@ export interface TraderFormModalProps {
   fee: number;
   dailyDate: string;
   traderOptions: Array<{ value: string; label: string }>;
+  accountOptions: Array<{ value: string; label: string }>;
   strategyOptions: Array<{ value: string; label: string }>;
   onCancel: () => void;
-  onConfirm: (trader: string, principal: number, strategy: string, loan: number, capitalInterest: number, loanInterest: number, fee: number, dailyDate: string) => void;
+  onConfirm: (trader: string, accountCode: string, principal: number, strategy: string, loan: number, capitalInterest: number, loanInterest: number, fee: number, dailyDate: string) => void;
   onChangeTrader: (val: string) => void;
+  onChangeAccount: (val: string) => void;
   onChangePrincipal: (val: number | null) => void;
   onChangeStrategy: (val: string) => void;
   onChangeLoan: (val: number | null) => void;
@@ -32,6 +35,7 @@ const TraderFormModal: React.FC<TraderFormModalProps> = ({
   open,
   mode,
   traderName,
+  accountCode,
   principal,
   strategyName,
   loan,
@@ -40,10 +44,12 @@ const TraderFormModal: React.FC<TraderFormModalProps> = ({
   fee,
   dailyDate,
   traderOptions,
+  accountOptions,
   strategyOptions,
   onCancel,
   onConfirm,
   onChangeTrader,
+  onChangeAccount,
   onChangePrincipal,
   onChangeStrategy,
   onChangeLoan,
@@ -55,15 +61,18 @@ const TraderFormModal: React.FC<TraderFormModalProps> = ({
   const filterOption = (inputValue: string, option?: { value: string; label: string }) =>
     (option?.label ?? '').toString().toLowerCase().includes(inputValue.toLowerCase());
 
+  // 编辑模式下，交易员/策略/账号不可修改
+  const isEdit = mode === 'edit';
+
   return (
     <Modal
-      title={mode === 'edit' ? '编辑交易员' : '新增交易员'}
+      title={isEdit ? '编辑交易员' : '新增交易员'}
       open={open}
       onCancel={onCancel}
       footer={
         <Space>
           <Button onClick={onCancel}>取消</Button>
-          <Button type="primary" onClick={() => onConfirm(traderName, principal, strategyName, loan, capitalInterest, loanInterest, fee, dailyDate)}>确认</Button>
+          <Button type="primary" onClick={() => onConfirm(traderName, accountCode, principal, strategyName, loan, capitalInterest, loanInterest, fee, dailyDate)}>确认</Button>
         </Space>
       }
     >
@@ -78,7 +87,7 @@ const TraderFormModal: React.FC<TraderFormModalProps> = ({
               <DatePicker
                 value={dailyDate ? dayjs(dailyDate) : null}
                 onChange={(_, dateStr) => onChangeDate(dateStr as string)}
-                disabled={mode === 'edit'}
+                disabled={isEdit}
                 placeholder="请选择日期"
                 style={{ width: '100%' }}
               />
@@ -95,7 +104,27 @@ const TraderFormModal: React.FC<TraderFormModalProps> = ({
                 value={traderName}
                 options={traderOptions}
                 onChange={onChangeTrader}
+                disabled={isEdit}
                 placeholder="填写或选择交易员"
+                style={{ width: '100%' }}
+                filterOption={filterOption}
+                allowClear
+              />
+            </Col>
+          </Row>
+        </Col>
+        <Col span={24}>
+          <Row align="middle" style={{ width: '100%' }}>
+            <Col span={4} style={{ textAlign: 'right', paddingRight: 12 }}>
+              <label>账号：</label>
+            </Col>
+            <Col span={20}>
+              <AutoComplete
+                value={accountCode || undefined}
+                options={accountOptions}
+                onChange={onChangeAccount}
+                disabled={isEdit}
+                placeholder="填写或选择账号"
                 style={{ width: '100%' }}
                 filterOption={filterOption}
                 allowClear
@@ -113,6 +142,7 @@ const TraderFormModal: React.FC<TraderFormModalProps> = ({
                 value={strategyName || undefined}
                 options={strategyOptions}
                 onChange={onChangeStrategy}
+                disabled={isEdit}
                 placeholder="填写或选择策略"
                 style={{ width: '100%' }}
                 filterOption={filterOption}
@@ -129,7 +159,7 @@ const TraderFormModal: React.FC<TraderFormModalProps> = ({
             <Col span={20}>
               <InputNumber
                 style={{ width: '100%' }}
-                min={0}
+                
                 value={principal}
                 onChange={onChangePrincipal}
                 placeholder="填写本金数值"

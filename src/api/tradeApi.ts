@@ -81,6 +81,7 @@ export interface AllocateApiParams {
 export interface TraderItem {
   id: number;
   traderName: string;
+  accountCode?: string;
   capital: number;
   strategyName: string;
   loan: number;
@@ -121,6 +122,7 @@ export interface TraderPageParams {
   traderNames?: string[];
   strategyNames?: string[];
   accountCodes?: string[];
+  dailyDate?: string;
 }
 
 // 分页返回结构
@@ -134,6 +136,7 @@ export interface TraderPageRes {
 // 新增入参
 export interface TraderAddParams {
   traderName: string;
+  accountCode?: string;
   strategyName?: string;
   capital: number;
   loan?: number;
@@ -148,6 +151,7 @@ export interface TraderAddParams {
 export interface TraderOperateParams {
   id: number;
   traderName: string;
+  accountCode?: string;
   capital: number;
   strategyName?: string;
   loan?: number;
@@ -156,6 +160,25 @@ export interface TraderOperateParams {
   interest?: number;
   fee?: number;
   dailyDate?: string;
+}
+
+// 交易员本金详情查询入参
+export interface TraderCapitalDetailParams {
+  traderName: string;
+  accountCode: string;
+  strategyName: string;
+  dailyDate: string;
+}
+
+// 交易员本金详情返回
+export interface TraderCapitalDetailRes {
+  id?: number;
+  capital?: number;
+  loan?: number;
+  capitalInterest?: number;
+  loanInterest?: number;
+  interest?: number;
+  fee?: number;
 }
 
 /**
@@ -206,6 +229,17 @@ export function deleteTrader(params: { id: number }) {
 export function getTraderDetail(params: TraderOperateParams) {
   return request<TraderDetailRes>({
     url: '/trader/pc/detail',
+    method: 'POST',
+    data: params
+  });
+}
+
+/**
+ * 获取交易员本金详情（用于新增时自动填充） /trader-capital/pc/detail
+ */
+export function getTraderCapitalDetail(params: TraderCapitalDetailParams) {
+  return request<TraderCapitalDetailRes>({
+    url: '/trader-capital/pc/detail',
     method: 'POST',
     data: params
   });
