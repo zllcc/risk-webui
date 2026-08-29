@@ -14,12 +14,13 @@ export interface TraderFormModalProps {
   capitalInterest: number;
   loanInterest: number;
   fee: number;
+  income: number;
   dailyDate: string;
   traderOptions: Array<{ value: string; label: string }>;
   accountOptions: Array<{ value: string; label: string }>;
   strategyOptions: Array<{ value: string; label: string }>;
   onCancel: () => void;
-  onConfirm: (trader: string, accountCode: string, principal: number, strategy: string, loan: number, capitalInterest: number, loanInterest: number, fee: number, dailyDate: string) => void;
+  onConfirm: (trader: string, accountCode: string, principal: number, strategy: string, loan: number, capitalInterest: number, loanInterest: number, fee: number, income: number, dailyDate: string) => void;
   onChangeTrader: (val: string) => void;
   onChangeAccount: (val: string) => void;
   onChangePrincipal: (val: number | null) => void;
@@ -28,6 +29,7 @@ export interface TraderFormModalProps {
   onChangeCapitalInterest: (val: number | null) => void;
   onChangeLoanInterest: (val: number | null) => void;
   onChangeFee: (val: number | null) => void;
+  onChangeIncome: (val: number | null) => void;
   onChangeDate: (val: string) => void;
 }
 
@@ -42,6 +44,7 @@ const TraderFormModal: React.FC<TraderFormModalProps> = ({
   capitalInterest,
   loanInterest,
   fee,
+  income,
   dailyDate,
   traderOptions,
   accountOptions,
@@ -56,6 +59,7 @@ const TraderFormModal: React.FC<TraderFormModalProps> = ({
   onChangeCapitalInterest,
   onChangeLoanInterest,
   onChangeFee,
+  onChangeIncome,
   onChangeDate,
 }) => {
   const filterOption = (inputValue: string, option?: { value: string; label: string }) =>
@@ -72,7 +76,7 @@ const TraderFormModal: React.FC<TraderFormModalProps> = ({
       footer={
         <Space>
           <Button onClick={onCancel}>取消</Button>
-          <Button type="primary" onClick={() => onConfirm(traderName, accountCode, principal, strategyName, loan, capitalInterest, loanInterest, fee, dailyDate)}>确认</Button>
+          <Button type="primary" onClick={() => onConfirm(traderName, accountCode, principal, strategyName, loan, capitalInterest, loanInterest, fee, income, dailyDate)}>确认</Button>
         </Space>
       }
     >
@@ -218,7 +222,23 @@ const TraderFormModal: React.FC<TraderFormModalProps> = ({
         <Col span={24}>
           <Row align="middle" style={{ width: '100%' }}>
             <Col span={4} style={{ textAlign: 'right', paddingRight: 12 }}>
-              <label>费用：</label>
+              <label>收入：</label>
+            </Col>
+            <Col span={20}>
+              <InputNumber
+                style={{ width: '100%' }}
+                min={0}
+                value={income}
+                onChange={onChangeIncome}
+                placeholder="填写收入金额"
+              />
+            </Col>
+          </Row>
+        </Col>
+        <Col span={24}>
+          <Row align="middle" style={{ width: '100%' }}>
+            <Col span={4} style={{ textAlign: 'right', paddingRight: 12 }}>
+              <label>支出：</label>
             </Col>
             <Col span={20}>
               <InputNumber
@@ -226,7 +246,7 @@ const TraderFormModal: React.FC<TraderFormModalProps> = ({
                 min={0}
                 value={fee}
                 onChange={onChangeFee}
-                placeholder="填写费用金额"
+                placeholder="填写支出金额"
               />
             </Col>
           </Row>

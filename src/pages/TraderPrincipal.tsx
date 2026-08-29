@@ -30,6 +30,7 @@ interface MainTableRow {
   capitalInterest: number;
   loanInterest: number;
   fee: number;
+  income: number;
   dailyDate: string;
   updateTime: string;
 }
@@ -71,6 +72,7 @@ export default function TraderPrincipalPage() {
   const [modalCapitalInterest, setModalCapitalInterest] = useState(0);
   const [modalLoanInterest, setModalLoanInterest] = useState(0);
   const [modalFee, setModalFee] = useState(0);
+  const [modalIncome, setModalIncome] = useState(0);
   const [modalDate, setModalDate] = useState('');
   const [currentEditRow, setCurrentEditRow] = useState<MainTableRow | null>(null);
   const [editTraderId, setEditTraderId] = useState<number>(0);
@@ -134,6 +136,7 @@ export default function TraderPrincipalPage() {
         capitalInterest: item.capitalInterest ?? item.interest ?? 0,
         loanInterest: item.loanInterest ?? 0,
         fee: item.fee,
+        income: item.income ?? 0,
         dailyDate: item.dailyDate ?? '',
         updateTime: item.modifiedTime,
       }));
@@ -193,7 +196,7 @@ export default function TraderPrincipalPage() {
   };
 
   // 新增/编辑弹窗提交
-  const submitFormModal = async (trader: string, accountCode: string, capital: number, strategy: string, loan: number, capitalInterest: number, loanInterest: number, fee: number, dailyDate: string) => {
+  const submitFormModal = async (trader: string, accountCode: string, capital: number, strategy: string, loan: number, capitalInterest: number, loanInterest: number, fee: number, income: number, dailyDate: string) => {
     if (!dailyDate) {
       message.warning('请选择日期');
       return;
@@ -228,6 +231,7 @@ export default function TraderPrincipalPage() {
             capitalInterest: capitalInterest,
             loanInterest: loanInterest,
             fee: fee,
+            income: income,
             dailyDate: dailyDate
           });
           message.success('编辑成功');
@@ -241,6 +245,7 @@ export default function TraderPrincipalPage() {
             capitalInterest: capitalInterest,
             loanInterest: loanInterest,
             fee: fee,
+            income: income,
             dailyDate: dailyDate
           });
           message.success('新增成功');
@@ -256,6 +261,7 @@ export default function TraderPrincipalPage() {
           capitalInterest: capitalInterest,
           loanInterest: loanInterest,
           fee: fee,
+          income: income,
           dailyDate: dailyDate
         });
         message.success('编辑成功');
@@ -277,7 +283,8 @@ export default function TraderPrincipalPage() {
     { title: '本金利息', dataIndex: 'capitalInterest', render: (val: number) => val ?? 0 },
     { title: '贷款', dataIndex: 'loan', render: (val: number) => val ?? 0 },
     { title: '贷款利息', dataIndex: 'loanInterest', render: (val: number) => val ?? 0 },
-    { title: '费用', dataIndex: 'fee', render: (val: number) => val ?? 0 },
+    { title: '收入', dataIndex: 'income', render: (val: number) => val ?? 0 },
+    { title: '支出', dataIndex: 'fee', render: (val: number) => val ?? 0 },
     { title: '更新时间', dataIndex: 'updateTime' },
     {
       title: '操作',
@@ -321,6 +328,7 @@ export default function TraderPrincipalPage() {
     setModalCapitalInterest(row.capitalInterest);
     setModalLoanInterest(row.loanInterest);
     setModalFee(row.fee);
+    setModalIncome(row.income);
     setModalDate(row.dailyDate);
     setModalDetailId(0);
     setFormModalOpen(true);
@@ -339,13 +347,14 @@ export default function TraderPrincipalPage() {
     setModalCapitalInterest(0);
     setModalLoanInterest(0);
     setModalFee(0);
+    setModalIncome(0);
     setModalDate('');
     setModalDetailId(0);
     setFormModalOpen(true);
   };
 
   // 新增模式下，日期/交易员/账号/策略四项齐全时，自动调用 detail 接口填充本金等字段
-  // 任一项被清空时，将本金/本金利息/贷款/贷款利息/费用重置为默认值 0
+  // 任一项被清空时，将本金/本金利息/贷款/贷款利息/收入/支出重置为默认值 0
   useEffect(() => {
     // 仅在弹窗打开且为新增模式时触发
     if (!formModalOpen || formModalMode !== 'add') return;
@@ -356,6 +365,7 @@ export default function TraderPrincipalPage() {
       setModalCapitalInterest(0);
       setModalLoanInterest(0);
       setModalFee(0);
+      setModalIncome(0);
       setModalDetailId(0);
       return;
     }
@@ -376,6 +386,7 @@ export default function TraderPrincipalPage() {
         setModalCapitalInterest(res.capitalInterest ?? res.interest ?? 0);
         setModalLoanInterest(res.loanInterest ?? 0);
         setModalFee(res.fee ?? 0);
+        setModalIncome(res.income ?? 0);
       } catch (err) {
         // 静默失败，不打断用户输入
         console.error('自动填充本金详情失败', err);
@@ -486,6 +497,7 @@ export default function TraderPrincipalPage() {
         capitalInterest={modalCapitalInterest}
         loanInterest={modalLoanInterest}
         fee={modalFee}
+        income={modalIncome}
         dailyDate={modalDate}
         traderOptions={traderOptions}
         accountOptions={accountOptions}
@@ -500,6 +512,7 @@ export default function TraderPrincipalPage() {
         onChangeCapitalInterest={setModalCapitalInterest}
         onChangeLoanInterest={setModalLoanInterest}
         onChangeFee={setModalFee}
+        onChangeIncome={setModalIncome}
         onChangeDate={setModalDate}
       />
 
@@ -514,6 +527,7 @@ export default function TraderPrincipalPage() {
           loan={currentEditRow.loan}
           interest={currentEditRow.capitalInterest}
           fee={currentEditRow.fee}
+          income={currentEditRow.income}
           onCancel={() => setRecordModalOpen(false)}
           fetchTraderList={() => fetchTraderList()}
         />

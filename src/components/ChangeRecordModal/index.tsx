@@ -10,6 +10,7 @@ export interface ChangeRecordRow {
   loan?: number;
   interest?: number;
   fee?: number;
+  income?: number;
   createTime: string;
 }
 
@@ -22,6 +23,7 @@ interface ChangeRecordModalProps {
   loan?: number;
   interest?: number;
   fee?: number;
+  income?: number;
   onCancel: () => void;
   fetchTraderList: () => void;
 }
@@ -35,6 +37,7 @@ const ChangeRecordModal: React.FC<ChangeRecordModalProps> = ({
   loan,
   interest,
   fee,
+  income,
   onCancel,
 }) => {
   const [loading, setLoading] = useState(false);
@@ -51,7 +54,8 @@ const ChangeRecordModal: React.FC<ChangeRecordModalProps> = ({
     { title: '本金利息', dataIndex: 'capitalInterest', render: (val: number) => val ?? 0 },
     { title: '贷款', dataIndex: 'loan', render: (val: number) => val ?? 0 },
     { title: '贷款利息', dataIndex: 'loanInterest', render: (val: number) => val ?? 0 },
-    { title: '费用', dataIndex: 'fee', render: (val: number) => val ?? 0 },
+    { title: '收入', dataIndex: 'income', render: (val: number) => val ?? 0 },
+    { title: '支出', dataIndex: 'fee', render: (val: number) => val ?? 0 },
     { title: '创建时间', dataIndex: 'createTime' },
   ];
 
@@ -71,6 +75,7 @@ const ChangeRecordModal: React.FC<ChangeRecordModalProps> = ({
         loan: item.loan,
         interest: item.interest,
         fee: item.fee,
+        income: item.income,
         createTime: item.createTime,
       }));
       setRecordList(list);
@@ -123,7 +128,11 @@ const ChangeRecordModal: React.FC<ChangeRecordModalProps> = ({
           <span>{interest ?? 0}</span>
         </Space>
         <Space style={{ alignItems: 'center' }}>
-          <span style={{ fontWeight: 500, width: 70 }}>费用：</span>
+          <span style={{ fontWeight: 500, width: 70 }}>收入：</span>
+          <span>{income ?? 0}</span>
+        </Space>
+        <Space style={{ alignItems: 'center' }}>
+          <span style={{ fontWeight: 500, width: 70 }}>支出：</span>
           <span>{fee ?? 0}</span>
         </Space>
         <Space style={{ alignItems: 'center' }}>
