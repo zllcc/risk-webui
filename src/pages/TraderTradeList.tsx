@@ -211,7 +211,7 @@ export default function TraderTradeList() {
 
   return (
     <Card
-      title={<Title level={5}>交易员交易列表</Title>}
+      title="交易员交易列表"
       extra={
         <Space>
           <Button type="primary" loading={calLoading} onClick={handleCalTrade}>核算</Button>

@@ -37,12 +37,13 @@ export default function BasicLayout() {
       <Header
         style={{
           background: '#161B24',
-          padding: '0 20px',
+          padding: '20px 20px 20px 12px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
           boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
           position: 'fixed',
+          height: 40,
           top: 0,
           left: 0,
           right: 0,
@@ -52,10 +53,11 @@ export default function BasicLayout() {
         {/* 左侧导航按钮，循环渲染自动判断高亮 */}
         <Space
           size="middle"
+          style={{ columnGap: 2 }}
         >
-          <Title level={4} style={{ color: '#fff', marginRight: 24, marginBottom: 0 }}>
+          {/* <Title level={4} style={{ color: '#fff', marginRight: 24, marginBottom: 0 }}>
             财务中台
-          </Title>
+          </Title> */}
           {navMenus.map((item) => {
             // 判断是否为当前选中路由
             const isActive = currentPath === item.path;
@@ -64,6 +66,8 @@ export default function BasicLayout() {
                 style={{
                   background: isActive ? 'rgba(48, 112, 202, 0.22)' : 'transparent',
                   borderRadius: 4,
+                  height: 40,
+                  lineHeight: '40px',
                 }}
               >
               <Button
@@ -72,7 +76,8 @@ export default function BasicLayout() {
                 onClick={() => navigate(item.path)}
                 style={{
                   color: isActive ? '#fff' : '#B8C2D6',
-                  height: '100%'
+                  height: '100%',
+                  padding: '0 6px',
                 }}
               >
                 {item.label}
@@ -101,7 +106,7 @@ export default function BasicLayout() {
       {/* 内容区：顶部留导航高度，左右自动边距 */}
       <Content
         style={{
-          marginTop: 64, // Header 高度
+          marginTop: 40, // Header 高度
           background: 'rgb(24,34,54)',
           minHeight: 'calc(100vh - 64px)',
         }}

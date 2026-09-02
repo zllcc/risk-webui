@@ -189,7 +189,7 @@ export default function AssetList() {
 
   return (
     <Card
-      title={<Title level={5}>交易员持仓列表</Title>}
+      title="交易员持仓列表"
       extra={<ImportBtnGroup type="4" onSuccess={fetchPositionData} />}
     >
       <FilterPanel onSearch={handleSearch} pageType="traderAsset" />

@@ -198,7 +198,7 @@ export default function PortfolioOverview() {
   };
 
   return (
-    <Card title={<Title level={5}>组合总览</Title>}>
+    <Card title="组合总览">
       <FilterPanel onSearch={handleSearch} pageType="overview" />
 
       <Row gutter={16} style={{ margin: '12px 0 24px' }}>

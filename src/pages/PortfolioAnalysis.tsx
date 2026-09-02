@@ -110,7 +110,7 @@ const PortfolioAnalysis: React.FC = () => {
   ];
 
   return (
-    <Card title={<Title level={5}>投资组合分析</Title>}>
+    <Card title="投资组合分析">
       {/* 顶部独立筛选组件 */}
       <FilterPanel onSearch={handleSearch} pageType="analysis" />
 

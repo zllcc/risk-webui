@@ -217,7 +217,7 @@ export default function AssetList() {
 
   return (
     <Card
-      title={<Title level={5}>持仓列表</Title>}
+      title="持仓列表"
       extra={
         <Space>
           <Button loading={exportLoading} onClick={handleExport}>导出</Button>
