@@ -216,15 +216,11 @@ export default function AssetList() {
     });
 
   return (
-    <Card
-      title="持仓列表"
-      extra={
-        <Space>
-          <Button loading={exportLoading} onClick={handleExport}>导出</Button>
-          <ImportBtnGroup type='1' onSuccess={fetchPositionData} />
-        </Space>
-      }
-    >
+    <Card bodyStyle={{ padding: 12 }}>
+      <Row style={{ marginBottom: 12 }} justify="end">
+        <Button loading={exportLoading} onClick={handleExport} style={{ marginRight: 8 }}>导出</Button>
+        <ImportBtnGroup type='1' onSuccess={fetchPositionData} />
+      </Row>
       <FilterPanel onSearch={handleSearch} pageType="asset" />
 
       <Row justify="space-between" align="middle" style={{ marginBottom: 16, marginTop: 16 }}>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Card, Input, Select, Table, Pagination, Space, Button, message, Typography } from 'antd';
+import { Card, Input, Select, Table, Pagination, Space, Button, message, Typography, Row } from 'antd';
 import type { TableProps } from 'antd';
 import ContractEditModal from '@/components/ContractEditModal';
 import ContractViewModal from '@/components/ContractViewModal';
@@ -148,10 +148,10 @@ const ContractList = () => {
   ];
 
   return (
-    <Card
-      title="标的资产"
-      extra={<ImportBtnGroup type="3" onSuccess={() => fetchList(searchSymbol, searchShortName, searchSecType ?? '', 1, pageSize)} />}
-    >
+    <Card bodyStyle={{ padding: 12 }}>
+      <Row style={{ marginBottom: 12 }} justify="end">
+        <ImportBtnGroup type="3" onSuccess={() => fetchList(searchSymbol, searchShortName, searchSecType ?? '', 1, pageSize)} />
+      </Row>
       {/* 筛选区域 */}
       <Space size={12} style={{ marginBottom: 18, alignItems: 'center' }} wrap>
         <span>标的资产：</span>

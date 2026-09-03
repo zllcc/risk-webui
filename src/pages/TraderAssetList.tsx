@@ -188,10 +188,10 @@ export default function AssetList() {
     });
 
   return (
-    <Card
-      title="交易员持仓列表"
-      extra={<ImportBtnGroup type="4" onSuccess={fetchPositionData} />}
-    >
+    <Card bodyStyle={{ padding: 12 }}>
+      <Row style={{ marginBottom: 12 }} justify="end">
+        <ImportBtnGroup type="4" onSuccess={fetchPositionData} />
+      </Row>
       <FilterPanel onSearch={handleSearch} pageType="traderAsset" />
 
       <Row justify="space-between" align="middle" style={{ marginBottom: 16, marginTop: 16 }}>

@@ -198,7 +198,7 @@ export default function PortfolioOverview() {
   };
 
   return (
-    <Card title="组合总览">
+    <Card bodyStyle={{ padding: 12 }}>
       <FilterPanel onSearch={handleSearch} pageType="overview" />
 
       <Row gutter={16} style={{ margin: '12px 0 24px' }}>

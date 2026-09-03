@@ -110,7 +110,7 @@ const PortfolioAnalysis: React.FC = () => {
   ];
 
   return (
-    <Card title="投资组合分析">
+    <Card bodyStyle={{ padding: 12 }}>
       {/* 顶部独立筛选组件 */}
       <FilterPanel onSearch={handleSearch} pageType="analysis" />
 

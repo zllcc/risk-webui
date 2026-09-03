@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Card, Select, Table, Button, Space, message, DatePicker } from 'antd';
+import { Card, Select, Table, Button, Space, message, DatePicker, Row } from 'antd';
 import dayjs from 'dayjs';
 import type { TableProps } from 'antd';
 // 导入抽离弹窗组件
@@ -407,7 +407,10 @@ export default function TraderPrincipalPage() {
   };
 
   return (
-    <Card title="交易员本金配置" extra={<ImportBtnGroup type="5" onSuccess={fetchTraderList} />}>
+    <Card bodyStyle={{ padding: 12 }}>
+      <Row style={{ marginBottom: 12 }} justify="end">
+        <ImportBtnGroup type="5" onSuccess={fetchTraderList} />
+      </Row>
       {/* 顶部搜索区域 */}
       <Space size={12} style={{ marginBottom: 18, alignItems: 'center' }}>
         <span>账号：</span>

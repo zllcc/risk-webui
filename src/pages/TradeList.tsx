@@ -261,16 +261,12 @@ export default function TradeList() {
     });
 
   return (
-    <Card
-      title="交易列表"
-      extra={
-        <Space>
-          <Button type="primary" loading={calLoading} onClick={handleCalTrade}>核算</Button>
-          <Button loading={exportLoading} onClick={handleExportUncalibrated}>导出</Button>
-          <ImportBtnGroup type='2' onSuccess={fetchTradeList} />
-        </Space>
-      }
-    >
+    <Card bodyStyle={{ padding: 12 }}>
+      <Row style={{ marginBottom: 12 }} justify="end">
+        <Button style={{ marginRight: 8}} loading={calLoading} onClick={handleCalTrade}>核算</Button>
+        <Button style={{ marginRight: 8}} loading={exportLoading} onClick={handleExportUncalibrated}>导出</Button>
+        <ImportBtnGroup type='2' onSuccess={fetchTradeList} />
+      </Row>
       <FilterPanel onSearch={handleSearch} pageType='trade' />
 
       <Row justify="space-between" align="middle" style={{ marginBottom: 16, marginTop: 16 }}>

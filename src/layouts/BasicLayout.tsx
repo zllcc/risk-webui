@@ -64,10 +64,11 @@ export default function BasicLayout() {
             return (
               <div
                 style={{
-                  background: isActive ? 'rgba(48, 112, 202, 0.22)' : 'transparent',
-                  borderRadius: 4,
+                  background: isActive ? 'rgba(24, 34, 54)' : 'transparent',
                   height: 40,
                   lineHeight: '40px',
+                  borderLeft: isActive ? '1px solid #293a5d' : '1px solid transparent',
+                  borderRight: isActive ? '1px solid #293a5d' : '1px solid transparent',
                 }}
               >
               <Button
@@ -78,6 +79,8 @@ export default function BasicLayout() {
                   color: isActive ? '#fff' : '#B8C2D6',
                   height: '100%',
                   padding: '0 6px',
+                  borderBottom: isActive ? '3px solid rgb(24, 34, 54)' : '3px solid transparent',
+                  borderRadius: 0,
                 }}
               >
                 {item.label}

@@ -210,15 +210,11 @@ export default function TraderTradeList() {
     });
 
   return (
-    <Card
-      title="交易员交易列表"
-      extra={
-        <Space>
-          <Button type="primary" loading={calLoading} onClick={handleCalTrade}>核算</Button>
-          <ImportBtnGroup type='6' onSuccess={fetchTradeList} />
-        </Space>
-      }
-    >
+    <Card bodyStyle={{ padding: 12 }}>
+      <Row style={{ marginBottom: 12 }} justify="end">
+        <Button style={{ marginRight: 8}} loading={calLoading} onClick={handleCalTrade}>核算</Button>
+        <ImportBtnGroup type='6' onSuccess={fetchTradeList} />
+      </Row>
       <FilterPanel onSearch={handleSearch} pageType='traderTrade' />
 
       <Row justify="space-between" align="middle" style={{ marginBottom: 16, marginTop: 16 }}>
