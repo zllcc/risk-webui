@@ -194,7 +194,7 @@ export default function AssetList() {
       </Row>
       <FilterPanel onSearch={handleSearch} pageType="traderAsset" />
 
-      <Row justify="space-between" align="middle" style={{ marginBottom: 16, marginTop: 16 }}>
+      <Row justify="space-between" align="middle" style={{ marginTop: 12 }}>
         <Col>
           <Tabs
             activeKey={activeTab}
@@ -220,7 +220,7 @@ export default function AssetList() {
         </Col>
       </Row>
 
-      <div style={{ marginBottom: 16, padding: '8px 12px', borderRadius: 4 }}>
+      <div style={{ marginBottom: 16, borderRadius: 4 }}>
         <Space align="baseline" wrap>
           <span style={{ fontWeight: 500 }}>表格显示字段：</span>
           <Checkbox.Group value={visibleCols} onChange={handleColCheckChange} disabled={colLoading}>

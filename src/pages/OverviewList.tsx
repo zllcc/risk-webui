@@ -201,7 +201,7 @@ export default function PortfolioOverview() {
     <Card bodyStyle={{ padding: 12 }}>
       <FilterPanel onSearch={handleSearch} pageType="overview" />
 
-      <Row gutter={16} style={{ margin: '12px 0 24px' }}>
+      <Row gutter={16} style={{ margin: '4px 0 16px' }}>
         <Col span={6}>
           <MetricCard title="收益额" value={summary.profitAmount} />
         </Col>

@@ -115,7 +115,7 @@ const PortfolioAnalysis: React.FC = () => {
       <FilterPanel onSearch={handleSearch} pageType="analysis" />
 
       {/* 右上角：组件配置弹窗按钮 */}
-      <Row justify="end" style={{ padding: '0 0 24px' }}>
+      <Row justify="end" style={{ padding: '0 0 12px' }}>
         <Button onClick={() => setcomponentsModalOpen(true)}>配置组件</Button>
         <ComponotsModel
           open={componentsModalOpen}
