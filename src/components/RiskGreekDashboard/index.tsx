@@ -1,9 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Row, Col, Typography } from 'antd';
+import { Card, Row, Col, Typography, Spin } from 'antd';
 import ReactEcharts from 'echarts-for-react';
+import { FilterParams } from '../FilterPanel';
+import { queryOptDelta, RiskQueryParams } from '@/api/riskApi';
 import styles from './index.module.less';
 
 const { Title, Text } = Typography;
+
+interface Props {
+  filter: FilterParams;
+}
 
 // 希腊指标类型定义
 interface GreekItem {
@@ -12,43 +18,63 @@ interface GreekItem {
   highlight?: boolean; // 是否高亮（当前Delta）
 }
 
-const RiskGreekDashboard = () => {
+const RiskGreekDashboard: React.FC<Props> = ({ filter }) => {
+  const [loading, setLoading] = useState(false);
+  const [optData, setOptData] = useState<{ delta: number; gamma: number; vega: number; theta: number } | null>(null);
+  const [areaSeries, setAreaSeries] = useState([]);
+  const [xAxisTime, setXAxisTime] = useState([]);
+
+  // 筛选变更，转换参数并请求后端接口
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        // 转换筛选参数为后端接口入参，完全对齐后端字段
+        const reqParams: RiskQueryParams = {
+          accountCodes: filter.accountCodes,
+          tradeNames: filter.tradeNames,
+          strategyNames: filter.strategyNames,
+          startDate: filter.startDate || '',
+          endDate: filter.endDate || '',
+          dateType: filter.dateType || null,
+        };
+        const res = await queryOptDelta(reqParams);
+        const obj = {
+          "Delta": res?.delta,
+          "Gamma": res?.gamma,
+          "Vega": res?.vega,
+          "Theta": res?.theta,
+        };
+        const arr = Object.entries(obj).map(([label, value]) => ({ label, value }));
+        const time = res?.optDeltaValueList?.map(item => item.dailyDate) || [];
+        const series = [
+          { name: '多头Delta总和', color: '#f5222d', data: res?.optDeltaValueList?.map(item => item.optDeltaLongValue) || [] },
+          { name: '空头Delta总和', color: '#52c41a', data: res?.optDeltaValueList?.map(item => item.optDeltaShortValue) || [] },
+        ];
+
+
+        setGreekList(arr);
+        setOptData(res);
+        setAreaSeries(series);
+        setXAxisTime(time);
+      } catch (err) {
+        console.error('风控接口请求异常：', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [filter]);
   // 模拟接口返回希腊字母数据
-  const [greekList, setGreekList] = useState<GreekItem[]>([
-    { label: 'Delta', value: '2,356', highlight: true },
-    { label: 'Gamma', value: '2005.99' },
-    { label: 'Vega', value: '0,8' },
-    { label: 'Theta', value: '325.78' },
-  ]);
+  const [greekList, setGreekList] = useState<GreekItem[]>([]);
 
-  // 热力图模拟数据
-  const heatmapData = [
-    ['半年内', '半年均', 11],
-    ['半年内', '转期日', 19.9],
-    ['半年内', '待兑付日', 10.9],
-    ['半年内', '到期日', 30],
-    ['半年内', '到期前日', 20.7],
-    ['半年内', '到期前日2', 30],
-    ['90日内', '半年均', 1.1],
-    ['90日内', '转期日', 19.9],
-    ['90日内', '待兑付日', 19.5],
-    ['90日内', '到期日', 27.27],
-    ['90日内', '到期前日', 10.7],
-    ['90日内', '到期前日2', 30],
-    ['15日内', '半年均', 1.1],
-    ['15日内', '转期日', 19.5],
-    ['15日内', '待兑付日', 15.3],
-    ['15日内', '到期日', 16.9],
-    ['15日内', '到期前日', 30],
-    ['15日内', '到期前日2', 30],
-  ];
-
-  // 多折线面积图模拟数据
-  const areaSeries = [
-    { name: '多头Delta总和', color: '#f5222d', data: [50, 120, 220, 480, 360, 420, 330] },
-    { name: '空头Delta总和', color: '#52c41a', data: [30, 90, 180, 320, 280, 340, 290] },
-  ];
-  const xAxisTime = ['03:13', '09:25', '13:05', '17:05', '11:00', '16:30', '19:30'];
+  if (!optData) {
+    return (
+      <div className={styles.wrap} style={{ textAlign: 'center', padding: 60 }}>
+        <Spin spinning={loading} size="large" />
+      </div>
+    );
+  }
 
   return (
     <>
@@ -56,7 +82,7 @@ const RiskGreekDashboard = () => {
       <Row gutter={[16, 16]}>
         {greekList.map((item, idx) => (
           <Col span={6} key={idx}>
-            <div className={item.highlight ? styles.greekItemActive : styles.greekItem}>
+            <div className={item.label === 'Delta' ? styles.greekItemActive : styles.greekItem}>
               <div className={styles.labelRow}>
                 <Text className={styles.labelText}>{item.label}</Text>
               </div>

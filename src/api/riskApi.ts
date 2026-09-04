@@ -128,3 +128,11 @@ export function queryAssetRatio(params: RiskQueryParams) {
     data: params
   });
 }
+
+export function queryOptDelta(params: RiskQueryParams) {
+  return request<AssetRatioRes>({
+    url: '/risk-dashboard/pc/query-opt-delta',
+    method: 'POST',
+    data: params
+  });
+}
