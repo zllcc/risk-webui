@@ -50,6 +50,7 @@ const ImportTradeData: React.FC<ImportTradeDataProps> = ({ type, onSuccess }) =>
         const res = await importPositionExecution({
           type,
           file: base64Str,
+          fileName: file.name,
         });
 
         // 业务code判断
