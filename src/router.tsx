@@ -9,6 +9,8 @@ import TradeList from './pages/TradeList.tsx';
 import PortfolioAnalysis from './pages/PortfolioAnalysis.tsx';
 import BasicLayout from './layouts/BasicLayout.tsx';
 import TraderPrincipalPage from './pages/TraderPrincipal.tsx';
+import RiskScoreConfig from './pages/RiskScoreConfig.tsx';
+import RiskScoreResult from './pages/RiskScoreResult.tsx';
 
 // 路由守卫：简单用 localStorage 模拟登录
 const PrivateRoute = ({ children } : any ) => {
@@ -36,6 +38,8 @@ export default function Router() {
         { path: 'trader-manage', element: <TraderPrincipalPage /> },
         { path: 'asset-list', element: <AssetList /> },
         { path: 'contract-list', element: <ContractList /> },
+        { path: 'risk-score-config', element: <RiskScoreConfig /> },
+        { path: 'risk-score-result', element: <RiskScoreResult /> },
       ],
     },
   ]);

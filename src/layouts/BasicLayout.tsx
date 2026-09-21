@@ -17,6 +17,8 @@ const navMenus = [
   { path: '/asset-list', label: '持仓' },
   { path: '/trade-list', label: '交易' },
   { path: '/contract-list', label: '标的资产' },
+  { path: '/risk-score-config', label: '风险评分配置' },
+  { path: '/risk-score-result', label: '风险评分结果' },
 ];
 
 export default function BasicLayout() {

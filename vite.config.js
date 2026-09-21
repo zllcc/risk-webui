@@ -89,6 +89,12 @@ export default defineConfig({
         rewrite: path => path,
         logLevel: 'info'
       },
+      '/riskIndicator': {
+        target: NORMAL_TARGET,
+        changeOrigin: true,
+        rewrite: path => path,
+        logLevel: 'info'
+      },
       '/position-trader-execution': {
         target: NORMAL_TARGET,
         changeOrigin: true,
